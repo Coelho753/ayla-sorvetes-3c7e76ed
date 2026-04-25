@@ -37,6 +37,13 @@ import popsicleKiwi from "@/assets/popsicle-kiwi.webp";
 import popsicleCoco from "@/assets/popsicle-coco.webp";
 import popsicleAcai from "@/assets/popsicle-acai.webp";
 import popsicleTentacao from "@/assets/popsicle-tentacao.webp";
+import popsicle3dLeitinho from "@/assets/popsicle-3d-leitinho.jpg";
+import popsicle3dManga from "@/assets/popsicle-3d-manga.jpg";
+import popsicle3dSkimoCoco from "@/assets/popsicle-3d-skimo-coco.jpg";
+import popsicle3dMaracuja from "@/assets/popsicle-3d-maracuja.jpg";
+import popsicle3dChiclete from "@/assets/popsicle-3d-chiclete.jpg";
+import popsicle3dGroselha from "@/assets/popsicle-3d-groselha.jpg";
+import popsicle3dChocolate from "@/assets/popsicle-3d-chocolate.jpg";
 import acai1L from "@/assets/acai-1l.webp";
 import acai5L from "@/assets/acai-5l.webp";
 import Autoplay from "embla-carousel-autoplay";
@@ -96,6 +103,13 @@ const popsicles = [
   { name: "Kiwi", desc: "Refrescante com pedaços de kiwi natural.", img: popsicleKiwi },
   { name: "Torta de Limão", desc: "Picolé gourmet com crocante de biscoito.", img: popsicleLimao },
   { name: "Tentação", desc: "Picolé cremoso de chocolate com cobertura irresistível.", img: popsicleTentacao },
+  { name: "Leitinho", desc: "Picolé cremoso sabor leite condensado.", img: popsicle3dLeitinho },
+  { name: "Manga", desc: "Tropical e refrescante com sabor intenso de manga.", img: popsicle3dManga },
+  { name: "Skimo Coco", desc: "Coco com cobertura crocante de chocolate.", img: popsicle3dSkimoCoco },
+  { name: "Maracujá", desc: "Azedinho na medida certa, super refrescante.", img: popsicle3dMaracuja },
+  { name: "Chiclete", desc: "Sabor divertido de chiclete colorido.", img: popsicle3dChiclete },
+  { name: "Groselha", desc: "Sabor clássico e marcante de groselha.", img: popsicle3dGroselha },
+  { name: "Chocolate", desc: "Chocolate intenso e cremoso em picolé.", img: popsicle3dChocolate },
 ];
 
 const acaiProducts = [
