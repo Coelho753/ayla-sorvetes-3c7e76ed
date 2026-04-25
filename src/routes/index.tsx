@@ -262,7 +262,6 @@ function Index() {
                         <h3 className="font-display text-2xl font-bold leading-tight drop-shadow-lg">
                           {t.name}
                         </h3>
-                        <p className="mt-1.5 text-sm text-white/85 drop-shadow">{t.desc}</p>
                       </div>
                     </article>
                   </CarouselItem>
@@ -314,7 +313,6 @@ function Index() {
                         <h3 className="font-display text-2xl font-bold leading-tight drop-shadow-lg">
                           {c.name}
                         </h3>
-                        <p className="mt-1.5 text-sm text-white/85 drop-shadow">{c.desc}</p>
                       </div>
                     </article>
                   </CarouselItem>
@@ -361,7 +359,6 @@ function Index() {
                       <div className="product-card__overlay" />
                       <div className="product-card__content">
                         <h3 className="font-display text-2xl font-bold leading-tight drop-shadow-lg">{p.name}</h3>
-                        <p className="mt-1.5 text-sm text-white/85 drop-shadow">{p.desc}</p>
                       </div>
                     </article>
                   </CarouselItem>
@@ -410,7 +407,6 @@ function Index() {
                       <div className="product-card__overlay" />
                       <div className="product-card__content">
                         <h3 className="font-display text-2xl font-bold leading-tight drop-shadow-lg">{a.name}</h3>
-                        <p className="mt-1.5 text-sm text-white/85 drop-shadow">{a.desc}</p>
                       </div>
                     </article>
                   </CarouselItem>
