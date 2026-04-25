@@ -15,6 +15,7 @@ import tubChocolate from "@/assets/tub-3d-chocolate.jpg";
 import tubMorango from "@/assets/tub-3d-morango.jpg";
 import tubBrigadeiro from "@/assets/tub-3d-brigadeiro.jpg";
 import tubCoco from "@/assets/tub-3d-coco.jpg";
+import tubMilho from "@/assets/tub-3d-milho.jpg";
 import tubIogurte from "@/assets/tub-iogurte-grego.webp";
 import tubFlocos from "@/assets/tub-flocos.webp";
 import tubNinho from "@/assets/tub-ninho-trufado.webp";
@@ -24,6 +25,12 @@ import cupDoceLeite from "@/assets/cup-3d-doce-leite.webp";
 import cupLimao from "@/assets/cup-3d-limao.webp";
 import cupLeiteCondensado from "@/assets/cup-3d-leite-condensado.webp";
 import cupAcai from "@/assets/cup-3d-acai.webp";
+import cupChocolate from "@/assets/cup-3d-chocolate.jpg";
+import cupMorango from "@/assets/cup-3d-morango.jpg";
+import cupMilho from "@/assets/cup-3d-milho.jpg";
+import cupAbacaxiVinho from "@/assets/cup-3d-abacaxi-vinho.jpg";
+import cupAbacaxi from "@/assets/cup-3d-abacaxi.jpg";
+import cupChocoMaltine from "@/assets/cup-3d-choco-maltine.jpg";
 import popsicleLimao from "@/assets/popsicle-limao.webp";
 import popsicleFlocos from "@/assets/popsicle-flocos.webp";
 import popsicleKiwi from "@/assets/popsicle-kiwi.webp";
@@ -61,6 +68,7 @@ const tubs = [
   { name: "Morango", img: tubMorango },
   { name: "Brigadeiro", img: tubBrigadeiro },
   { name: "Coco", img: tubCoco },
+  { name: "Milho", img: tubMilho },
   { name: "Iogurte Grego com Frutas Silvestres", img: tubIogurte },
   { name: "Flocos", img: tubFlocos },
   { name: "Ninho Trufado", img: tubNinho },
@@ -73,6 +81,12 @@ const cups = [
   { name: "Limão Suíço", desc: "Refrescante e cítrico, na medida certa.", img: cupLimao },
   { name: "Leite Condensado", desc: "Doce, cremoso e irresistível.", img: cupLeiteCondensado },
   { name: "Açaí Premium", desc: "Açaí cremoso com toque tropical.", img: cupAcai },
+  { name: "Chocolate", desc: "Chocolate intenso e cremoso.", img: cupChocolate },
+  { name: "Morango", desc: "Morangos frescos em creme suave.", img: cupMorango },
+  { name: "Milho", desc: "Sabor caseiro e cremoso de milho verde.", img: cupMilho },
+  { name: "Abacaxi ao Vinho", desc: "Tropical com toque sofisticado.", img: cupAbacaxiVinho },
+  { name: "Abacaxi", desc: "Refrescante e tropical.", img: cupAbacaxi },
+  { name: "Choco Maltine", desc: "Chocolate com crocância de maltine.", img: cupChocoMaltine },
 ];
 
 const popsicles = [
