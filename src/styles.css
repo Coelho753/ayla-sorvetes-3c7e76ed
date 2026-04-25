@@ -93,8 +93,8 @@
   --gradient-candy: linear-gradient(135deg, oklch(0.74 0.24 350), oklch(0.9 0.19 92));
   --gradient-purple: linear-gradient(135deg, oklch(0.55 0.27 300), oklch(0.7 0.24 340));
   --gradient-cta: linear-gradient(135deg, oklch(0.7 0.26 8), oklch(0.58 0.26 305));
-  --gradient-card: linear-gradient(180deg, transparent 35%, oklch(0.18 0.08 305 / 0.55) 70%, oklch(0.12 0.06 305 / 0.92) 100%);
-  --gradient-card-acai: linear-gradient(180deg, transparent 35%, oklch(0.25 0.18 305 / 0.6) 70%, oklch(0.18 0.18 305 / 0.95) 100%);
+  --gradient-card: linear-gradient(180deg, transparent 55%, oklch(0.2 0.08 305 / 0.35) 80%, oklch(0.15 0.06 305 / 0.65) 100%);
+  --gradient-card-acai: linear-gradient(180deg, transparent 55%, oklch(0.28 0.18 305 / 0.4) 80%, oklch(0.2 0.18 305 / 0.7) 100%);
 
   /* Shadows / Glow */
   --shadow-glow: 0 0 60px oklch(0.74 0.24 350 / 0.55), 0 0 120px oklch(0.58 0.26 305 / 0.4);
@@ -245,9 +245,10 @@
   left: 0;
   right: 0;
   bottom: 0;
-  padding: 1.25rem 1.25rem 1.4rem;
+  padding: 1rem 1rem 1.25rem;
   color: oklch(1 0 0);
   z-index: 2;
+  text-align: center;
   transform: translateY(0);
   transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
 }
