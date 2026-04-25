@@ -224,36 +224,26 @@ function Index() {
                 {tubs.map((t, i) => (
                   <CarouselItem key={t.name} className="pl-4 sm:basis-1/2 lg:basis-1/3">
                     <article
-                      className="group relative flex h-full flex-col items-center rounded-3xl bg-card p-6 shadow-card ring-1 ring-border transition-all duration-500 hover:-translate-y-2 hover:shadow-glow"
-                      style={{ transitionDelay: `${i * 60}ms` }}
+                      className="product-card group animate-pop-in"
+                      style={{ animationDelay: `${i * 90}ms` }}
                     >
-                      <div className="absolute inset-0 -z-10 rounded-3xl bg-gradient-candy opacity-0 blur-2xl transition-opacity duration-500 group-hover:opacity-50" />
-                      <span className="absolute right-4 top-4 rounded-full bg-gradient-cta px-3 py-1 font-display text-xs font-bold text-white shadow-button">
-                        1,5L
-                      </span>
-                      <div className="relative flex h-56 w-56 items-center justify-center">
-                        <div className="absolute inset-0 rounded-full bg-gradient-candy opacity-30 blur-2xl" />
-                        <img
-                          src={t.img}
-                          alt={`Pote 1,5L de ${t.name}`}
-                          width={1024}
-                          height={1024}
-                          loading="lazy"
-                          className="relative h-full w-full object-contain drop-shadow-2xl transition-transform duration-500 group-hover:scale-110 group-hover:-rotate-2"
-                        />
+                      <img
+                        src={t.img}
+                        alt={`Pote 1,5L de ${t.name}`}
+                        width={1024}
+                        height={1024}
+                        loading="lazy"
+                        className="product-card__img"
+                      />
+                      <span className="product-card__badge">1,5L</span>
+                      <div className="product-card__shine" />
+                      <div className="product-card__overlay" />
+                      <div className="product-card__content">
+                        <h3 className="font-display text-2xl font-bold leading-tight drop-shadow-lg">
+                          {t.name}
+                        </h3>
+                        <p className="mt-1.5 text-sm text-white/85 drop-shadow">{t.desc}</p>
                       </div>
-                      <h3 className="mt-4 text-center font-display text-xl font-semibold text-foreground">
-                        {t.name}
-                      </h3>
-                      <p className="mt-2 text-center text-sm text-muted-foreground">{t.desc}</p>
-                      <a
-                        href={WHATSAPP_LINK}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="mt-5 inline-flex items-center gap-2 rounded-full bg-secondary px-5 py-2.5 text-sm font-semibold text-secondary-foreground transition-transform hover:scale-105"
-                      >
-                        Pedir pote 1,5L
-                      </a>
                     </article>
                   </CarouselItem>
                 ))}
