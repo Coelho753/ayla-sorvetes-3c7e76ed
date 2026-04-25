@@ -5,6 +5,16 @@ import { Sparkles, MessageCircle, Instagram, Facebook } from "lucide-react";
 import mascot from "@/assets/mascot.webp";
 import floatPopsicle from "@/assets/float-popsicle.webp";
 import floatScoop from "@/assets/float-scoop.webp";
+import tubLimaoSuico from "@/assets/tub-limao-suico.jpg";
+import tubAbacaxiVinho from "@/assets/tub-abacaxi-vinho.jpg";
+import tubAbacaxi from "@/assets/tub-abacaxi.jpg";
+import tubPistache from "@/assets/tub-pistache.jpg";
+import tubDoceLeite from "@/assets/tub-doce-leite.jpg";
+import tubNapolitano from "@/assets/tub-napolitano.jpg";
+import tubChocolate from "@/assets/tub-chocolate.jpg";
+import tubMorango from "@/assets/tub-morango.jpg";
+import tubBrigadeiro from "@/assets/tub-brigadeiro.jpg";
+import tubCoco from "@/assets/tub-coco.jpg";
 import tubIogurte from "@/assets/tub-iogurte-grego.webp";
 import tubFlocos from "@/assets/tub-flocos.webp";
 import tubNinho from "@/assets/tub-ninho-trufado.webp";
@@ -41,9 +51,19 @@ export const Route = createFileRoute("/")({
 });
 
 const tubs = [
-  { name: "Iogurte Grego com Frutas Silvestres", desc: "Cremoso com mix de berries selvagens.", img: tubIogurte },
-  { name: "Flocos", desc: "Clássico cremoso com flocos crocantes de chocolate.", img: tubFlocos },
-  { name: "Ninho Trufado", desc: "Leitinho com pedaços de trufa de chocolate.", img: tubNinho },
+  { name: "Limão Suíço", img: tubLimaoSuico },
+  { name: "Abacaxi ao Vinho", img: tubAbacaxiVinho },
+  { name: "Abacaxi", img: tubAbacaxi },
+  { name: "Pistache", img: tubPistache },
+  { name: "Doce de Leite", img: tubDoceLeite },
+  { name: "Napolitano", img: tubNapolitano },
+  { name: "Chocolate", img: tubChocolate },
+  { name: "Morango", img: tubMorango },
+  { name: "Brigadeiro", img: tubBrigadeiro },
+  { name: "Coco", img: tubCoco },
+  { name: "Iogurte Grego com Frutas Silvestres", img: tubIogurte },
+  { name: "Flocos", img: tubFlocos },
+  { name: "Ninho Trufado", img: tubNinho },
 ];
 
 const cups = [
