@@ -224,36 +224,26 @@ function Index() {
                 {tubs.map((t, i) => (
                   <CarouselItem key={t.name} className="pl-4 sm:basis-1/2 lg:basis-1/3">
                     <article
-                      className="group relative flex h-full flex-col items-center rounded-3xl bg-card p-6 shadow-card ring-1 ring-border transition-all duration-500 hover:-translate-y-2 hover:shadow-glow"
-                      style={{ transitionDelay: `${i * 60}ms` }}
+                      className="product-card group animate-pop-in"
+                      style={{ animationDelay: `${i * 90}ms` }}
                     >
-                      <div className="absolute inset-0 -z-10 rounded-3xl bg-gradient-candy opacity-0 blur-2xl transition-opacity duration-500 group-hover:opacity-50" />
-                      <span className="absolute right-4 top-4 rounded-full bg-gradient-cta px-3 py-1 font-display text-xs font-bold text-white shadow-button">
-                        1,5L
-                      </span>
-                      <div className="relative flex h-56 w-56 items-center justify-center">
-                        <div className="absolute inset-0 rounded-full bg-gradient-candy opacity-30 blur-2xl" />
-                        <img
-                          src={t.img}
-                          alt={`Pote 1,5L de ${t.name}`}
-                          width={1024}
-                          height={1024}
-                          loading="lazy"
-                          className="relative h-full w-full object-contain drop-shadow-2xl transition-transform duration-500 group-hover:scale-110 group-hover:-rotate-2"
-                        />
+                      <img
+                        src={t.img}
+                        alt={`Pote 1,5L de ${t.name}`}
+                        width={1024}
+                        height={1024}
+                        loading="lazy"
+                        className="product-card__img"
+                      />
+                      <span className="product-card__badge">1,5L</span>
+                      <div className="product-card__shine" />
+                      <div className="product-card__overlay" />
+                      <div className="product-card__content">
+                        <h3 className="font-display text-2xl font-bold leading-tight drop-shadow-lg">
+                          {t.name}
+                        </h3>
+                        <p className="mt-1.5 text-sm text-white/85 drop-shadow">{t.desc}</p>
                       </div>
-                      <h3 className="mt-4 text-center font-display text-xl font-semibold text-foreground">
-                        {t.name}
-                      </h3>
-                      <p className="mt-2 text-center text-sm text-muted-foreground">{t.desc}</p>
-                      <a
-                        href={WHATSAPP_LINK}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="mt-5 inline-flex items-center gap-2 rounded-full bg-secondary px-5 py-2.5 text-sm font-semibold text-secondary-foreground transition-transform hover:scale-105"
-                      >
-                        Pedir pote 1,5L
-                      </a>
                     </article>
                   </CarouselItem>
                 ))}
@@ -286,36 +276,26 @@ function Index() {
                 {cups.map((c, i) => (
                   <CarouselItem key={c.name} className="pl-4 sm:basis-1/2 lg:basis-1/3">
                     <article
-                      className="group relative flex h-full flex-col items-center rounded-3xl bg-card p-6 shadow-card ring-1 ring-border transition-all duration-500 hover:-translate-y-2 hover:shadow-glow"
-                      style={{ transitionDelay: `${i * 60}ms` }}
+                      className="product-card group animate-pop-in"
+                      style={{ animationDelay: `${i * 80}ms` }}
                     >
-                      <div className="absolute inset-0 -z-10 rounded-3xl bg-gradient-candy opacity-0 blur-2xl transition-opacity duration-500 group-hover:opacity-50" />
-                      <span className="absolute right-4 top-4 rounded-full bg-gradient-cta px-3 py-1 font-display text-xs font-bold text-white shadow-button">
-                        300ml
-                      </span>
-                      <div className="relative flex h-56 w-56 items-center justify-center">
-                        <div className="absolute inset-0 rounded-full bg-gradient-candy opacity-30 blur-2xl" />
-                        <img
-                          src={c.img}
-                          alt={`Copo 300ml de ${c.name}`}
-                          width={1024}
-                          height={1024}
-                          loading="lazy"
-                          className="relative h-full w-full object-contain drop-shadow-2xl transition-transform duration-500 group-hover:scale-110 group-hover:-rotate-2"
-                        />
+                      <img
+                        src={c.img}
+                        alt={`Copo 300ml de ${c.name}`}
+                        width={1024}
+                        height={1024}
+                        loading="lazy"
+                        className="product-card__img"
+                      />
+                      <span className="product-card__badge">300ml</span>
+                      <div className="product-card__shine" />
+                      <div className="product-card__overlay" />
+                      <div className="product-card__content">
+                        <h3 className="font-display text-2xl font-bold leading-tight drop-shadow-lg">
+                          {c.name}
+                        </h3>
+                        <p className="mt-1.5 text-sm text-white/85 drop-shadow">{c.desc}</p>
                       </div>
-                      <h3 className="mt-4 text-center font-display text-xl font-semibold text-foreground">
-                        {c.name}
-                      </h3>
-                      <p className="mt-2 text-center text-sm text-muted-foreground">{c.desc}</p>
-                      <a
-                        href={WHATSAPP_LINK}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="mt-5 inline-flex items-center gap-2 rounded-full bg-secondary px-5 py-2.5 text-sm font-semibold text-secondary-foreground transition-transform hover:scale-105"
-                      >
-                        Pedir copo 300ml
-                      </a>
                     </article>
                   </CarouselItem>
                 ))}
@@ -347,16 +327,22 @@ function Index() {
               <CarouselContent className="-ml-4">
                 {popsicles.map((p, i) => (
                   <CarouselItem key={p.name} className="pl-4 sm:basis-1/2 lg:basis-1/3">
-                    <article className="group relative flex h-full flex-col items-center rounded-3xl bg-card p-6 shadow-card ring-1 ring-border transition-all duration-500 hover:-translate-y-2 hover:shadow-glow" style={{ transitionDelay: `${i * 60}ms` }}>
-                      <div className="absolute inset-0 -z-10 rounded-3xl bg-gradient-purple opacity-0 blur-2xl transition-opacity duration-500 group-hover:opacity-50" />
-                      <span className="absolute right-4 top-4 rounded-full bg-gradient-cta px-3 py-1 font-display text-xs font-bold text-white shadow-button">Gourmet</span>
-                      <div className="relative flex h-56 w-56 items-center justify-center">
-                        <div className="absolute inset-0 rounded-full bg-gradient-candy opacity-30 blur-2xl" />
-                        <img src={p.img} alt={`Picolé sabor ${p.name}`} width={1024} height={1024} loading="lazy" className="relative h-full w-full object-contain drop-shadow-2xl transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3" />
+                    <article className="product-card group animate-pop-in" style={{ animationDelay: `${i * 80}ms` }}>
+                      <img
+                        src={p.img}
+                        alt={`Picolé sabor ${p.name}`}
+                        width={1024}
+                        height={1024}
+                        loading="lazy"
+                        className="product-card__img"
+                      />
+                      <span className="product-card__badge">Gourmet</span>
+                      <div className="product-card__shine" />
+                      <div className="product-card__overlay" />
+                      <div className="product-card__content">
+                        <h3 className="font-display text-2xl font-bold leading-tight drop-shadow-lg">{p.name}</h3>
+                        <p className="mt-1.5 text-sm text-white/85 drop-shadow">{p.desc}</p>
                       </div>
-                      <h3 className="mt-4 text-center font-display text-xl font-semibold text-foreground">{p.name}</h3>
-                      <p className="mt-2 text-center text-sm text-muted-foreground">{p.desc}</p>
-                      <a href={WHATSAPP_LINK} target="_blank" rel="noopener noreferrer" className="mt-5 inline-flex items-center gap-2 rounded-full bg-secondary px-5 py-2.5 text-sm font-semibold text-secondary-foreground transition-transform hover:scale-105">Pedir picolé</a>
                     </article>
                   </CarouselItem>
                 ))}
@@ -390,16 +376,22 @@ function Index() {
               <CarouselContent className="-ml-4">
                 {acaiProducts.map((a, i) => (
                   <CarouselItem key={a.name} className="pl-4 sm:basis-1/2 lg:basis-1/3">
-                    <article className="group relative flex h-full flex-col items-center rounded-3xl bg-card p-6 shadow-card ring-1 ring-border transition-all duration-500 hover:-translate-y-3 hover:shadow-glow" style={{ transitionDelay: `${i * 70}ms` }}>
-                      <div className="absolute inset-0 -z-10 rounded-3xl bg-gradient-purple opacity-0 blur-2xl transition-opacity duration-500 group-hover:opacity-60" />
-                      <span className="absolute right-4 top-4 rounded-full bg-gradient-purple px-3 py-1 font-display text-xs font-bold text-white shadow-button">{a.size}</span>
-                      <div className="relative flex h-56 w-56 items-center justify-center">
-                        <div className="absolute inset-0 rounded-full bg-gradient-purple opacity-40 blur-2xl" />
-                        <img src={a.img} alt={`Açaí ${a.name}`} width={1024} height={1024} loading="lazy" className="relative h-full w-full object-contain drop-shadow-2xl transition-transform duration-500 group-hover:scale-110 group-hover:-rotate-2" />
+                    <article className="product-card product-card--acai group animate-pop-in" style={{ animationDelay: `${i * 100}ms` }}>
+                      <img
+                        src={a.img}
+                        alt={`Açaí ${a.name}`}
+                        width={1024}
+                        height={1024}
+                        loading="lazy"
+                        className="product-card__img"
+                      />
+                      <span className="product-card__badge">{a.size}</span>
+                      <div className="product-card__shine" />
+                      <div className="product-card__overlay" />
+                      <div className="product-card__content">
+                        <h3 className="font-display text-2xl font-bold leading-tight drop-shadow-lg">{a.name}</h3>
+                        <p className="mt-1.5 text-sm text-white/85 drop-shadow">{a.desc}</p>
                       </div>
-                      <h3 className="mt-4 text-center font-display text-xl font-semibold text-foreground">{a.name}</h3>
-                      <p className="mt-2 text-center text-sm text-muted-foreground">{a.desc}</p>
-                      <a href={WHATSAPP_LINK} target="_blank" rel="noopener noreferrer" className="mt-5 inline-flex items-center gap-2 rounded-full bg-gradient-purple px-5 py-2.5 text-sm font-semibold text-white shadow-button transition-transform hover:scale-105">Pedir açaí</a>
                     </article>
                   </CarouselItem>
                 ))}
