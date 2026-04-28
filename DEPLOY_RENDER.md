@@ -1,33 +1,35 @@
-# Deploy no Render
+# 🚀 Deploy no Render
 
-Este projeto está pronto para ser publicado no [Render](https://render.com) como **Static Site**.
+Este projeto está pronto para publicar no [Render](https://render.com) com 1 clique.
 
-## Passo a passo (super fácil)
+## Opção 1 — Blueprint automático (recomendado)
 
-### Opção 1 — Via Blueprint (recomendado, 1 clique)
-
-1. Faça push do código para um repositório no GitHub.
+1. Suba o código para um repositório no **GitHub**.
 2. No Render, clique em **New +** → **Blueprint**.
-3. Conecte o repositório. O Render vai detectar o arquivo `render.yaml` automaticamente.
+3. Conecte o repositório. O Render detecta o `render.yaml` sozinho.
 4. Clique em **Apply**. Pronto! 🎉
 
-### Opção 2 — Manual
+## Opção 2 — Manual (Web Service)
 
-1. No Render, clique em **New +** → **Static Site**.
+1. No Render, clique em **New +** → **Web Service**.
 2. Conecte seu repositório GitHub.
 3. Preencha:
+   - **Runtime:** Node
    - **Build Command:** `npm install && npm run build`
-   - **Publish Directory:** `dist/client`
-4. Em **Redirects/Rewrites**, adicione:
-   - Source: `/*`
-   - Destination: `/index.html`
-   - Action: `Rewrite`
-5. Clique em **Create Static Site**.
+   - **Start Command:** `npm start`
+   - **Node Version:** 20 (em Environment, adicione `NODE_VERSION=20`)
+4. Clique em **Create Web Service**.
+
+## Como funciona
+
+- `npm run build` gera a versão de produção (cliente em `dist/client` e SSR em `dist/server`).
+- `npm start` roda `server.js`, um servidor Node leve que serve os assets estáticos e faz SSR via o handler do TanStack Start.
+- O Render injeta a porta automaticamente via `PORT`.
 
 ## Atualizações automáticas
 
-Toda vez que você fizer push para a branch principal (main), o Render fará o deploy automaticamente.
+Cada `git push` na branch principal dispara um novo deploy.
 
 ## Domínio personalizado
 
-Em **Settings → Custom Domains**, adicione seu domínio e siga as instruções de DNS.
+Em **Settings → Custom Domains**, adicione seu domínio e configure os DNS conforme indicado pelo Render.
