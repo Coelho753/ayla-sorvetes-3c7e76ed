@@ -250,14 +250,15 @@ function Index() {
       <section id="potes" className="relative overflow-hidden px-6 py-24 md:py-32">
         <div className="absolute inset-0 -z-10 bg-gradient-to-b from-background via-muted/30 to-background" />
         <div className="mx-auto max-w-6xl">
-          <div className="text-center">
-            <p className="reveal font-display text-sm font-semibold uppercase tracking-widest text-secondary">
-              Potes de 1,5L
-            </p>
-            <h2 className="reveal mt-3 font-display text-4xl font-bold sm:text-5xl md:text-6xl">
-              Leve para <span className="bg-gradient-candy bg-clip-text text-transparent">casa</span> 🏠
+          <div className="mx-auto max-w-2xl text-center">
+            <span className="reveal inline-block rounded-full bg-secondary/15 px-4 py-1.5 font-display text-xs font-bold uppercase tracking-[0.2em] text-secondary ring-1 ring-secondary/20">
+              🍦 Potes de 1,5L
+            </span>
+            <h2 className="reveal mt-5 font-display text-4xl font-bold leading-[1.05] tracking-tight sm:text-5xl md:text-6xl">
+              Leve para{" "}
+              <span className="bg-gradient-candy bg-clip-text text-transparent">casa</span>
             </h2>
-            <p className="reveal mx-auto mt-4 max-w-xl text-base text-muted-foreground sm:text-lg">
+            <p className="reveal mx-auto mt-5 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">
               Sabores incríveis em potes generosos de 1,5 litro. Perfeito para compartilhar (ou não 😋).
             </p>
           </div>
@@ -306,14 +307,15 @@ function Index() {
       <section id="copos" className="relative overflow-hidden px-6 py-24 md:py-32">
         <div className="absolute inset-0 -z-10 bg-gradient-to-b from-background via-secondary/10 to-background" />
         <div className="mx-auto max-w-6xl">
-          <div className="text-center">
-            <p className="reveal font-display text-sm font-semibold uppercase tracking-widest text-secondary">
-              Copos 300ml
-            </p>
-            <h2 className="reveal mt-3 font-display text-4xl font-bold sm:text-5xl md:text-6xl">
-              Sorvetes <span className="bg-gradient-candy bg-clip-text text-transparent">individuais</span> 🍨
+          <div className="mx-auto max-w-2xl text-center">
+            <span className="reveal inline-block rounded-full bg-secondary/15 px-4 py-1.5 font-display text-xs font-bold uppercase tracking-[0.2em] text-secondary ring-1 ring-secondary/20">
+              🍨 Copos de 300ml
+            </span>
+            <h2 className="reveal mt-5 font-display text-4xl font-bold leading-[1.05] tracking-tight sm:text-5xl md:text-6xl">
+              Sorvetes{" "}
+              <span className="bg-gradient-candy bg-clip-text text-transparent">individuais</span>
             </h2>
-            <p className="reveal mx-auto mt-4 max-w-xl text-base text-muted-foreground sm:text-lg">
+            <p className="reveal mx-auto mt-5 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">
               Porção perfeita pra matar a vontade. Cremoso, gelado e do seu jeito.
             </p>
           </div>
@@ -357,14 +359,15 @@ function Index() {
       <section id="picoles" className="relative overflow-hidden px-6 py-24 md:py-32">
         <div className="absolute inset-0 -z-10 bg-gradient-to-b from-background via-primary/10 to-background" />
         <div className="mx-auto max-w-6xl">
-          <div className="text-center">
-            <p className="reveal font-display text-sm font-semibold uppercase tracking-widest text-secondary">
-              Picolés Gourmet
-            </p>
-            <h2 className="reveal mt-3 font-display text-4xl font-bold sm:text-5xl md:text-6xl">
-              Geladinho na <span className="bg-gradient-purple bg-clip-text text-transparent">palitinho</span> 🍡
+          <div className="mx-auto max-w-2xl text-center">
+            <span className="reveal inline-block rounded-full bg-primary/15 px-4 py-1.5 font-display text-xs font-bold uppercase tracking-[0.2em] text-primary ring-1 ring-primary/20">
+              🍡 Picolés Gourmet
+            </span>
+            <h2 className="reveal mt-5 font-display text-4xl font-bold leading-[1.05] tracking-tight sm:text-5xl md:text-6xl">
+              Geladinho no{" "}
+              <span className="bg-gradient-purple bg-clip-text text-transparent">palitinho</span>
             </h2>
-            <p className="reveal mx-auto mt-4 max-w-xl text-base text-muted-foreground sm:text-lg">
+            <p className="reveal mx-auto mt-5 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">
               Picolés artesanais com sabores intensos e ingredientes selecionados.
             </p>
           </div>
