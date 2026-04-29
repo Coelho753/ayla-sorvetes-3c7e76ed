@@ -87,7 +87,6 @@ const cups = [
   { name: "Doce de Leite", desc: "Caramelo cremoso que derrete na boca.", img: cupDoceLeite },
   { name: "Limão Suíço", desc: "Refrescante e cítrico, na medida certa.", img: cupLimao },
   { name: "Leite Condensado", desc: "Doce, cremoso e irresistível.", img: cupLeiteCondensado },
-  { name: "Açaí Premium", desc: "Açaí cremoso com toque tropical.", img: cupAcai },
   { name: "Chocolate", desc: "Chocolate intenso e cremoso.", img: cupChocolate },
   { name: "Morango", desc: "Morangos frescos em creme suave.", img: cupMorango },
   { name: "Milho", desc: "Sabor caseiro e cremoso de milho verde.", img: cupMilho },
@@ -99,7 +98,6 @@ const cups = [
 const popsicles = [
   { name: "Flocos", desc: "Cremoso com flocos crocantes de chocolate.", img: popsicleFlocos },
   { name: "Coco Branco", desc: "Tropical e refrescante com coco fresco.", img: popsicleCoco },
-  { name: "Açaí", desc: "Intenso e cremoso, direto da Amazônia.", img: popsicleAcai },
   { name: "Kiwi", desc: "Refrescante com pedaços de kiwi natural.", img: popsicleKiwi },
   { name: "Torta de Limão", desc: "Picolé gourmet com crocante de biscoito.", img: popsicleLimao },
   { name: "Tentação", desc: "Picolé cremoso de chocolate com cobertura irresistível.", img: popsicleTentacao },
@@ -115,6 +113,8 @@ const popsicles = [
 const acaiProducts = [
   { name: "Açaí Premium 1L", desc: "Pote com guaraná e frutos vermelhos.", img: acai1L, size: "1L" },
   { name: "Açaí Premium 5L", desc: "Caixa família para festas e eventos.", img: acai5L, size: "5L" },
+  { name: "Copo de Açaí", desc: "Açaí cremoso individual com toque tropical.", img: cupAcai, size: "300ml" },
+  { name: "Picolé de Açaí", desc: "Intenso e cremoso, direto da Amazônia.", img: popsicleAcai, size: "Gourmet" },
 ];
 
 function Index() {
