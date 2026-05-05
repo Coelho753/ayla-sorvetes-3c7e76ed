@@ -277,27 +277,15 @@ function Index() {
               <CarouselContent className="-ml-4">
                 {tubs.map((t, i) => (
                   <CarouselItem key={t.name} className="pl-4 sm:basis-1/2 lg:basis-1/3">
-                    <article
-                      className="product-card group animate-pop-in"
-                      style={{ animationDelay: `${i * 90}ms` }}
-                    >
-                      <img
-                        src={t.img}
-                        alt={`Pote 1,5L de ${t.name}`}
-                        width={1024}
-                        height={1024}
-                        loading="lazy"
-                        className="product-card__img"
+                    <div className="animate-pop-in h-full" style={{ animationDelay: `${i * 90}ms` }}>
+                      <ProductCard
+                        id={`tub-${t.name}`}
+                        name={t.name}
+                        price={t.price}
+                        img={t.img}
+                        badge="1,5L"
                       />
-                      <span className="product-card__badge">1,5L</span>
-                      <div className="product-card__shine" />
-                      <div className="product-card__overlay" />
-                      <div className="product-card__content">
-                        <h3 className="font-display text-2xl font-bold leading-tight drop-shadow-lg">
-                          {t.name}
-                        </h3>
-                      </div>
-                    </article>
+                    </div>
                   </CarouselItem>
                 ))}
               </CarouselContent>
@@ -329,27 +317,16 @@ function Index() {
               <CarouselContent className="-ml-4">
                 {cups.map((c, i) => (
                   <CarouselItem key={c.name} className="pl-4 sm:basis-1/2 lg:basis-1/3">
-                    <article
-                      className="product-card group animate-pop-in"
-                      style={{ animationDelay: `${i * 80}ms` }}
-                    >
-                      <img
-                        src={c.img}
-                        alt={`Copo 300ml de ${c.name}`}
-                        width={1024}
-                        height={1024}
-                        loading="lazy"
-                        className="product-card__img"
+                    <div className="animate-pop-in h-full" style={{ animationDelay: `${i * 80}ms` }}>
+                      <ProductCard
+                        id={`cup-${c.name}`}
+                        name={c.name}
+                        desc={c.desc}
+                        price={c.price}
+                        img={c.img}
+                        badge="300ml"
                       />
-                      <span className="product-card__badge">300ml</span>
-                      <div className="product-card__shine" />
-                      <div className="product-card__overlay" />
-                      <div className="product-card__content">
-                        <h3 className="font-display text-2xl font-bold leading-tight drop-shadow-lg">
-                          {c.name}
-                        </h3>
-                      </div>
-                    </article>
+                    </div>
                   </CarouselItem>
                 ))}
               </CarouselContent>
@@ -381,22 +358,16 @@ function Index() {
               <CarouselContent className="-ml-4">
                 {popsicles.map((p, i) => (
                   <CarouselItem key={p.name} className="pl-4 sm:basis-1/2 lg:basis-1/3">
-                    <article className="product-card group animate-pop-in" style={{ animationDelay: `${i * 80}ms` }}>
-                      <img
-                        src={p.img}
-                        alt={`Picolé sabor ${p.name}`}
-                        width={1024}
-                        height={1024}
-                        loading="lazy"
-                        className="product-card__img"
+                    <div className="animate-pop-in h-full" style={{ animationDelay: `${i * 80}ms` }}>
+                      <ProductCard
+                        id={`pop-${p.name}`}
+                        name={p.name}
+                        desc={p.desc}
+                        price={p.price}
+                        img={p.img}
+                        badge="Gourmet"
                       />
-                      <span className="product-card__badge">Gourmet</span>
-                      <div className="product-card__shine" />
-                      <div className="product-card__overlay" />
-                      <div className="product-card__content">
-                        <h3 className="font-display text-2xl font-bold leading-tight drop-shadow-lg">{p.name}</h3>
-                      </div>
-                    </article>
+                    </div>
                   </CarouselItem>
                 ))}
               </CarouselContent>
@@ -429,22 +400,17 @@ function Index() {
               <CarouselContent className="-ml-4">
                 {acaiProducts.map((a, i) => (
                   <CarouselItem key={a.name} className="pl-4 sm:basis-1/2 lg:basis-1/3">
-                    <article className="product-card product-card--acai group animate-pop-in" style={{ animationDelay: `${i * 100}ms` }}>
-                      <img
-                        src={a.img}
-                        alt={`Açaí ${a.name}`}
-                        width={1024}
-                        height={1024}
-                        loading="lazy"
-                        className="product-card__img"
+                    <div className="animate-pop-in h-full" style={{ animationDelay: `${i * 100}ms` }}>
+                      <ProductCard
+                        id={`acai-${a.name}`}
+                        name={a.name}
+                        desc={a.desc}
+                        price={a.price}
+                        img={a.img}
+                        badge={a.size}
+                        variant="acai"
                       />
-                      <span className="product-card__badge">{a.size}</span>
-                      <div className="product-card__shine" />
-                      <div className="product-card__overlay" />
-                      <div className="product-card__content">
-                        <h3 className="font-display text-2xl font-bold leading-tight drop-shadow-lg">{a.name}</h3>
-                      </div>
-                    </article>
+                    </div>
                   </CarouselItem>
                 ))}
               </CarouselContent>
