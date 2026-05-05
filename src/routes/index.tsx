@@ -57,12 +57,17 @@ import {
 } from "@/components/ui/carousel";
 
 import { WhatsAppFloat } from "@/components/WhatsAppFloat";
+import { ProductCard } from "@/components/ProductCard";
 import { WHATSAPP_LINK } from "@/lib/whatsapp";
 import { useReveal } from "@/hooks/use-reveal";
 
 export const Route = createFileRoute("/")({
   component: Index,
 });
+
+const TUB_PRICE = 35.0;
+const CUP_PRICE = 12.0;
+const POPSICLE_PRICE = 7.0;
 
 const tubs = [
   { name: "Limão Suíço", img: tubLimaoSuico },
@@ -79,7 +84,7 @@ const tubs = [
   { name: "Iogurte Grego com Frutas Silvestres", img: tubIogurte },
   { name: "Flocos", img: tubFlocos },
   { name: "Ninho Trufado", img: tubNinho },
-];
+].map((t) => ({ ...t, price: TUB_PRICE }));
 
 const cups = [
   { name: "Ninho Trufado", desc: "Cremoso leitinho com pedaços de trufa.", img: cupNinho },
@@ -93,7 +98,7 @@ const cups = [
   { name: "Abacaxi ao Vinho", desc: "Tropical com toque sofisticado.", img: cupAbacaxiVinho },
   { name: "Abacaxi", desc: "Refrescante e tropical.", img: cupAbacaxi },
   { name: "Choco Maltine", desc: "Chocolate com crocância de maltine.", img: cupChocoMaltine },
-];
+].map((c) => ({ ...c, price: CUP_PRICE }));
 
 const popsicles = [
   { name: "Flocos", desc: "Cremoso com flocos crocantes de chocolate.", img: popsicleFlocos },
@@ -108,13 +113,13 @@ const popsicles = [
   { name: "Chiclete", desc: "Sabor divertido de chiclete colorido.", img: popsicle3dChiclete },
   { name: "Groselha", desc: "Sabor clássico e marcante de groselha.", img: popsicle3dGroselha },
   { name: "Chocolate", desc: "Chocolate intenso e cremoso em picolé.", img: popsicle3dChocolate },
-];
+].map((p) => ({ ...p, price: POPSICLE_PRICE }));
 
 const acaiProducts = [
-  { name: "Açaí Premium 1L", desc: "Pote com guaraná e frutos vermelhos.", img: acai1L, size: "1L" },
-  { name: "Açaí Premium 5L", desc: "Caixa família para festas e eventos.", img: acai5L, size: "5L" },
-  { name: "Copo de Açaí", desc: "Açaí cremoso individual com toque tropical.", img: cupAcai, size: "300ml" },
-  { name: "Picolé de Açaí", desc: "Intenso e cremoso, direto da Amazônia.", img: popsicleAcai, size: "Gourmet" },
+  { name: "Açaí Premium 1L", desc: "Pote com guaraná e frutos vermelhos.", img: acai1L, size: "1L", price: 45.0 },
+  { name: "Açaí Premium 5L", desc: "Caixa família para festas e eventos.", img: acai5L, size: "5L", price: 180.0 },
+  { name: "Copo de Açaí", desc: "Açaí cremoso individual com toque tropical.", img: cupAcai, size: "300ml", price: 15.0 },
+  { name: "Picolé de Açaí", desc: "Intenso e cremoso, direto da Amazônia.", img: popsicleAcai, size: "Gourmet", price: 8.0 },
 ];
 
 function Index() {
