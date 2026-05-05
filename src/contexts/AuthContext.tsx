@@ -34,8 +34,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const fetchMe = useCallback(async () => {
     try {
-      const { data } = await api.get<User>("/users/me");
-      setUser(data);
+      // Tenta /users/me; se a API expor /auth/me ou /usuarios/me, faz fallback.
+      const tryEndpoints = ["/users/me", "/auth/me", "/usuarios/me"];
+      let payload: Record<string, unknown> | null = null;
+      for (const ep of tryEndpoints) {
+        try {
+          const { data } = await api.get<Record<string, unknown>>(ep);
+          payload = data;
+          break;
+        } catch {
+          /* tenta o próximo */
+        }
+      }
+      if (!payload) throw new Error("not-found");
+      const u = (payload.user as User | undefined) ?? (payload as unknown as User);
+      // Normaliza campos PT->EN
+      const normalized: User = {
+        id: (u.id as User["id"]) ?? (payload.id as User["id"]),
+        email: (u.email as string) ?? (payload.email as string),
+        name: (u.name as string) ?? (payload as { nome?: string }).nome ?? (u as unknown as { nome?: string }).nome,
+        role: (u.role as string) ?? (payload as { role?: string }).role,
+      };
+      setUser(normalized);
     } catch {
       setUser(null);
     }
@@ -60,15 +80,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = useCallback(
     async (email: string, password: string) => {
       try {
-        const { data } = await api.post("/auth/login", { email, password });
+        // Backend usa nomes em PT: { email, senha }
+        const { data } = await api.post("/auth/login", { email, senha: password, password });
         const { access, refresh } = pickTokens(data);
         if (!access) throw new Error("Resposta de login inválida.");
         tokenStorage.set(access, refresh);
-        const apiUser = (data.user as User | undefined) ?? null;
+        const apiUser = (data.user as User | undefined) ?? (data.usuario as User | undefined) ?? null;
         if (apiUser) setUser(apiUser);
         else await fetchMe();
       } catch (err) {
-        throw new Error(extractApiError(err, "Falha ao entrar. Verifique seu email e senha."));
+        const msg = extractApiError(err, "Falha ao entrar. Verifique seu email e senha.");
+        // Erro de JWT mal configurado no backend
+        if (/secretOrPrivateKey/i.test(msg)) {
+          throw new Error("O servidor de autenticação está sem a chave JWT configurada. Avise o administrador.");
+        }
+        throw new Error(msg);
       }
     },
     [fetchMe],
@@ -77,11 +103,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const register = useCallback(
     async (name: string, email: string, password: string) => {
       try {
-        const { data } = await api.post("/auth/register", { name, email, password });
+        // Backend usa { nome, email, senha }
+        const { data } = await api.post("/auth/register", {
+          nome: name,
+          name,
+          email,
+          senha: password,
+          password,
+        });
         const { access, refresh } = pickTokens(data);
         if (access) {
           tokenStorage.set(access, refresh);
-          const apiUser = (data.user as User | undefined) ?? null;
+          const apiUser = (data.user as User | undefined) ?? (data.usuario as User | undefined) ?? null;
           if (apiUser) setUser(apiUser);
           else await fetchMe();
         }

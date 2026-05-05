@@ -104,7 +104,12 @@ api.interceptors.response.use(
 
 export function extractApiError(err: unknown, fallback = "Algo deu errado. Tente novamente."): string {
   if (axios.isAxiosError(err)) {
-    const data = err.response?.data as { message?: string | string[]; error?: string } | undefined;
+    const data = err.response?.data as
+      | { message?: string | string[]; error?: string; errors?: Array<{ msg?: string; path?: string }> }
+      | undefined;
+    if (data?.errors && Array.isArray(data.errors) && data.errors.length) {
+      return data.errors.map((e) => (e.path ? `${e.path}: ${e.msg}` : e.msg)).filter(Boolean).join(" • ");
+    }
     const msg = data?.message ?? data?.error;
     if (Array.isArray(msg)) return msg.join(", ");
     if (typeof msg === "string") return msg;
