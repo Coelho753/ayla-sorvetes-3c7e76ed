@@ -28,6 +28,20 @@ function pickTokens(data: Record<string, unknown>) {
   return { access, refresh };
 }
 
+// Normaliza usuário do backend (PT/Mongo) para o shape do app.
+function normalizeUser(raw: Record<string, unknown> | null | undefined): User | null {
+  if (!raw) return null;
+  const id = (raw.id as User["id"]) ?? (raw._id as User["id"]);
+  const email = raw.email as string;
+  if (!id || !email) return null;
+  return {
+    id,
+    email,
+    name: (raw.name as string) ?? (raw.nome as string) ?? undefined,
+    role: (raw.role as string) ?? undefined,
+  };
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
