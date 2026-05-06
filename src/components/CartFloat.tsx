@@ -1,20 +1,33 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { ShoppingCart, Trash2, Plus, Minus, X } from "lucide-react";
+import { ShoppingCart, Trash2, Plus, Minus, X, Loader2 } from "lucide-react";
 import { useCart, formatBRL } from "@/contexts/CartContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { WHATSAPP_PHONE } from "@/config/api";
+import { api } from "@/lib/api";
+import { toast } from "sonner";
 
 export function CartFloat() {
-  const { count, items, total, setQuantity, remove, clear } = useCart();
+  const { count, items, total, setQuantity, remove, clear, syncing } = useCart();
   const { user } = useAuth();
   const [open, setOpen] = useState(false);
+  const [placing, setPlacing] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
     return () => { document.body.style.overflow = ""; };
   }, [open]);
+
+  function formatAddress() {
+    const a = user?.address;
+    if (!a?.rua) return null;
+    const linha1 = [a.rua, a.numero].filter(Boolean).join(", ");
+    const linha2 = [a.bairro, a.cidade, a.estado].filter(Boolean).join(" • ");
+    const compl = a.complemento ? ` (${a.complemento})` : "";
+    const cep = a.cep ? ` — CEP ${a.cep}` : "";
+    return `${linha1}${compl} • ${linha2}${cep}`;
+  }
 
   function buildMessage() {
     const lines = [
@@ -25,14 +38,37 @@ export function CartFloat() {
       "",
       `*Total:* ${formatBRL(total)}`,
     ];
-    if (user?.name) lines.push("", `Cliente: ${user.name}`);
+    if (user?.name) lines.push("", `*Cliente:* ${user.name}`);
+    const addr = formatAddress();
+    if (addr) lines.push(`*Endereço:* ${addr}`);
     return lines.join("\n");
   }
 
-  function checkout() {
+  async function checkout() {
     if (items.length === 0) return;
+    setPlacing(true);
+    // Tenta registrar o pedido no backend (silencioso se endpoint não existir)
+    if (user) {
+      try {
+        await api.post("/orders", {
+          items: items.map((i) => ({
+            id: i.id, name: i.name, price: i.price, quantity: i.quantity,
+          })),
+          total,
+          address: user.address ?? null,
+        });
+      } catch {
+        /* sem bloquear envio para WhatsApp */
+      }
+    }
+    if (user && !user.address?.rua) {
+      toast.message("Adicione seu endereço no perfil para entrega.", {
+        action: { label: "Ir para perfil", onClick: () => navigate({ to: "/perfil" }) },
+      });
+    }
     const url = `https://wa.me/${WHATSAPP_PHONE}?text=${encodeURIComponent(buildMessage())}`;
     window.open(url, "_blank", "noopener,noreferrer");
+    setPlacing(false);
   }
 
   return (
