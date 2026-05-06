@@ -4,6 +4,7 @@ import { z } from "zod";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { Loader2 } from "lucide-react";
+import { GoogleButton } from "@/components/GoogleButton";
 
 export const Route = createFileRoute("/login")({
   head: () => ({ meta: [{ title: "Entrar — Ayla Sorvetes" }, { name: "description", content: "Acesse sua conta da Ayla Sorvetes." }] }),
@@ -40,7 +41,13 @@ function LoginPage() {
     <main className="mx-auto flex min-h-[80vh] max-w-md flex-col justify-center px-4 py-10">
       <h1 className="font-display text-3xl font-bold">Entrar</h1>
       <p className="mt-1 text-muted-foreground">Acesse sua conta para finalizar pedidos.</p>
-      <form onSubmit={onSubmit} className="mt-6 space-y-4">
+      <div className="mt-6">
+        <GoogleButton />
+        <div className="my-5 flex items-center gap-3 text-xs text-muted-foreground">
+          <span className="h-px flex-1 bg-border" /> ou com email <span className="h-px flex-1 bg-border" />
+        </div>
+      </div>
+      <form onSubmit={onSubmit} className="space-y-4">
         <div>
           <label className="text-sm font-semibold">Email</label>
           <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 outline-none focus:ring-2 focus:ring-primary" />
