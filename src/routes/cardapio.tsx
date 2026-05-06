@@ -1,9 +1,10 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Loader2, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { api, extractApiError } from "@/lib/api";
 import { useCart, formatBRL } from "@/contexts/CartContext";
+import { useAuth } from "@/contexts/AuthContext";
 
 export const Route = createFileRoute("/cardapio")({
   head: () => ({ meta: [{ title: "Cardápio — Ayla Sorvetes" }, { name: "description", content: "Veja e peça nossos sabores online." }] }),
@@ -23,9 +24,12 @@ type Product = {
 function CardapioPage() {
   const [products, setProducts] = useState<Product[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [needsAuth, setNeedsAuth] = useState(false);
   const { add } = useCart();
+  const { isAuthenticated, loading: authLoading } = useAuth();
 
   useEffect(() => {
+    if (authLoading) return;
     let alive = true;
     (async () => {
       try {
@@ -33,11 +37,14 @@ function CardapioPage() {
         const list = Array.isArray(data) ? data : (data as { data: Product[] }).data ?? [];
         if (alive) setProducts(list);
       } catch (err) {
-        if (alive) setError(extractApiError(err, "Não foi possível carregar os produtos."));
+        if (!alive) return;
+        const status = (err as { response?: { status?: number } })?.response?.status;
+        if (status === 401) setNeedsAuth(true);
+        else setError(extractApiError(err, "Não foi possível carregar os produtos."));
       }
     })();
     return () => { alive = false; };
-  }, []);
+  }, [authLoading, isAuthenticated]);
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-10">
@@ -46,11 +53,22 @@ function CardapioPage() {
         <p className="mt-2 text-muted-foreground">Escolha seus favoritos e peça pelo WhatsApp.</p>
       </header>
 
-      {error && (
+      {needsAuth && (
+        <div className="rounded-2xl border border-border bg-card p-8 text-center">
+          <p className="font-display text-lg font-semibold">Faça login para ver o cardápio</p>
+          <p className="mt-1 text-sm text-muted-foreground">Nosso catálogo é exclusivo para clientes cadastrados.</p>
+          <div className="mt-4 flex items-center justify-center gap-3">
+            <Link to="/login" className="rounded-full bg-primary px-5 py-2 font-semibold text-primary-foreground hover:opacity-90">Entrar</Link>
+            <Link to="/cadastro" className="rounded-full border border-border px-5 py-2 font-semibold hover:bg-muted">Cadastrar</Link>
+          </div>
+        </div>
+      )}
+
+      {error && !needsAuth && (
         <div className="rounded-xl border border-destructive/40 bg-destructive/5 p-4 text-center text-destructive">{error}</div>
       )}
 
-      {!products && !error && (
+      {!products && !error && !needsAuth && (
         <div className="flex justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
       )}
 

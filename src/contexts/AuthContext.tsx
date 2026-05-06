@@ -28,13 +28,26 @@ function pickTokens(data: Record<string, unknown>) {
   return { access, refresh };
 }
 
+// Normaliza usuário do backend (PT/Mongo) para o shape do app.
+function normalizeUser(raw: Record<string, unknown> | null | undefined): User | null {
+  if (!raw) return null;
+  const id = (raw.id as User["id"]) ?? (raw._id as User["id"]);
+  const email = raw.email as string;
+  if (!id || !email) return null;
+  return {
+    id,
+    email,
+    name: (raw.name as string) ?? (raw.nome as string) ?? undefined,
+    role: (raw.role as string) ?? undefined,
+  };
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   const fetchMe = useCallback(async () => {
     try {
-      // Tenta /users/me; se a API expor /auth/me ou /usuarios/me, faz fallback.
       const tryEndpoints = ["/users/me", "/auth/me", "/usuarios/me"];
       let payload: Record<string, unknown> | null = null;
       for (const ep of tryEndpoints) {
@@ -47,15 +60,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       }
       if (!payload) throw new Error("not-found");
-      const u = (payload.user as User | undefined) ?? (payload as unknown as User);
-      // Normaliza campos PT->EN
-      const normalized: User = {
-        id: (u.id as User["id"]) ?? (payload.id as User["id"]),
-        email: (u.email as string) ?? (payload.email as string),
-        name: (u.name as string) ?? (payload as { nome?: string }).nome ?? (u as unknown as { nome?: string }).nome,
-        role: (u.role as string) ?? (payload as { role?: string }).role,
-      };
-      setUser(normalized);
+      const raw = (payload.user as Record<string, unknown> | undefined) ?? payload;
+      setUser(normalizeUser(raw));
     } catch {
       setUser(null);
     }
@@ -85,7 +91,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const { access, refresh } = pickTokens(data);
         if (!access) throw new Error("Resposta de login inválida.");
         tokenStorage.set(access, refresh);
-        const apiUser = (data.user as User | undefined) ?? (data.usuario as User | undefined) ?? null;
+        const apiUser = normalizeUser(
+          (data.user as Record<string, unknown>) ?? (data.usuario as Record<string, unknown>),
+        );
         if (apiUser) setUser(apiUser);
         else await fetchMe();
       } catch (err) {
@@ -114,7 +122,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const { access, refresh } = pickTokens(data);
         if (access) {
           tokenStorage.set(access, refresh);
-          const apiUser = (data.user as User | undefined) ?? (data.usuario as User | undefined) ?? null;
+          const apiUser = normalizeUser(
+            (data.user as Record<string, unknown>) ?? (data.usuario as Record<string, unknown>),
+          );
           if (apiUser) setUser(apiUser);
           else await fetchMe();
         }
