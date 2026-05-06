@@ -1,9 +1,10 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Loader2, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { api, extractApiError } from "@/lib/api";
 import { useCart, formatBRL } from "@/contexts/CartContext";
+import { useAuth } from "@/contexts/AuthContext";
 
 export const Route = createFileRoute("/cardapio")({
   head: () => ({ meta: [{ title: "Cardápio — Ayla Sorvetes" }, { name: "description", content: "Veja e peça nossos sabores online." }] }),
