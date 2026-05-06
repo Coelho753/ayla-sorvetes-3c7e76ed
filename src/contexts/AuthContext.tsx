@@ -48,7 +48,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const fetchMe = useCallback(async () => {
     try {
-      // Tenta /users/me; se a API expor /auth/me ou /usuarios/me, faz fallback.
       const tryEndpoints = ["/users/me", "/auth/me", "/usuarios/me"];
       let payload: Record<string, unknown> | null = null;
       for (const ep of tryEndpoints) {
@@ -61,15 +60,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       }
       if (!payload) throw new Error("not-found");
-      const u = (payload.user as User | undefined) ?? (payload as unknown as User);
-      // Normaliza campos PT->EN
-      const normalized: User = {
-        id: (u.id as User["id"]) ?? (payload.id as User["id"]),
-        email: (u.email as string) ?? (payload.email as string),
-        name: (u.name as string) ?? (payload as { nome?: string }).nome ?? (u as unknown as { nome?: string }).nome,
-        role: (u.role as string) ?? (payload as { role?: string }).role,
-      };
-      setUser(normalized);
+      const raw = (payload.user as Record<string, unknown> | undefined) ?? payload;
+      setUser(normalizeUser(raw));
     } catch {
       setUser(null);
     }
