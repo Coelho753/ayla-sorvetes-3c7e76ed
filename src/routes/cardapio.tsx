@@ -24,9 +24,12 @@ type Product = {
 function CardapioPage() {
   const [products, setProducts] = useState<Product[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [needsAuth, setNeedsAuth] = useState(false);
   const { add } = useCart();
+  const { isAuthenticated, loading: authLoading } = useAuth();
 
   useEffect(() => {
+    if (authLoading) return;
     let alive = true;
     (async () => {
       try {
@@ -34,11 +37,14 @@ function CardapioPage() {
         const list = Array.isArray(data) ? data : (data as { data: Product[] }).data ?? [];
         if (alive) setProducts(list);
       } catch (err) {
-        if (alive) setError(extractApiError(err, "Não foi possível carregar os produtos."));
+        if (!alive) return;
+        const status = (err as { response?: { status?: number } })?.response?.status;
+        if (status === 401) setNeedsAuth(true);
+        else setError(extractApiError(err, "Não foi possível carregar os produtos."));
       }
     })();
     return () => { alive = false; };
-  }, []);
+  }, [authLoading, isAuthenticated]);
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-10">
