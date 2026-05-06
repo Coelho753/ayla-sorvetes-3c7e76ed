@@ -1,11 +1,32 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { api, tokenStorage, onUnauthorized, extractApiError } from "@/lib/api";
 
+export type Address = {
+  cep?: string;
+  rua?: string;
+  numero?: string;
+  complemento?: string;
+  bairro?: string;
+  cidade?: string;
+  estado?: string;
+};
+
 export type User = {
   id: string | number;
   name?: string;
+  firstName?: string;
+  lastName?: string;
   email: string;
   role?: string;
+  address?: Address;
+};
+
+type RegisterPayload = {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+  address: Address;
 };
 
 type AuthContextValue = {
@@ -14,9 +35,10 @@ type AuthContextValue = {
   isAuthenticated: boolean;
   isAdmin: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (name: string, email: string, password: string) => Promise<void>;
+  register: (payload: RegisterPayload) => Promise<void>;
   logout: () => void;
   refreshUser: () => Promise<void>;
+  updateAddress: (address: Address) => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -28,17 +50,36 @@ function pickTokens(data: Record<string, unknown>) {
   return { access, refresh };
 }
 
-// Normaliza usuário do backend (PT/Mongo) para o shape do app.
+function normalizeAddress(raw: Record<string, unknown> | null | undefined): Address | undefined {
+  if (!raw) return undefined;
+  const a = raw as Record<string, string | undefined>;
+  return {
+    cep: a.cep ?? a.zip,
+    rua: a.rua ?? a.street ?? a.logradouro,
+    numero: a.numero ?? a.number,
+    complemento: a.complemento ?? a.complement,
+    bairro: a.bairro ?? a.neighborhood,
+    cidade: a.cidade ?? a.city,
+    estado: a.estado ?? a.state ?? a.uf,
+  };
+}
+
 function normalizeUser(raw: Record<string, unknown> | null | undefined): User | null {
   if (!raw) return null;
   const id = (raw.id as User["id"]) ?? (raw._id as User["id"]);
   const email = raw.email as string;
   if (!id || !email) return null;
+  const fullName = (raw.name as string) ?? (raw.nome as string) ?? "";
+  const firstName = (raw.firstName as string) ?? (raw.nome as string) ?? fullName.split(" ")[0];
+  const lastName = (raw.lastName as string) ?? (raw.sobrenome as string) ?? fullName.split(" ").slice(1).join(" ");
   return {
     id,
     email,
-    name: (raw.name as string) ?? (raw.nome as string) ?? undefined,
+    name: fullName || [firstName, lastName].filter(Boolean).join(" ") || undefined,
+    firstName,
+    lastName,
     role: (raw.role as string) ?? undefined,
+    address: normalizeAddress((raw.endereco ?? raw.address) as Record<string, unknown> | undefined),
   };
 }
 
@@ -86,7 +127,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = useCallback(
     async (email: string, password: string) => {
       try {
-        // Backend usa nomes em PT: { email, senha }
         const { data } = await api.post("/auth/login", { email, senha: password, password });
         const { access, refresh } = pickTokens(data);
         if (!access) throw new Error("Resposta de login inválida.");
@@ -98,7 +138,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         else await fetchMe();
       } catch (err) {
         const msg = extractApiError(err, "Falha ao entrar. Verifique seu email e senha.");
-        // Erro de JWT mal configurado no backend
         if (/secretOrPrivateKey/i.test(msg)) {
           throw new Error("O servidor de autenticação está sem a chave JWT configurada. Avise o administrador.");
         }
@@ -109,15 +148,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 
   const register = useCallback(
-    async (name: string, email: string, password: string) => {
+    async (payload: RegisterPayload) => {
       try {
-        // Backend usa { nome, email, senha }
+        const fullName = `${payload.firstName} ${payload.lastName}`.trim();
+        // Envia tanto chaves PT quanto EN para máxima compatibilidade.
         const { data } = await api.post("/auth/register", {
-          nome: name,
-          name,
-          email,
-          senha: password,
-          password,
+          nome: fullName,
+          name: fullName,
+          firstName: payload.firstName,
+          lastName: payload.lastName,
+          sobrenome: payload.lastName,
+          email: payload.email,
+          senha: payload.password,
+          password: payload.password,
+          endereco: payload.address,
+          address: payload.address,
         });
         const { access, refresh } = pickTokens(data);
         if (access) {
@@ -135,6 +180,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [fetchMe],
   );
 
+  const updateAddress = useCallback(
+    async (address: Address) => {
+      try {
+        await api.put("/users/me", { endereco: address, address });
+        await refreshUser();
+      } catch (err) {
+        throw new Error(extractApiError(err, "Falha ao salvar endereço."));
+      }
+    },
+    [refreshUser],
+  );
+
   const logout = useCallback(() => {
     tokenStorage.clear();
     setUser(null);
@@ -150,8 +207,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       register,
       logout,
       refreshUser,
+      updateAddress,
     }),
-    [user, loading, login, register, logout, refreshUser],
+    [user, loading, login, register, logout, refreshUser, updateAddress],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
