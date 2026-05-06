@@ -91,7 +91,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const { access, refresh } = pickTokens(data);
         if (!access) throw new Error("Resposta de login inválida.");
         tokenStorage.set(access, refresh);
-        const apiUser = (data.user as User | undefined) ?? (data.usuario as User | undefined) ?? null;
+        const apiUser = normalizeUser(
+          (data.user as Record<string, unknown>) ?? (data.usuario as Record<string, unknown>),
+        );
         if (apiUser) setUser(apiUser);
         else await fetchMe();
       } catch (err) {
