@@ -5,6 +5,7 @@ import appCss from "../styles.css?url";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { CartProvider } from "@/contexts/CartContext";
 import { SiteHeader } from "@/components/SiteHeader";
+import { AuthBar } from "@/components/AuthBar";
 import { CartFloat } from "@/components/CartFloat";
 
 function NotFoundComponent() {
@@ -83,6 +84,7 @@ function RootComponent() {
     <AuthProvider>
       <CartProvider>
         <SiteHeader />
+        <AuthBar />
         <Outlet />
         <CartFloat />
         <Toaster richColors position="top-center" />
