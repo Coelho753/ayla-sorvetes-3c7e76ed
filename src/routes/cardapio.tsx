@@ -53,11 +53,22 @@ function CardapioPage() {
         <p className="mt-2 text-muted-foreground">Escolha seus favoritos e peça pelo WhatsApp.</p>
       </header>
 
-      {error && (
+      {needsAuth && (
+        <div className="rounded-2xl border border-border bg-card p-8 text-center">
+          <p className="font-display text-lg font-semibold">Faça login para ver o cardápio</p>
+          <p className="mt-1 text-sm text-muted-foreground">Nosso catálogo é exclusivo para clientes cadastrados.</p>
+          <div className="mt-4 flex items-center justify-center gap-3">
+            <Link to="/login" className="rounded-full bg-primary px-5 py-2 font-semibold text-primary-foreground hover:opacity-90">Entrar</Link>
+            <Link to="/cadastro" className="rounded-full border border-border px-5 py-2 font-semibold hover:bg-muted">Cadastrar</Link>
+          </div>
+        </div>
+      )}
+
+      {error && !needsAuth && (
         <div className="rounded-xl border border-destructive/40 bg-destructive/5 p-4 text-center text-destructive">{error}</div>
       )}
 
-      {!products && !error && (
+      {!products && !error && !needsAuth && (
         <div className="flex justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
       )}
 
