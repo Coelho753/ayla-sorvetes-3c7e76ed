@@ -92,7 +92,10 @@ export function CartFloat() {
           <div className="absolute inset-0 bg-black/50" onClick={() => setOpen(false)} />
           <aside className="absolute right-0 top-0 flex h-full w-full max-w-md flex-col bg-background shadow-2xl">
             <header className="flex items-center justify-between border-b border-border px-5 py-4">
-              <h2 className="font-display text-xl font-bold">Seu carrinho</h2>
+              <div className="flex items-center gap-2">
+                <h2 className="font-display text-xl font-bold">Seu carrinho</h2>
+                {syncing && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
+              </div>
               <button onClick={() => setOpen(false)} aria-label="Fechar" className="rounded-full p-2 hover:bg-muted">
                 <X className="h-5 w-5" />
               </button>
@@ -137,21 +140,33 @@ export function CartFloat() {
 
             {items.length > 0 && (
               <footer className="border-t border-border px-5 py-4">
+                {user?.address?.rua ? (
+                  <div className="mb-3 rounded-lg bg-muted/50 px-3 py-2 text-xs text-muted-foreground">
+                    <span className="font-semibold text-foreground">Entrega: </span>
+                    {formatAddress()}
+                  </div>
+                ) : user ? (
+                  <button onClick={() => { setOpen(false); navigate({ to: "/perfil" }); }} className="mb-3 block w-full rounded-lg border border-dashed border-primary/50 px-3 py-2 text-xs text-primary hover:bg-primary/5">
+                    + Adicionar endereço de entrega
+                  </button>
+                ) : null}
                 <div className="mb-3 flex items-center justify-between">
                   <span className="font-display text-lg">Total</span>
                   <span className="font-display text-2xl font-bold">{formatBRL(total)}</span>
                 </div>
                 <button
                   onClick={checkout}
-                  className="w-full rounded-full bg-whatsapp py-3 font-display font-bold text-whatsapp-foreground shadow-button transition-transform hover:scale-[1.02]"
+                  disabled={placing}
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-whatsapp py-3 font-display font-bold text-whatsapp-foreground shadow-button transition-transform hover:scale-[1.02] disabled:opacity-60"
                 >
+                  {placing && <Loader2 className="h-4 w-4 animate-spin" />}
                   Finalizar pelo WhatsApp
                 </button>
                 <div className="mt-2 flex items-center justify-between text-xs">
                   <button onClick={clear} className="text-muted-foreground hover:text-destructive">Esvaziar</button>
                   {!user && (
                     <button onClick={() => { setOpen(false); navigate({ to: "/login" }); }} className="text-primary hover:underline">
-                      Entrar para identificar pedido
+                      Entrar para salvar carrinho
                     </button>
                   )}
                 </div>
