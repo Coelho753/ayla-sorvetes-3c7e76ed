@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { Sparkles, MessageCircle, Instagram, Facebook } from "lucide-react";
 
@@ -343,10 +343,10 @@ function Index() {
         <div className="mx-auto max-w-6xl">
           <div className="mx-auto max-w-2xl text-center">
             <span className="reveal inline-block rounded-full bg-primary/15 px-4 py-1.5 font-display text-xs font-bold uppercase tracking-[0.2em] text-primary ring-1 ring-primary/20">
-              🍡 Picolés Gourmet
+              🍡 Picolés
             </span>
             <h2 className="reveal mt-5 font-display text-4xl font-bold leading-[1.05] tracking-tight sm:text-5xl md:text-6xl">
-              Geladinho no{" "}
+              Picolé no{" "}
               <span className="bg-gradient-purple bg-clip-text text-transparent">palitinho</span>
             </h2>
             <p className="reveal mx-auto mt-5 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">
@@ -365,7 +365,7 @@ function Index() {
                         desc={p.desc}
                         price={p.price}
                         img={p.img}
-                        badge="Gourmet"
+                        badge="Picolé"
                       />
                     </div>
                   </CarouselItem>
