@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { Sparkles, MessageCircle, Instagram, Facebook } from "lucide-react";
 
@@ -104,7 +104,7 @@ const popsicles = [
   { name: "Flocos", desc: "Cremoso com flocos crocantes de chocolate.", img: popsicleFlocos },
   { name: "Coco Branco", desc: "Tropical e refrescante com coco fresco.", img: popsicleCoco },
   { name: "Kiwi", desc: "Refrescante com pedaços de kiwi natural.", img: popsicleKiwi },
-  { name: "Torta de Limão", desc: "Picolé gourmet com crocante de biscoito.", img: popsicleLimao },
+  { name: "Torta de Limão", desc: "Picolé com crocante de biscoito.", img: popsicleLimao },
   { name: "Tentação", desc: "Picolé cremoso de chocolate com cobertura irresistível.", img: popsicleTentacao },
   { name: "Leitinho", desc: "Picolé cremoso sabor leite condensado.", img: popsicle3dLeitinho },
   { name: "Manga", desc: "Tropical e refrescante com sabor intenso de manga.", img: popsicle3dManga },
@@ -119,7 +119,7 @@ const acaiProducts = [
   { name: "Açaí Premium 1L", desc: "Pote com guaraná e frutos vermelhos.", img: acai1L, size: "1L", price: 45.0 },
   { name: "Açaí Premium 5L", desc: "Caixa família para festas e eventos.", img: acai5L, size: "5L", price: 180.0 },
   { name: "Copo de Açaí", desc: "Açaí cremoso individual com toque tropical.", img: cupAcai, size: "300ml", price: 15.0 },
-  { name: "Picolé de Açaí", desc: "Intenso e cremoso, direto da Amazônia.", img: popsicleAcai, size: "Gourmet", price: 8.0 },
+  { name: "Picolé de Açaí", desc: "Intenso e cremoso, direto da Amazônia.", img: popsicleAcai, size: "Picolé", price: 8.0 },
 ];
 
 function Index() {
@@ -343,10 +343,10 @@ function Index() {
         <div className="mx-auto max-w-6xl">
           <div className="mx-auto max-w-2xl text-center">
             <span className="reveal inline-block rounded-full bg-primary/15 px-4 py-1.5 font-display text-xs font-bold uppercase tracking-[0.2em] text-primary ring-1 ring-primary/20">
-              🍡 Picolés Gourmet
+              🍡 Picolés
             </span>
             <h2 className="reveal mt-5 font-display text-4xl font-bold leading-[1.05] tracking-tight sm:text-5xl md:text-6xl">
-              Geladinho no{" "}
+              Picolé no{" "}
               <span className="bg-gradient-purple bg-clip-text text-transparent">palitinho</span>
             </h2>
             <p className="reveal mx-auto mt-5 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">
@@ -365,7 +365,7 @@ function Index() {
                         desc={p.desc}
                         price={p.price}
                         img={p.img}
-                        badge="Gourmet"
+                        badge="Picolé"
                       />
                     </div>
                   </CarouselItem>
@@ -419,6 +419,16 @@ function Index() {
             </Carousel>
           </div>
         </div>
+      </section>
+
+      {/* VER TODOS OS PRODUTOS */}
+      <section className="px-6 py-12 text-center">
+        <Link
+          to="/cardapio"
+          className="inline-flex items-center gap-2 rounded-full bg-primary px-8 py-4 font-display text-base font-bold text-primary-foreground shadow-button transition-transform hover:scale-105"
+        >
+          Ver todos os produtos 🍦
+        </Link>
       </section>
 
       {/* DIFERENCIAIS */}

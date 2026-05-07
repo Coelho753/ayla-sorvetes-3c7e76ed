@@ -7,6 +7,7 @@ import { CartProvider } from "@/contexts/CartContext";
 import { SiteHeader } from "@/components/SiteHeader";
 import { AuthBar } from "@/components/AuthBar";
 import { CartFloat } from "@/components/CartFloat";
+import { AddressGate } from "@/components/AddressGate";
 
 function NotFoundComponent() {
   return (
@@ -87,6 +88,7 @@ function RootComponent() {
         <AuthBar />
         <Outlet />
         <CartFloat />
+        <AddressGate />
         <Toaster richColors position="top-center" />
       </CartProvider>
     </AuthProvider>
