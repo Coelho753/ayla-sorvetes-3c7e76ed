@@ -421,6 +421,16 @@ function Index() {
         </div>
       </section>
 
+      {/* VER TODOS OS PRODUTOS */}
+      <section className="px-6 py-12 text-center">
+        <Link
+          to="/cardapio"
+          className="inline-flex items-center gap-2 rounded-full bg-primary px-8 py-4 font-display text-base font-bold text-primary-foreground shadow-button transition-transform hover:scale-105"
+        >
+          Ver todos os produtos 🍦
+        </Link>
+      </section>
+
       {/* DIFERENCIAIS */}
       {/* CTA PRINCIPAL */}
       <section className="relative overflow-hidden bg-gradient-cta px-6 py-24 text-center">
