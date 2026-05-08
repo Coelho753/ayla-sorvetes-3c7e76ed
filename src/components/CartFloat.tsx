@@ -6,6 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { WHATSAPP_PHONE } from "@/config/api";
 import { api } from "@/lib/api";
 import { toast } from "sonner";
+import { saveOrder, newOrderId } from "@/lib/orders";
 
 export function CartFloat() {
   const { count, items, total, setQuantity, remove, clear, syncing } = useCart();
@@ -66,8 +67,21 @@ export function CartFloat() {
         action: { label: "Ir para perfil", onClick: () => navigate({ to: "/perfil" }) },
       });
     }
+    // Salva no histórico local (sempre, mesmo sem login)
+    saveOrder(user?.id ?? null, {
+      id: newOrderId(),
+      createdAt: new Date().toISOString(),
+      items: items.map((i) => ({ ...i })),
+      total,
+      address: user?.address ?? null,
+      customerName: user?.name,
+    });
     const url = `https://wa.me/${WHATSAPP_PHONE}?text=${encodeURIComponent(buildMessage())}`;
     window.open(url, "_blank", "noopener,noreferrer");
+    // Limpa o carrinho após enviar pelo WhatsApp
+    clear();
+    setOpen(false);
+    toast.success("Pedido enviado! Veja no histórico em Minha conta.");
     setPlacing(false);
   }
 
