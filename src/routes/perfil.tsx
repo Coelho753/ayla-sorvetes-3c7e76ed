@@ -1,11 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { z } from "zod";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { RequireAuth } from "@/components/RequireAuth";
 import { useAuth, type Address } from "@/contexts/AuthContext";
 import { api, extractApiError } from "@/lib/api";
+import { loadOrders, type Order } from "@/lib/orders";
+import { formatBRL } from "@/contexts/CartContext";
 
 export const Route = createFileRoute("/perfil")({
   head: () => ({ meta: [{ title: "Minha conta — Ayla Sorvetes" }] }),
@@ -151,8 +153,43 @@ function Profile() {
         </button>
       </form>
 
+      <OrderHistory userId={user?.id ?? null} />
+
       <button onClick={logout} className="mt-6 text-sm text-destructive hover:underline">Sair da conta</button>
     </main>
+  );
+}
+
+function OrderHistory({ userId }: { userId: string | number | null }) {
+  const orders = useMemo<Order[]>(() => loadOrders(userId), [userId]);
+  return (
+    <section className="mt-6 rounded-xl border border-border p-5">
+      <h2 className="font-display text-xl font-semibold">Histórico de pedidos</h2>
+      {orders.length === 0 ? (
+        <p className="mt-2 text-sm text-muted-foreground">Você ainda não fez nenhum pedido por aqui.</p>
+      ) : (
+        <ul className="mt-3 space-y-3">
+          {orders.map((o) => (
+            <li key={o.id} className="rounded-lg border border-border bg-card p-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-muted-foreground">
+                  {new Date(o.createdAt).toLocaleString("pt-BR")}
+                </span>
+                <span className="font-display font-bold text-primary">{formatBRL(o.total)}</span>
+              </div>
+              <ul className="mt-2 space-y-0.5 text-sm">
+                {o.items.map((i) => (
+                  <li key={String(i.id)} className="flex justify-between">
+                    <span>{i.quantity}× {i.name}</span>
+                    <span className="text-muted-foreground">{formatBRL(i.price * i.quantity)}</span>
+                  </li>
+                ))}
+              </ul>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
   );
 }
 
