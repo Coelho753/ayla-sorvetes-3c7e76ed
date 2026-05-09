@@ -10,9 +10,12 @@ import { saveOrder, newOrderId } from "@/lib/orders";
 
 export function CartFloat() {
   const { count, items, total, setQuantity, remove, clear, syncing } = useCart();
-  const { user } = useAuth();
+  const { user, updateAddress } = useAuth();
   const [open, setOpen] = useState(false);
   const [placing, setPlacing] = useState(false);
+  const [editingAddr, setEditingAddr] = useState(false);
+  const [addrDraft, setAddrDraft] = useState<Address>({});
+  const [savingAddr, setSavingAddr] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
