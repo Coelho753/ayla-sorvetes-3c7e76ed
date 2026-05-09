@@ -227,3 +227,94 @@ export function CartFloat() {
     </>
   );
 }
+
+function AddressEditor({
+  initial,
+  saving,
+  onSave,
+  onCancel,
+}: {
+  initial: Address;
+  saving: boolean;
+  onSave: (a: Address) => void;
+  onCancel: () => void;
+}) {
+  const [a, setA] = useState<Address>(initial);
+  const [cepBusy, setCepBusy] = useState(false);
+
+  async function lookupCep(cep: string) {
+    const clean = cep.replace(/\D/g, "");
+    if (clean.length !== 8) return;
+    setCepBusy(true);
+    try {
+      const r = await fetch(`https://viacep.com.br/ws/${clean}/json/`);
+      const d = await r.json();
+      if (d.erro) return;
+      setA((p) => ({
+        ...p,
+        cep: clean,
+        rua: d.logradouro || p.rua,
+        bairro: d.bairro || p.bairro,
+        cidade: d.localidade || p.cidade,
+        estado: d.uf || p.estado,
+      }));
+    } catch { /* ignore */ }
+    finally { setCepBusy(false); }
+  }
+
+  function submit() {
+    if (!a.rua || !a.numero || !a.bairro || !a.cidade || !a.estado) {
+      toast.error("Preencha rua, número, bairro, cidade e UF.");
+      return;
+    }
+    onSave({ ...a, estado: (a.estado || "").toUpperCase() });
+  }
+
+  const inputCls =
+    "w-full rounded-md border border-input bg-background px-2 py-1.5 text-xs outline-none focus:ring-2 focus:ring-primary";
+
+  return (
+    <div className="mb-3 rounded-lg border border-primary/30 bg-card p-3">
+      <div className="mb-2 flex items-center gap-2 text-xs font-semibold text-foreground">
+        <MapPin className="h-3.5 w-3.5 text-primary" />
+        Trocar endereço de entrega
+      </div>
+      <div className="grid grid-cols-2 gap-2">
+        <div className="relative">
+          <input
+            placeholder="CEP"
+            value={a.cep ?? ""}
+            onChange={(e) => { setA({ ...a, cep: e.target.value }); lookupCep(e.target.value); }}
+            className={inputCls}
+          />
+          {cepBusy && <Loader2 className="absolute right-2 top-2 h-3 w-3 animate-spin text-muted-foreground" />}
+        </div>
+        <input placeholder="Número" value={a.numero ?? ""} onChange={(e) => setA({ ...a, numero: e.target.value })} className={inputCls} />
+      </div>
+      <input placeholder="Rua" value={a.rua ?? ""} onChange={(e) => setA({ ...a, rua: e.target.value })} className={`${inputCls} mt-2`} />
+      <input placeholder="Complemento (opcional)" value={a.complemento ?? ""} onChange={(e) => setA({ ...a, complemento: e.target.value })} className={`${inputCls} mt-2`} />
+      <input placeholder="Bairro" value={a.bairro ?? ""} onChange={(e) => setA({ ...a, bairro: e.target.value })} className={`${inputCls} mt-2`} />
+      <div className="mt-2 grid grid-cols-[1fr_70px] gap-2">
+        <input placeholder="Cidade" value={a.cidade ?? ""} onChange={(e) => setA({ ...a, cidade: e.target.value })} className={inputCls} />
+        <input placeholder="UF" maxLength={2} value={a.estado ?? ""} onChange={(e) => setA({ ...a, estado: e.target.value.toUpperCase() })} className={inputCls} />
+      </div>
+      <div className="mt-3 flex gap-2">
+        <button
+          onClick={onCancel}
+          disabled={saving}
+          className="flex-1 rounded-full border border-border px-3 py-2 text-xs font-semibold text-muted-foreground hover:bg-muted"
+        >
+          Cancelar
+        </button>
+        <button
+          onClick={submit}
+          disabled={saving}
+          className="inline-flex flex-1 items-center justify-center gap-1 rounded-full bg-primary px-3 py-2 text-xs font-bold text-primary-foreground shadow-button hover:scale-[1.02] disabled:opacity-60"
+        >
+          {saving ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3" />}
+          Salvar
+        </button>
+      </div>
+    </div>
+  );
+}
