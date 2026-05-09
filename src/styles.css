@@ -127,6 +127,9 @@
   }
   body {
     background-color: var(--color-background);
+    background-image: var(--bg-confetti);
+    background-attachment: fixed;
+    background-size: 520px 520px;
     color: var(--color-foreground);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
