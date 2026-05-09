@@ -44,63 +44,78 @@
 :root {
   --radius: 1.25rem;
 
-  /* Brand — paleta mais vibrante e saturada */
-  --background: oklch(0.98 0.018 330);
-  --foreground: oklch(0.22 0.09 305);
+  /* Brand — paleta ainda mais vibrante e candy */
+  --background: oklch(0.97 0.04 330);
+  --foreground: oklch(0.2 0.1 305);
 
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.22 0.09 305);
+  --card-foreground: oklch(0.2 0.1 305);
 
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.22 0.09 305);
+  --popover-foreground: oklch(0.2 0.1 305);
 
   /* Roxo principal — mais profundo e rico */
-  --primary: oklch(0.58 0.26 305);
+  --primary: oklch(0.58 0.28 305);
   --primary-foreground: oklch(0.99 0.005 320);
 
   /* Rosa bubblegum — mais vivo */
-  --secondary: oklch(0.74 0.24 350);
+  --secondary: oklch(0.74 0.26 350);
   --secondary-foreground: oklch(0.18 0.07 305);
 
-  --muted: oklch(0.95 0.025 330);
-  --muted-foreground: oklch(0.48 0.07 305);
+  --muted: oklch(0.95 0.04 330);
+  --muted-foreground: oklch(0.45 0.08 305);
 
   /* Accent rosa-claro */
-  --accent: oklch(0.86 0.15 350);
+  --accent: oklch(0.84 0.18 350);
   --accent-foreground: oklch(0.22 0.1 305);
 
   /* Amarelo doce — mais quente */
-  --sunny: oklch(0.9 0.19 92);
+  --sunny: oklch(0.9 0.21 92);
   --sunny-foreground: oklch(0.28 0.11 60);
 
   /* Bubble pink (calls-to-action quentes) — mais saturado */
-  --bubble: oklch(0.7 0.26 8);
+  --bubble: oklch(0.7 0.28 8);
   --bubble-foreground: oklch(0.99 0.005 0);
 
+  /* Verdinho menta extra */
+  --mint: oklch(0.85 0.16 165);
+  --mint-foreground: oklch(0.22 0.1 200);
+
+  /* Azul céu */
+  --sky: oklch(0.82 0.15 230);
+  --sky-foreground: oklch(0.2 0.1 260);
+
   /* WhatsApp */
-  --whatsapp: oklch(0.72 0.18 145);
+  --whatsapp: oklch(0.72 0.2 145);
   --whatsapp-foreground: oklch(0.99 0 0);
 
-  --destructive: oklch(0.65 0.22 25);
+  --destructive: oklch(0.65 0.24 25);
   --destructive-foreground: oklch(0.99 0 0);
 
-  --border: oklch(0.9 0.04 320);
-  --input: oklch(0.92 0.03 320);
-  --ring: oklch(0.62 0.22 305);
+  --border: oklch(0.9 0.05 320);
+  --input: oklch(0.92 0.04 320);
+  --ring: oklch(0.62 0.24 305);
 
   /* Gradients — mais ricos e contrastantes */
-  --gradient-hero: linear-gradient(135deg, oklch(0.5 0.27 300) 0%, oklch(0.65 0.25 340) 45%, oklch(0.78 0.22 25) 100%);
-  --gradient-candy: linear-gradient(135deg, oklch(0.74 0.24 350), oklch(0.9 0.19 92));
-  --gradient-purple: linear-gradient(135deg, oklch(0.55 0.27 300), oklch(0.7 0.24 340));
-  --gradient-cta: linear-gradient(135deg, oklch(0.7 0.26 8), oklch(0.58 0.26 305));
+  --gradient-hero: linear-gradient(135deg, oklch(0.5 0.28 300) 0%, oklch(0.65 0.27 340) 35%, oklch(0.78 0.22 25) 70%, oklch(0.85 0.2 80) 100%);
+  --gradient-candy: linear-gradient(135deg, oklch(0.74 0.26 350), oklch(0.9 0.21 92));
+  --gradient-purple: linear-gradient(135deg, oklch(0.55 0.28 300), oklch(0.7 0.26 340));
+  --gradient-cta: linear-gradient(135deg, oklch(0.7 0.28 8), oklch(0.58 0.28 305));
+  --gradient-rainbow: linear-gradient(90deg, oklch(0.7 0.28 8), oklch(0.78 0.22 60), oklch(0.85 0.2 130), oklch(0.75 0.18 220), oklch(0.6 0.28 305));
   --gradient-card: linear-gradient(180deg, transparent 55%, oklch(0.2 0.08 305 / 0.35) 80%, oklch(0.15 0.06 305 / 0.65) 100%);
   --gradient-card-acai: linear-gradient(180deg, transparent 55%, oklch(0.28 0.18 305 / 0.4) 80%, oklch(0.2 0.18 305 / 0.7) 100%);
+  --bg-confetti:
+    radial-gradient(circle at 8% 12%, oklch(0.85 0.2 350 / 0.35) 0 8px, transparent 9px),
+    radial-gradient(circle at 92% 18%, oklch(0.9 0.21 92 / 0.32) 0 6px, transparent 7px),
+    radial-gradient(circle at 22% 78%, oklch(0.78 0.22 220 / 0.3) 0 7px, transparent 8px),
+    radial-gradient(circle at 78% 88%, oklch(0.7 0.28 305 / 0.28) 0 7px, transparent 8px),
+    radial-gradient(circle at 50% 45%, oklch(0.85 0.16 165 / 0.25) 0 5px, transparent 6px);
 
   /* Shadows / Glow */
-  --shadow-glow: 0 0 60px oklch(0.74 0.24 350 / 0.55), 0 0 120px oklch(0.58 0.26 305 / 0.4);
-  --shadow-soft: 0 20px 50px -15px oklch(0.5 0.27 300 / 0.4);
-  --shadow-card: 0 14px 40px -12px oklch(0.5 0.27 300 / 0.32);
-  --shadow-button: 0 12px 32px -8px oklch(0.7 0.26 8 / 0.6);
+  --shadow-glow: 0 0 60px oklch(0.74 0.26 350 / 0.6), 0 0 120px oklch(0.58 0.28 305 / 0.45);
+  --shadow-soft: 0 20px 50px -15px oklch(0.5 0.28 300 / 0.45);
+  --shadow-card: 0 14px 40px -12px oklch(0.5 0.28 300 / 0.35);
+  --shadow-button: 0 12px 32px -8px oklch(0.7 0.28 8 / 0.65);
 }
 
 @layer base {
