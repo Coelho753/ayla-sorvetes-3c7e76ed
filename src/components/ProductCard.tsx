@@ -46,6 +46,9 @@ export function ProductCard({
           src={img}
           alt={name}
           loading="lazy"
+          decoding="async"
+          width={600}
+          height={600}
           className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
         />
         {badge && (
