@@ -157,13 +157,45 @@ export function CartFloat() {
 
             {items.length > 0 && (
               <footer className="border-t border-border px-5 py-4">
-                {user?.address?.rua ? (
-                  <div className="mb-3 rounded-lg bg-muted/50 px-3 py-2 text-xs text-muted-foreground">
-                    <span className="font-semibold text-foreground">Entrega: </span>
-                    {formatAddress()}
+                {user && editingAddr ? (
+                  <AddressEditor
+                    initial={addrDraft}
+                    saving={savingAddr}
+                    onCancel={() => setEditingAddr(false)}
+                    onSave={async (a) => {
+                      setSavingAddr(true);
+                      try {
+                        await updateAddress(a);
+                        toast.success("Endereço atualizado!");
+                        setEditingAddr(false);
+                      } catch (err) {
+                        toast.error((err as Error).message);
+                      } finally {
+                        setSavingAddr(false);
+                      }
+                    }}
+                  />
+                ) : user?.address?.rua ? (
+                  <div className="mb-3 flex items-start gap-2 rounded-lg bg-muted/60 px-3 py-2 text-xs text-muted-foreground">
+                    <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
+                    <div className="flex-1">
+                      <span className="font-semibold text-foreground">Entrega: </span>
+                      {formatAddress()}
+                    </div>
+                    <button
+                      onClick={() => { setAddrDraft(user.address ?? {}); setEditingAddr(true); }}
+                      className="shrink-0 rounded-full p-1 text-primary hover:bg-primary/10"
+                      aria-label="Trocar endereço"
+                      title="Trocar endereço"
+                    >
+                      <Pencil className="h-3.5 w-3.5" />
+                    </button>
                   </div>
                 ) : user ? (
-                  <button onClick={() => { setOpen(false); navigate({ to: "/perfil" }); }} className="mb-3 block w-full rounded-lg border border-dashed border-primary/50 px-3 py-2 text-xs text-primary hover:bg-primary/5">
+                  <button
+                    onClick={() => { setAddrDraft({}); setEditingAddr(true); }}
+                    className="mb-3 block w-full rounded-lg border border-dashed border-primary/50 px-3 py-2 text-xs text-primary hover:bg-primary/5"
+                  >
                     + Adicionar endereço de entrega
                   </button>
                 ) : null}
