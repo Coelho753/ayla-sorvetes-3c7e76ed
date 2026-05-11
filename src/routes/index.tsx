@@ -307,7 +307,7 @@ function Index() {
               className="mx-auto w-full max-w-5xl"
             >
               <CarouselContent className="-ml-4">
-                {tubs.map((t, i) => (
+                {tubsView.map((t, i) => (
                   <CarouselItem key={t.name} className="pl-4 sm:basis-1/2 lg:basis-1/3">
                     <div className="animate-pop-in h-full" style={{ animationDelay: `${i * 90}ms` }}>
                       <ProductCard
@@ -365,7 +365,7 @@ function Index() {
           <div className="reveal mt-14">
             <Carousel opts={{ align: "start", loop: true }} plugins={[autoplayCups.current]} className="mx-auto w-full max-w-5xl">
               <CarouselContent className="-ml-4">
-                {cups.map((c, i) => (
+                {cupsView.map((c, i) => (
                   <CarouselItem key={c.name} className="pl-4 sm:basis-1/2 lg:basis-1/3">
                     <div className="animate-pop-in h-full" style={{ animationDelay: `${i * 80}ms` }}>
                       <ProductCard
@@ -424,7 +424,7 @@ function Index() {
           <div className="reveal mt-14">
             <Carousel opts={{ align: "start", loop: true }} plugins={[autoplayPops.current]} className="mx-auto w-full max-w-5xl">
               <CarouselContent className="-ml-4">
-                {popsicles.map((p, i) => (
+                {popsiclesView.map((p, i) => (
                   <CarouselItem key={p.name} className="pl-4 sm:basis-1/2 lg:basis-1/3">
                     <div className="animate-pop-in h-full" style={{ animationDelay: `${i * 80}ms` }}>
                       <ProductCard
@@ -484,7 +484,7 @@ function Index() {
           <div className="reveal mt-14">
             <Carousel opts={{ align: "start", loop: true }} plugins={[autoplayAcai.current]} className="mx-auto w-full max-w-5xl">
               <CarouselContent className="-ml-4">
-                {acaiProducts.map((a, i) => (
+                {acaiView.map((a, i) => (
                   <CarouselItem key={a.name} className="pl-4 sm:basis-1/2 lg:basis-1/3">
                     <div className="animate-pop-in h-full" style={{ animationDelay: `${i * 100}ms` }}>
                       <ProductCard
