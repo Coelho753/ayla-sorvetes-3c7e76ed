@@ -145,6 +145,22 @@ function Index() {
     floatPopsicle, floatScoop, mascot,
   ]);
 
+  // Tenta carregar produtos do backend; se falhar, usa fallback local
+  const [remote, setRemote] = useState<{ tub: ApiProduct[]; cup: ApiProduct[]; popsicle: ApiProduct[]; acai: ApiProduct[] } | null>(null);
+  useEffect(() => {
+    let alive = true;
+    fetchProducts().then((list) => {
+      if (!alive || !list || list.length === 0) return;
+      setRemote(groupByCategory(list));
+    });
+    return () => { alive = false; };
+  }, []);
+
+  const tubsView = remote?.tub.length ? remote.tub.map((p) => ({ name: p.name, img: imgOf(p) ?? "", price: Number(p.price) || TUB_PRICE })) : tubs;
+  const cupsView = remote?.cup.length ? remote.cup.map((p) => ({ name: p.name, img: imgOf(p) ?? "", price: Number(p.price) || CUP_PRICE, desc: p.description })) : cups;
+  const popsiclesView = remote?.popsicle.length ? remote.popsicle.map((p) => ({ name: p.name, img: imgOf(p) ?? "", price: Number(p.price) || POPSICLE_PRICE, desc: p.description })) : popsicles;
+  const acaiView = remote?.acai.length ? remote.acai.map((p) => ({ name: p.name, img: imgOf(p) ?? "", price: Number(p.price) || 0, desc: p.description, size: p.size ?? "" })) : acaiProducts;
+
   useEffect(() => {
     document.title = "Ayla Sorvetes — Os sorvetes mais irresistíveis da sua região 🍦";
   }, []);
