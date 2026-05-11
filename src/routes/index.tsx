@@ -64,6 +64,8 @@ import { ProductCard } from "@/components/ProductCard";
 import { WHATSAPP_LINK } from "@/lib/whatsapp";
 import { useReveal } from "@/hooks/use-reveal";
 import { useImagePreload } from "@/hooks/use-image-preload";
+import { fetchProducts, groupByCategory, imgOf, type ApiProduct } from "@/lib/products";
+import { useState } from "react";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -142,6 +144,22 @@ function Index() {
     lifestyleFamily, lifestyleScoops, lifestyleAcai,
     floatPopsicle, floatScoop, mascot,
   ]);
+
+  // Tenta carregar produtos do backend; se falhar, usa fallback local
+  const [remote, setRemote] = useState<{ tub: ApiProduct[]; cup: ApiProduct[]; popsicle: ApiProduct[]; acai: ApiProduct[] } | null>(null);
+  useEffect(() => {
+    let alive = true;
+    fetchProducts().then((list) => {
+      if (!alive || !list || list.length === 0) return;
+      setRemote(groupByCategory(list));
+    });
+    return () => { alive = false; };
+  }, []);
+
+  const tubsView = remote?.tub.length ? remote.tub.map((p) => ({ name: p.name, img: imgOf(p) ?? "", price: Number(p.price) || TUB_PRICE })) : tubs;
+  const cupsView = remote?.cup.length ? remote.cup.map((p) => ({ name: p.name, img: imgOf(p) ?? "", price: Number(p.price) || CUP_PRICE, desc: p.description })) : cups;
+  const popsiclesView = remote?.popsicle.length ? remote.popsicle.map((p) => ({ name: p.name, img: imgOf(p) ?? "", price: Number(p.price) || POPSICLE_PRICE, desc: p.description })) : popsicles;
+  const acaiView = remote?.acai.length ? remote.acai.map((p) => ({ name: p.name, img: imgOf(p) ?? "", price: Number(p.price) || 0, desc: p.description, size: p.size ?? "" })) : acaiProducts;
 
   useEffect(() => {
     document.title = "Ayla Sorvetes — Os sorvetes mais irresistíveis da sua região 🍦";
@@ -289,7 +307,7 @@ function Index() {
               className="mx-auto w-full max-w-5xl"
             >
               <CarouselContent className="-ml-4">
-                {tubs.map((t, i) => (
+                {tubsView.map((t, i) => (
                   <CarouselItem key={t.name} className="pl-4 sm:basis-1/2 lg:basis-1/3">
                     <div className="animate-pop-in h-full" style={{ animationDelay: `${i * 90}ms` }}>
                       <ProductCard
@@ -347,7 +365,7 @@ function Index() {
           <div className="reveal mt-14">
             <Carousel opts={{ align: "start", loop: true }} plugins={[autoplayCups.current]} className="mx-auto w-full max-w-5xl">
               <CarouselContent className="-ml-4">
-                {cups.map((c, i) => (
+                {cupsView.map((c, i) => (
                   <CarouselItem key={c.name} className="pl-4 sm:basis-1/2 lg:basis-1/3">
                     <div className="animate-pop-in h-full" style={{ animationDelay: `${i * 80}ms` }}>
                       <ProductCard
@@ -406,7 +424,7 @@ function Index() {
           <div className="reveal mt-14">
             <Carousel opts={{ align: "start", loop: true }} plugins={[autoplayPops.current]} className="mx-auto w-full max-w-5xl">
               <CarouselContent className="-ml-4">
-                {popsicles.map((p, i) => (
+                {popsiclesView.map((p, i) => (
                   <CarouselItem key={p.name} className="pl-4 sm:basis-1/2 lg:basis-1/3">
                     <div className="animate-pop-in h-full" style={{ animationDelay: `${i * 80}ms` }}>
                       <ProductCard
@@ -466,7 +484,7 @@ function Index() {
           <div className="reveal mt-14">
             <Carousel opts={{ align: "start", loop: true }} plugins={[autoplayAcai.current]} className="mx-auto w-full max-w-5xl">
               <CarouselContent className="-ml-4">
-                {acaiProducts.map((a, i) => (
+                {acaiView.map((a, i) => (
                   <CarouselItem key={a.name} className="pl-4 sm:basis-1/2 lg:basis-1/3">
                     <div className="animate-pop-in h-full" style={{ animationDelay: `${i * 100}ms` }}>
                       <ProductCard
