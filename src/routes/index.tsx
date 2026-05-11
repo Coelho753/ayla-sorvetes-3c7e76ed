@@ -46,6 +46,9 @@ import popsicle3dGroselha from "@/assets/popsicle-3d-groselha.jpg";
 import popsicle3dChocolate from "@/assets/popsicle-3d-chocolate.jpg";
 import acai1L from "@/assets/acai-1l.webp";
 import acai5L from "@/assets/acai-5l.webp";
+import lifestyleFamily from "@/assets/lifestyle-family.jpg";
+import lifestyleScoops from "@/assets/lifestyle-scoops.jpg";
+import lifestyleAcai from "@/assets/lifestyle-acai.jpg";
 import Autoplay from "embla-carousel-autoplay";
 import { useRef } from "react";
 import {
