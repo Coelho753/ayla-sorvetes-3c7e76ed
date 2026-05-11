@@ -333,6 +333,13 @@
   background-attachment: fixed;
   overflow: hidden;
   isolation: isolate;
+  /* recortes onduladas no topo e na base para fundir com a página */
+  -webkit-mask-image:
+    radial-gradient(60px 30px at 50% 0%, transparent 99%, #000 100%),
+    linear-gradient(#000, #000);
+  mask-image:
+    radial-gradient(120% 40px at 50% 0%, transparent 30px, #000 31px),
+    linear-gradient(#000, #000);
 }
 @media (max-width: 768px) {
   .lifestyle-banner { background-attachment: scroll; height: 280px; }
