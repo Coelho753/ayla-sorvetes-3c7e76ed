@@ -63,6 +63,7 @@ import { WhatsAppFloat } from "@/components/WhatsAppFloat";
 import { ProductCard } from "@/components/ProductCard";
 import { WHATSAPP_LINK } from "@/lib/whatsapp";
 import { useReveal } from "@/hooks/use-reveal";
+import { useImagePreload } from "@/hooks/use-image-preload";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -132,12 +133,22 @@ function Index() {
   const autoplayPops = useRef(Autoplay({ delay: 3200, stopOnInteraction: false, stopOnMouseEnter: true }));
   const autoplayAcai = useRef(Autoplay({ delay: 4000, stopOnInteraction: false, stopOnMouseEnter: true }));
 
+  // Pré-carrega TODAS as imagens dos cards/banners e mantém em cache
+  useImagePreload([
+    ...tubs.map((t) => t.img),
+    ...cups.map((c) => c.img),
+    ...popsicles.map((p) => p.img),
+    ...acaiProducts.map((a) => a.img),
+    lifestyleFamily, lifestyleScoops, lifestyleAcai,
+    floatPopsicle, floatScoop, mascot,
+  ]);
+
   useEffect(() => {
     document.title = "Ayla Sorvetes — Os sorvetes mais irresistíveis da sua região 🍦";
   }, []);
 
   return (
-    <main className="overflow-x-hidden bg-background text-foreground">
+    <main className="relative overflow-x-hidden text-foreground bg-gradient-page">
       <WhatsAppFloat />
 
       {/* HERO */}
