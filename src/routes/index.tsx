@@ -63,6 +63,7 @@ import { WhatsAppFloat } from "@/components/WhatsAppFloat";
 import { ProductCard } from "@/components/ProductCard";
 import { WHATSAPP_LINK } from "@/lib/whatsapp";
 import { useReveal } from "@/hooks/use-reveal";
+import { useImagePreload } from "@/hooks/use-image-preload";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -132,12 +133,22 @@ function Index() {
   const autoplayPops = useRef(Autoplay({ delay: 3200, stopOnInteraction: false, stopOnMouseEnter: true }));
   const autoplayAcai = useRef(Autoplay({ delay: 4000, stopOnInteraction: false, stopOnMouseEnter: true }));
 
+  // Pré-carrega TODAS as imagens dos cards/banners e mantém em cache
+  useImagePreload([
+    ...tubs.map((t) => t.img),
+    ...cups.map((c) => c.img),
+    ...popsicles.map((p) => p.img),
+    ...acaiProducts.map((a) => a.img),
+    lifestyleFamily, lifestyleScoops, lifestyleAcai,
+    floatPopsicle, floatScoop, mascot,
+  ]);
+
   useEffect(() => {
     document.title = "Ayla Sorvetes — Os sorvetes mais irresistíveis da sua região 🍦";
   }, []);
 
   return (
-    <main className="overflow-x-hidden bg-background text-foreground">
+    <main className="relative overflow-x-hidden text-foreground bg-gradient-page">
       <WhatsAppFloat />
 
       {/* HERO */}
@@ -256,7 +267,7 @@ function Index() {
 
       {/* POTES 1,5L - CARROSSEL */}
       <section id="potes" className="relative overflow-hidden px-6 py-24 md:py-32">
-        <div className="absolute inset-0 -z-10 bg-gradient-to-b from-background via-muted/30 to-background" />
+        {/* fundo unificado em <main>; sem overlay local */}
         <div className="mx-auto max-w-6xl">
           <div className="mx-auto max-w-2xl text-center">
             <span className="reveal inline-block rounded-full bg-secondary/15 px-4 py-1.5 font-display text-xs font-bold uppercase tracking-[0.2em] text-secondary ring-1 ring-secondary/20">
@@ -319,7 +330,7 @@ function Index() {
 
       {/* COPOS 300ML */}
       <section id="copos" className="relative overflow-hidden px-6 py-24 md:py-32">
-        <div className="absolute inset-0 -z-10 bg-gradient-to-b from-background via-secondary/10 to-background" />
+        {/* fundo unificado em <main>; sem overlay local */}
         <div className="mx-auto max-w-6xl">
           <div className="mx-auto max-w-2xl text-center">
             <span className="reveal inline-block rounded-full bg-secondary/15 px-4 py-1.5 font-display text-xs font-bold uppercase tracking-[0.2em] text-secondary ring-1 ring-secondary/20">
@@ -378,7 +389,7 @@ function Index() {
 
       {/* PICOLÉS */}
       <section id="picoles" className="relative overflow-hidden px-6 py-24 md:py-32">
-        <div className="absolute inset-0 -z-10 bg-gradient-to-b from-background via-primary/10 to-background" />
+        {/* fundo unificado em <main>; sem overlay local */}
         <div className="mx-auto max-w-6xl">
           <div className="mx-auto max-w-2xl text-center">
             <span className="reveal inline-block rounded-full bg-primary/15 px-4 py-1.5 font-display text-xs font-bold uppercase tracking-[0.2em] text-primary ring-1 ring-primary/20">
