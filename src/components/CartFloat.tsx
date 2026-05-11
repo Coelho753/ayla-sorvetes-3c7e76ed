@@ -45,6 +45,7 @@ export function CartFloat() {
     if (user?.name) lines.push("", `*Cliente:* ${user.name}`);
     const addr = formatAddress();
     if (addr) lines.push(`*Endereço:* ${addr}`);
+    lines.push("", "_📱 Pedido feito pelo aplicativo Ayla Sorvetes_");
     return lines.join("\n");
   }
 

@@ -46,6 +46,9 @@ import popsicle3dGroselha from "@/assets/popsicle-3d-groselha.jpg";
 import popsicle3dChocolate from "@/assets/popsicle-3d-chocolate.jpg";
 import acai1L from "@/assets/acai-1l.webp";
 import acai5L from "@/assets/acai-5l.webp";
+import lifestyleFamily from "@/assets/lifestyle-family.jpg";
+import lifestyleScoops from "@/assets/lifestyle-scoops.jpg";
+import lifestyleAcai from "@/assets/lifestyle-acai.jpg";
 import Autoplay from "embla-carousel-autoplay";
 import { useRef } from "react";
 import {
@@ -296,6 +299,24 @@ function Index() {
         </div>
       </section>
 
+      {/* BANNER LIFESTYLE 1 */}
+      <section
+        className="lifestyle-banner"
+        style={{ backgroundImage: `url(${lifestyleScoops})` }}
+        aria-label="Sorvetes artesanais cremosos"
+      >
+        <div className="lifestyle-banner__content">
+          <div className="reveal max-w-2xl">
+            <p className="font-display text-xs font-bold uppercase tracking-[0.3em] text-sunny drop-shadow">
+              ✨ Feitos com amor
+            </p>
+            <h3 className="mt-3 font-display text-3xl font-bold leading-tight text-white drop-shadow-lg sm:text-5xl md:text-6xl">
+              Cremosidade que <span className="text-sunny">derrete</span> na boca
+            </h3>
+          </div>
+        </div>
+      </section>
+
       {/* COPOS 300ML */}
       <section id="copos" className="relative overflow-hidden px-6 py-24 md:py-32">
         <div className="absolute inset-0 -z-10 bg-gradient-to-b from-background via-secondary/10 to-background" />
@@ -337,6 +358,24 @@ function Index() {
         </div>
       </section>
 
+      {/* BANNER LIFESTYLE 2 */}
+      <section
+        className="lifestyle-banner"
+        style={{ backgroundImage: `url(${lifestyleFamily})` }}
+        aria-label="Família feliz com sorvete"
+      >
+        <div className="lifestyle-banner__content">
+          <div className="reveal max-w-2xl">
+            <p className="font-display text-xs font-bold uppercase tracking-[0.3em] text-sunny drop-shadow">
+              👨‍👩‍👧‍👦 Momentos em família
+            </p>
+            <h3 className="mt-3 font-display text-3xl font-bold leading-tight text-white drop-shadow-lg sm:text-5xl md:text-6xl">
+              O sabor que une <span className="text-sunny">todo mundo</span>
+            </h3>
+          </div>
+        </div>
+      </section>
+
       {/* PICOLÉS */}
       <section id="picoles" className="relative overflow-hidden px-6 py-24 md:py-32">
         <div className="absolute inset-0 -z-10 bg-gradient-to-b from-background via-primary/10 to-background" />
@@ -374,6 +413,24 @@ function Index() {
               <CarouselPrevious className="hidden md:flex -left-4 lg:-left-12 bg-card" />
               <CarouselNext className="hidden md:flex -right-4 lg:-right-12 bg-card" />
             </Carousel>
+          </div>
+        </div>
+      </section>
+
+      {/* BANNER LIFESTYLE 3 - AÇAÍ */}
+      <section
+        className="lifestyle-banner"
+        style={{ backgroundImage: `url(${lifestyleAcai})` }}
+        aria-label="Açaí premium"
+      >
+        <div className="lifestyle-banner__content">
+          <div className="reveal max-w-2xl">
+            <p className="font-display text-xs font-bold uppercase tracking-[0.3em] text-sunny drop-shadow">
+              💜 Açaí Premium
+            </p>
+            <h3 className="mt-3 font-display text-3xl font-bold leading-tight text-white drop-shadow-lg sm:text-5xl md:text-6xl">
+              Direto da <span className="text-sunny">Amazônia</span>
+            </h3>
           </div>
         </div>
       </section>
