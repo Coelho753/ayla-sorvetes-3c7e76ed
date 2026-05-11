@@ -64,6 +64,8 @@ import { ProductCard } from "@/components/ProductCard";
 import { WHATSAPP_LINK } from "@/lib/whatsapp";
 import { useReveal } from "@/hooks/use-reveal";
 import { useImagePreload } from "@/hooks/use-image-preload";
+import { fetchProducts, groupByCategory, imgOf, type ApiProduct } from "@/lib/products";
+import { useState } from "react";
 
 export const Route = createFileRoute("/")({
   component: Index,
