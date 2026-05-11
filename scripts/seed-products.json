@@ -1,0 +1,316 @@
+[
+  {
+    "name": "Limão Suíço",
+    "price": 35,
+    "category": "tub",
+    "size": "1,5L",
+    "active": true
+  },
+  {
+    "name": "Abacaxi ao Vinho",
+    "price": 35,
+    "category": "tub",
+    "size": "1,5L",
+    "active": true
+  },
+  {
+    "name": "Abacaxi",
+    "price": 35,
+    "category": "tub",
+    "size": "1,5L",
+    "active": true
+  },
+  {
+    "name": "Pistache",
+    "price": 35,
+    "category": "tub",
+    "size": "1,5L",
+    "active": true
+  },
+  {
+    "name": "Doce de Leite",
+    "price": 35,
+    "category": "tub",
+    "size": "1,5L",
+    "active": true
+  },
+  {
+    "name": "Napolitano",
+    "price": 35,
+    "category": "tub",
+    "size": "1,5L",
+    "active": true
+  },
+  {
+    "name": "Chocolate",
+    "price": 35,
+    "category": "tub",
+    "size": "1,5L",
+    "active": true
+  },
+  {
+    "name": "Morango",
+    "price": 35,
+    "category": "tub",
+    "size": "1,5L",
+    "active": true
+  },
+  {
+    "name": "Brigadeiro",
+    "price": 35,
+    "category": "tub",
+    "size": "1,5L",
+    "active": true
+  },
+  {
+    "name": "Coco",
+    "price": 35,
+    "category": "tub",
+    "size": "1,5L",
+    "active": true
+  },
+  {
+    "name": "Milho",
+    "price": 35,
+    "category": "tub",
+    "size": "1,5L",
+    "active": true
+  },
+  {
+    "name": "Iogurte Grego com Frutas Silvestres",
+    "price": 35,
+    "category": "tub",
+    "size": "1,5L",
+    "active": true
+  },
+  {
+    "name": "Flocos",
+    "price": 35,
+    "category": "tub",
+    "size": "1,5L",
+    "active": true
+  },
+  {
+    "name": "Ninho Trufado",
+    "price": 35,
+    "category": "tub",
+    "size": "1,5L",
+    "active": true
+  },
+  {
+    "name": "Ninho Trufado",
+    "description": "Cremoso leitinho com pedaços de trufa.",
+    "price": 12,
+    "category": "cup",
+    "size": "300ml",
+    "active": true
+  },
+  {
+    "name": "Brigadeiro",
+    "description": "Chocolate puro com granulado crocante.",
+    "price": 12,
+    "category": "cup",
+    "size": "300ml",
+    "active": true
+  },
+  {
+    "name": "Doce de Leite",
+    "description": "Caramelo cremoso que derrete na boca.",
+    "price": 12,
+    "category": "cup",
+    "size": "300ml",
+    "active": true
+  },
+  {
+    "name": "Limão Suíço",
+    "description": "Refrescante e cítrico, na medida certa.",
+    "price": 12,
+    "category": "cup",
+    "size": "300ml",
+    "active": true
+  },
+  {
+    "name": "Leite Condensado",
+    "description": "Doce, cremoso e irresistível.",
+    "price": 12,
+    "category": "cup",
+    "size": "300ml",
+    "active": true
+  },
+  {
+    "name": "Chocolate",
+    "description": "Chocolate intenso e cremoso.",
+    "price": 12,
+    "category": "cup",
+    "size": "300ml",
+    "active": true
+  },
+  {
+    "name": "Morango",
+    "description": "Morangos frescos em creme suave.",
+    "price": 12,
+    "category": "cup",
+    "size": "300ml",
+    "active": true
+  },
+  {
+    "name": "Milho",
+    "description": "Sabor caseiro e cremoso de milho verde.",
+    "price": 12,
+    "category": "cup",
+    "size": "300ml",
+    "active": true
+  },
+  {
+    "name": "Abacaxi ao Vinho",
+    "description": "Tropical com toque sofisticado.",
+    "price": 12,
+    "category": "cup",
+    "size": "300ml",
+    "active": true
+  },
+  {
+    "name": "Abacaxi",
+    "description": "Refrescante e tropical.",
+    "price": 12,
+    "category": "cup",
+    "size": "300ml",
+    "active": true
+  },
+  {
+    "name": "Choco Maltine",
+    "description": "Chocolate com crocância de maltine.",
+    "price": 12,
+    "category": "cup",
+    "size": "300ml",
+    "active": true
+  },
+  {
+    "name": "Flocos",
+    "description": "Cremoso com flocos crocantes de chocolate.",
+    "price": 7,
+    "category": "popsicle",
+    "size": "Picolé",
+    "active": true
+  },
+  {
+    "name": "Coco Branco",
+    "description": "Tropical e refrescante com coco fresco.",
+    "price": 7,
+    "category": "popsicle",
+    "size": "Picolé",
+    "active": true
+  },
+  {
+    "name": "Kiwi",
+    "description": "Refrescante com pedaços de kiwi natural.",
+    "price": 7,
+    "category": "popsicle",
+    "size": "Picolé",
+    "active": true
+  },
+  {
+    "name": "Torta de Limão",
+    "description": "Picolé com crocante de biscoito.",
+    "price": 7,
+    "category": "popsicle",
+    "size": "Picolé",
+    "active": true
+  },
+  {
+    "name": "Tentação",
+    "description": "Picolé cremoso de chocolate com cobertura irresistível.",
+    "price": 7,
+    "category": "popsicle",
+    "size": "Picolé",
+    "active": true
+  },
+  {
+    "name": "Leitinho",
+    "description": "Picolé cremoso sabor leite condensado.",
+    "price": 7,
+    "category": "popsicle",
+    "size": "Picolé",
+    "active": true
+  },
+  {
+    "name": "Manga",
+    "description": "Tropical e refrescante com sabor intenso de manga.",
+    "price": 7,
+    "category": "popsicle",
+    "size": "Picolé",
+    "active": true
+  },
+  {
+    "name": "Skimo Coco",
+    "description": "Coco com cobertura crocante de chocolate.",
+    "price": 7,
+    "category": "popsicle",
+    "size": "Picolé",
+    "active": true
+  },
+  {
+    "name": "Maracujá",
+    "description": "Azedinho na medida certa, super refrescante.",
+    "price": 7,
+    "category": "popsicle",
+    "size": "Picolé",
+    "active": true
+  },
+  {
+    "name": "Chiclete",
+    "description": "Sabor divertido de chiclete colorido.",
+    "price": 7,
+    "category": "popsicle",
+    "size": "Picolé",
+    "active": true
+  },
+  {
+    "name": "Groselha",
+    "description": "Sabor clássico e marcante de groselha.",
+    "price": 7,
+    "category": "popsicle",
+    "size": "Picolé",
+    "active": true
+  },
+  {
+    "name": "Chocolate",
+    "description": "Chocolate intenso e cremoso em picolé.",
+    "price": 7,
+    "category": "popsicle",
+    "size": "Picolé",
+    "active": true
+  },
+  {
+    "name": "Açaí Premium 1L",
+    "description": "Pote com guaraná e frutos vermelhos.",
+    "price": 45,
+    "category": "acai",
+    "size": "1L",
+    "active": true
+  },
+  {
+    "name": "Açaí Premium 5L",
+    "description": "Caixa família para festas e eventos.",
+    "price": 180,
+    "category": "acai",
+    "size": "5L",
+    "active": true
+  },
+  {
+    "name": "Copo de Açaí",
+    "description": "Açaí cremoso individual com toque tropical.",
+    "price": 15,
+    "category": "acai",
+    "size": "300ml",
+    "active": true
+  },
+  {
+    "name": "Picolé de Açaí",
+    "description": "Intenso e cremoso, direto da Amazônia.",
+    "price": 8,
+    "category": "acai",
+    "size": "Picolé",
+    "active": true
+  }
+]
