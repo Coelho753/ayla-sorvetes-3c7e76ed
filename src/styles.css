@@ -309,3 +309,47 @@
   background-image: radial-gradient(oklch(1 0 0 / 0.18) 1.5px, transparent 1.5px);
   background-size: 22px 22px;
 }
+
+/* Lifestyle parallax banner */
+.lifestyle-banner {
+  position: relative;
+  height: 360px;
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  overflow: hidden;
+  isolation: isolate;
+}
+@media (max-width: 768px) {
+  .lifestyle-banner { background-attachment: scroll; height: 280px; }
+}
+.lifestyle-banner::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, oklch(0.4 0.25 305 / 0.55), oklch(0.6 0.25 350 / 0.4));
+  z-index: 1;
+}
+.lifestyle-banner__content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  text-align: center;
+  padding: 0 1.5rem;
+}
+
+/* Marquee */
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+.marquee-track {
+  display: flex;
+  width: max-content;
+  animation: marquee 30s linear infinite;
+  gap: 3rem;
+}
+
