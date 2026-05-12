@@ -86,20 +86,20 @@ export function ProductCard({
           >
             <button
               type="button"
-              aria-label="Diminuir"
+              aria-label={`Diminuir quantidade de ${name}`}
               onClick={() => setQty((q) => Math.max(1, q - 1))}
-              className="flex h-7 w-7 items-center justify-center rounded-full transition-colors hover:bg-background/40"
+              className="flex h-9 w-9 items-center justify-center rounded-full transition-colors hover:bg-background/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             >
-              <Minus className="h-3.5 w-3.5" />
+              <Minus className="h-4 w-4" aria-hidden="true" />
             </button>
-            <span className="w-6 text-center text-sm font-bold tabular-nums">{qty}</span>
+            <span className="w-7 text-center text-sm font-bold tabular-nums" aria-live="polite">{qty}</span>
             <button
               type="button"
-              aria-label="Aumentar"
+              aria-label={`Aumentar quantidade de ${name}`}
               onClick={() => setQty((q) => Math.min(99, q + 1))}
-              className="flex h-7 w-7 items-center justify-center rounded-full transition-colors hover:bg-background/40"
+              className="flex h-9 w-9 items-center justify-center rounded-full transition-colors hover:bg-background/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             >
-              <Plus className="h-3.5 w-3.5" />
+              <Plus className="h-4 w-4" aria-hidden="true" />
             </button>
           </div>
         </div>
@@ -107,9 +107,10 @@ export function ProductCard({
         <button
           type="button"
           onClick={handleAdd}
-          className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary px-4 py-2.5 font-display text-sm font-bold text-primary-foreground shadow-button transition-transform hover:scale-[1.02] active:scale-[0.98]"
+          aria-label={`Adicionar ${qty} ${name} ao carrinho`}
+          className="mt-4 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-primary px-4 py-3 font-display text-sm font-bold text-primary-foreground shadow-button transition-transform hover:scale-[1.02] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
         >
-          <ShoppingCart className="h-4 w-4" />
+          <ShoppingCart className="h-4 w-4" aria-hidden="true" />
           Adicionar
         </button>
       </div>
