@@ -44,30 +44,30 @@
 :root {
   --radius: 1.25rem;
 
-  /* Brand — paleta ainda mais vibrante e candy */
-  --background: oklch(0.97 0.04 330);
-  --foreground: oklch(0.2 0.1 305);
+  /* Brand — Açaí Noturno: dark roxo profundo + laranja vibrante */
+  --background: oklch(0.13 0.05 295);
+  --foreground: oklch(0.98 0.01 320);
 
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.2 0.1 305);
+  --card: oklch(0.18 0.07 295);
+  --card-foreground: oklch(0.98 0.01 320);
 
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.2 0.1 305);
+  --popover: oklch(0.18 0.07 295);
+  --popover-foreground: oklch(0.98 0.01 320);
 
-  /* Roxo principal — mais profundo e rico */
-  --primary: oklch(0.58 0.28 305);
-  --primary-foreground: oklch(0.99 0.005 320);
+  /* Laranja sorvete — primary épico */
+  --primary: oklch(0.72 0.21 45);
+  --primary-foreground: oklch(0.13 0.05 295);
 
-  /* Rosa bubblegum — mais vivo */
-  --secondary: oklch(0.74 0.26 350);
-  --secondary-foreground: oklch(0.18 0.07 305);
+  /* Roxo açaí — secondary */
+  --secondary: oklch(0.55 0.22 305);
+  --secondary-foreground: oklch(0.98 0.01 320);
 
-  --muted: oklch(0.95 0.04 330);
-  --muted-foreground: oklch(0.45 0.08 305);
+  --muted: oklch(0.22 0.06 295);
+  --muted-foreground: oklch(0.72 0.04 310);
 
-  /* Accent rosa-claro */
-  --accent: oklch(0.84 0.18 350);
-  --accent-foreground: oklch(0.22 0.1 305);
+  /* Accent roxo claro */
+  --accent: oklch(0.7 0.2 305);
+  --accent-foreground: oklch(0.13 0.05 295);
 
   /* Amarelo doce — mais quente */
   --sunny: oklch(0.9 0.21 92);
