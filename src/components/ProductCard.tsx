@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Minus, Plus, ShoppingCart } from "lucide-react";
+import { useMemo, useState } from "react";
+import { Minus, Plus, Plus as PlusIcon, Sparkles, Star } from "lucide-react";
 import { toast } from "sonner";
 import { useCart, formatBRL } from "@/contexts/CartContext";
 
@@ -10,9 +10,20 @@ type ProductCardProps = {
   img: string;
   badge?: string;
   desc?: string;
-  /** Variante visual: padrão (claro) ou açaí (sobre fundo escuro/roxo) */
+  /** Variante visual: padrão (escuro) ou açaí (roxo intenso) */
   variant?: "default" | "acai";
+  /** Marca exibida em cima do nome (ex: "AYLA", "AÇAÍ") */
+  brand?: string;
 };
+
+// Hash determinístico p/ rating consistente entre renders
+function pseudoRating(id: string) {
+  let h = 0;
+  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
+  const rating = 4.5 + ((h % 50) / 100); // 4.50 - 4.99
+  const reviews = 28 + (h % 130); // 28 - 157
+  return { rating: Math.round(rating * 10) / 10, reviews };
+}
 
 export function ProductCard({
   id,
@@ -22,26 +33,29 @@ export function ProductCard({
   badge,
   desc,
   variant = "default",
+  brand,
 }: ProductCardProps) {
   const { add } = useCart();
   const [qty, setQty] = useState(1);
+  const isAcai = variant === "acai";
+  const { rating, reviews } = useMemo(() => pseudoRating(id), [id]);
+  const brandLabel = brand ?? (isAcai ? "AÇAÍ" : "AYLA");
 
   function handleAdd() {
     add({ id, name, price, image: img }, qty);
     toast.success(`${qty}x ${name} no carrinho!`);
   }
 
-  const isAcai = variant === "acai";
-
   return (
     <article
-      className={`group relative flex h-full flex-col overflow-hidden rounded-3xl shadow-button transition-all hover:-translate-y-1 hover:shadow-glow ${
+      className={`group relative flex h-full flex-col overflow-hidden rounded-3xl ring-1 backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:shadow-glow ${
         isAcai
-          ? "bg-white/10 ring-1 ring-white/25 backdrop-blur-md"
-          : "bg-card ring-1 ring-border"
+          ? "bg-secondary/15 ring-secondary/30"
+          : "bg-card/80 ring-white/10"
       }`}
     >
-      <div className="relative aspect-square overflow-hidden bg-muted/40">
+      {/* IMAGEM */}
+      <div className="relative aspect-square overflow-hidden">
         <img
           src={img}
           alt={name}
@@ -49,68 +63,89 @@ export function ProductCard({
           decoding="async"
           width={600}
           height={600}
-          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+          className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
         />
+        {/* Rating chip topo-esquerda */}
+        <span className="absolute left-3 top-3 z-10 inline-flex items-center gap-1 rounded-full bg-black/70 px-2.5 py-1 text-xs font-bold text-white backdrop-blur-md ring-1 ring-white/15">
+          <Star className="h-3 w-3 fill-primary text-primary" aria-hidden="true" />
+          {rating.toFixed(1)}
+        </span>
+
+        {/* Botão "+" rápido topo-direita */}
+        <button
+          type="button"
+          onClick={handleAdd}
+          aria-label={`Adicionar ${name} rapidamente`}
+          className="absolute right-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-white/15 text-white ring-1 ring-white/30 backdrop-blur-md transition-all hover:scale-110 hover:bg-primary hover:text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+        >
+          <PlusIcon className="h-4 w-4" aria-hidden="true" />
+        </button>
+
+        {/* Badge TOP / custom */}
         {badge && (
-          <span className="absolute top-3 right-3 rounded-full bg-primary px-3 py-1 font-display text-xs font-bold uppercase tracking-wide text-primary-foreground shadow-md">
+          <span className="absolute bottom-3 left-3 z-10 inline-flex items-center gap-1 rounded-full bg-primary px-3 py-1 font-display text-[11px] font-bold uppercase tracking-wider text-primary-foreground shadow-button">
+            <Sparkles className="h-3 w-3" aria-hidden="true" />
             {badge}
           </span>
         )}
       </div>
 
-      <div className={`flex flex-1 flex-col p-4 ${isAcai ? "text-white" : ""}`}>
-        <h3 className="font-display text-lg font-bold leading-tight sm:text-xl">{name}</h3>
+      {/* CONTEÚDO */}
+      <div className="flex flex-1 flex-col p-4 text-white">
+        <span className={`font-display text-[11px] font-bold uppercase tracking-[0.18em] ${isAcai ? "text-secondary" : "text-primary"}`}>
+          {brandLabel}
+        </span>
+        <h3 className="mt-1 font-display text-base font-bold leading-tight sm:text-lg">{name}</h3>
         {desc && (
-          <p
-            className={`mt-1 line-clamp-2 text-sm leading-snug ${
-              isAcai ? "text-white/80" : "text-muted-foreground"
-            }`}
-          >
-            {desc}
-          </p>
+          <p className="mt-1.5 line-clamp-2 text-xs leading-snug text-white/65">{desc}</p>
         )}
 
-        <div className="mt-3 flex items-center justify-between">
-          <span
-            className={`font-display text-2xl font-extrabold ${
-              isAcai ? "text-sunny" : "bg-gradient-candy bg-clip-text text-transparent"
-            }`}
-          >
-            {formatBRL(price)}
-          </span>
+        {/* Stars + reviews */}
+        <div className="mt-3 flex items-center gap-1.5">
+          <div className="flex" aria-label={`Avaliação ${rating} de 5`}>
+            {Array.from({ length: 5 }).map((_, i) => (
+              <Star
+                key={i}
+                className={`h-3.5 w-3.5 ${i < Math.round(rating) ? "fill-primary text-primary" : "text-white/20"}`}
+                aria-hidden="true"
+              />
+            ))}
+          </div>
+          <span className="text-xs text-white/50">({reviews})</span>
+        </div>
 
-          <div
-            className={`flex items-center gap-1 rounded-full p-1 ${
-              isAcai ? "bg-white/15 ring-1 ring-white/25" : "bg-muted ring-1 ring-border"
-            }`}
-          >
+        {/* Preço + qty */}
+        <div className="mt-3 flex items-center justify-between">
+          <span className="font-display text-xl font-extrabold text-white">{formatBRL(price)}</span>
+          <div className="flex items-center gap-1 rounded-full bg-white/10 p-1 ring-1 ring-white/15">
             <button
               type="button"
               aria-label={`Diminuir quantidade de ${name}`}
               onClick={() => setQty((q) => Math.max(1, q - 1))}
-              className="flex h-9 w-9 items-center justify-center rounded-full transition-colors hover:bg-background/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              className="flex h-8 w-8 items-center justify-center rounded-full transition-colors hover:bg-white/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             >
-              <Minus className="h-4 w-4" aria-hidden="true" />
+              <Minus className="h-3.5 w-3.5" aria-hidden="true" />
             </button>
-            <span className="w-7 text-center text-sm font-bold tabular-nums" aria-live="polite">{qty}</span>
+            <span className="w-6 text-center text-sm font-bold tabular-nums" aria-live="polite">{qty}</span>
             <button
               type="button"
               aria-label={`Aumentar quantidade de ${name}`}
               onClick={() => setQty((q) => Math.min(99, q + 1))}
-              className="flex h-9 w-9 items-center justify-center rounded-full transition-colors hover:bg-background/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              className="flex h-8 w-8 items-center justify-center rounded-full transition-colors hover:bg-white/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             >
-              <Plus className="h-4 w-4" aria-hidden="true" />
+              <Plus className="h-3.5 w-3.5" aria-hidden="true" />
             </button>
           </div>
         </div>
 
+        {/* Botão ADICIONAR principal — outline estilo Johnny */}
         <button
           type="button"
           onClick={handleAdd}
           aria-label={`Adicionar ${qty} ${name} ao carrinho`}
-          className="mt-4 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-primary px-4 py-3 font-display text-sm font-bold text-primary-foreground shadow-button transition-transform hover:scale-[1.02] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+          className="mt-4 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full border border-white/30 bg-transparent px-4 py-3 font-display text-xs font-bold uppercase tracking-[0.2em] text-white transition-all hover:border-primary hover:bg-primary hover:text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
         >
-          <ShoppingCart className="h-4 w-4" aria-hidden="true" />
+          <PlusIcon className="h-4 w-4" aria-hidden="true" />
           Adicionar
         </button>
       </div>

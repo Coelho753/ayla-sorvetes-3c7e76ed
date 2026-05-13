@@ -44,30 +44,30 @@
 :root {
   --radius: 1.25rem;
 
-  /* Brand — paleta ainda mais vibrante e candy */
-  --background: oklch(0.97 0.04 330);
-  --foreground: oklch(0.2 0.1 305);
+  /* Brand — Açaí Noturno: dark roxo profundo + laranja vibrante */
+  --background: oklch(0.13 0.05 295);
+  --foreground: oklch(0.98 0.01 320);
 
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.2 0.1 305);
+  --card: oklch(0.18 0.07 295);
+  --card-foreground: oklch(0.98 0.01 320);
 
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.2 0.1 305);
+  --popover: oklch(0.18 0.07 295);
+  --popover-foreground: oklch(0.98 0.01 320);
 
-  /* Roxo principal — mais profundo e rico */
-  --primary: oklch(0.58 0.28 305);
-  --primary-foreground: oklch(0.99 0.005 320);
+  /* Laranja sorvete — primary épico */
+  --primary: oklch(0.72 0.21 45);
+  --primary-foreground: oklch(0.13 0.05 295);
 
-  /* Rosa bubblegum — mais vivo */
-  --secondary: oklch(0.74 0.26 350);
-  --secondary-foreground: oklch(0.18 0.07 305);
+  /* Roxo açaí — secondary */
+  --secondary: oklch(0.55 0.22 305);
+  --secondary-foreground: oklch(0.98 0.01 320);
 
-  --muted: oklch(0.95 0.04 330);
-  --muted-foreground: oklch(0.45 0.08 305);
+  --muted: oklch(0.22 0.06 295);
+  --muted-foreground: oklch(0.72 0.04 310);
 
-  /* Accent rosa-claro */
-  --accent: oklch(0.84 0.18 350);
-  --accent-foreground: oklch(0.22 0.1 305);
+  /* Accent roxo claro */
+  --accent: oklch(0.7 0.2 305);
+  --accent-foreground: oklch(0.13 0.05 295);
 
   /* Amarelo doce — mais quente */
   --sunny: oklch(0.9 0.21 92);
@@ -92,30 +92,29 @@
   --destructive: oklch(0.65 0.24 25);
   --destructive-foreground: oklch(0.99 0 0);
 
-  --border: oklch(0.9 0.05 320);
-  --input: oklch(0.92 0.04 320);
-  --ring: oklch(0.62 0.24 305);
+  --border: oklch(0.28 0.07 295);
+  --input: oklch(0.24 0.06 295);
+  --ring: oklch(0.72 0.21 45);
 
-  /* Gradients — mais ricos e contrastantes */
-  --gradient-hero: linear-gradient(135deg, oklch(0.5 0.28 300) 0%, oklch(0.65 0.27 340) 35%, oklch(0.78 0.22 25) 70%, oklch(0.85 0.2 80) 100%);
-  --gradient-candy: linear-gradient(135deg, oklch(0.74 0.26 350), oklch(0.9 0.21 92));
-  --gradient-purple: linear-gradient(135deg, oklch(0.55 0.28 300), oklch(0.7 0.26 340));
-  --gradient-cta: linear-gradient(135deg, oklch(0.7 0.28 8), oklch(0.58 0.28 305));
-  --gradient-rainbow: linear-gradient(90deg, oklch(0.7 0.28 8), oklch(0.78 0.22 60), oklch(0.85 0.2 130), oklch(0.75 0.18 220), oklch(0.6 0.28 305));
-  --gradient-card: linear-gradient(180deg, transparent 55%, oklch(0.2 0.08 305 / 0.35) 80%, oklch(0.15 0.06 305 / 0.65) 100%);
-  --gradient-card-acai: linear-gradient(180deg, transparent 55%, oklch(0.28 0.18 305 / 0.4) 80%, oklch(0.2 0.18 305 / 0.7) 100%);
+  /* Gradients — épicos noturnos */
+  --gradient-hero: linear-gradient(135deg, oklch(0.13 0.05 295) 0%, oklch(0.22 0.12 305) 45%, oklch(0.45 0.22 30) 100%);
+  --gradient-candy: linear-gradient(135deg, oklch(0.78 0.22 50), oklch(0.72 0.21 45));
+  --gradient-purple: linear-gradient(135deg, oklch(0.4 0.22 305), oklch(0.6 0.24 320));
+  --gradient-cta: linear-gradient(135deg, oklch(0.72 0.21 45), oklch(0.62 0.24 25));
+  --gradient-rainbow: linear-gradient(90deg, oklch(0.72 0.21 45), oklch(0.78 0.22 60), oklch(0.6 0.26 305), oklch(0.55 0.22 280));
+  --gradient-card: linear-gradient(180deg, transparent 45%, oklch(0.08 0.04 295 / 0.7) 78%, oklch(0.06 0.03 295 / 0.95) 100%);
+  --gradient-card-acai: linear-gradient(180deg, transparent 45%, oklch(0.18 0.18 305 / 0.7) 78%, oklch(0.1 0.15 305 / 0.95) 100%);
   --bg-confetti:
-    radial-gradient(circle at 8% 12%, oklch(0.85 0.2 350 / 0.35) 0 8px, transparent 9px),
-    radial-gradient(circle at 92% 18%, oklch(0.9 0.21 92 / 0.32) 0 6px, transparent 7px),
-    radial-gradient(circle at 22% 78%, oklch(0.78 0.22 220 / 0.3) 0 7px, transparent 8px),
-    radial-gradient(circle at 78% 88%, oklch(0.7 0.28 305 / 0.28) 0 7px, transparent 8px),
-    radial-gradient(circle at 50% 45%, oklch(0.85 0.16 165 / 0.25) 0 5px, transparent 6px);
+    radial-gradient(circle at 8% 12%, oklch(0.72 0.21 45 / 0.18) 0 6px, transparent 7px),
+    radial-gradient(circle at 92% 18%, oklch(0.6 0.26 305 / 0.18) 0 5px, transparent 6px),
+    radial-gradient(circle at 22% 78%, oklch(0.78 0.22 50 / 0.16) 0 6px, transparent 7px),
+    radial-gradient(circle at 78% 88%, oklch(0.55 0.22 280 / 0.18) 0 6px, transparent 7px);
 
   /* Shadows / Glow */
-  --shadow-glow: 0 0 60px oklch(0.74 0.26 350 / 0.6), 0 0 120px oklch(0.58 0.28 305 / 0.45);
-  --shadow-soft: 0 20px 50px -15px oklch(0.5 0.28 300 / 0.45);
-  --shadow-card: 0 14px 40px -12px oklch(0.5 0.28 300 / 0.35);
-  --shadow-button: 0 12px 32px -8px oklch(0.7 0.28 8 / 0.65);
+  --shadow-glow: 0 0 60px oklch(0.72 0.21 45 / 0.55), 0 0 120px oklch(0.55 0.22 305 / 0.4);
+  --shadow-soft: 0 20px 50px -15px oklch(0.05 0.02 295 / 0.8);
+  --shadow-card: 0 14px 40px -12px oklch(0.05 0.02 295 / 0.7);
+  --shadow-button: 0 12px 32px -8px oklch(0.72 0.21 45 / 0.55);
 }
 
 @layer base {
@@ -217,16 +216,15 @@
 .bg-gradient-card { background: var(--gradient-card); }
 .bg-gradient-card-acai { background: var(--gradient-card-acai); }
 
-/* Página inteira como uma única tela contínua e colorida */
+/* Página inteira como uma única tela contínua noturna */
 .bg-gradient-page {
   background:
-    radial-gradient(ellipse at 10% 5%,  oklch(0.85 0.2 350 / 0.55) 0%, transparent 45%),
-    radial-gradient(ellipse at 90% 18%, oklch(0.88 0.2 92  / 0.55) 0%, transparent 45%),
-    radial-gradient(ellipse at 5%  40%, oklch(0.82 0.18 220 / 0.5)  0%, transparent 50%),
-    radial-gradient(ellipse at 95% 55%, oklch(0.75 0.26 8   / 0.5)  0%, transparent 50%),
-    radial-gradient(ellipse at 15% 78%, oklch(0.78 0.22 165 / 0.5)  0%, transparent 50%),
-    radial-gradient(ellipse at 85% 92%, oklch(0.7  0.28 305 / 0.55) 0%, transparent 50%),
-    linear-gradient(180deg, oklch(0.97 0.04 330) 0%, oklch(0.95 0.06 320) 50%, oklch(0.97 0.04 350) 100%);
+    radial-gradient(ellipse at 10% 5%,  oklch(0.4 0.22 305 / 0.45) 0%, transparent 50%),
+    radial-gradient(ellipse at 90% 18%, oklch(0.55 0.24 30 / 0.35) 0%, transparent 50%),
+    radial-gradient(ellipse at 5%  55%, oklch(0.45 0.22 280 / 0.35) 0%, transparent 55%),
+    radial-gradient(ellipse at 95% 70%, oklch(0.62 0.24 25 / 0.3)  0%, transparent 50%),
+    radial-gradient(ellipse at 50% 95%, oklch(0.5 0.24 305 / 0.4)  0%, transparent 60%),
+    linear-gradient(180deg, oklch(0.1 0.04 295) 0%, oklch(0.14 0.06 300) 50%, oklch(0.11 0.05 295) 100%);
   background-attachment: fixed;
 }
 
