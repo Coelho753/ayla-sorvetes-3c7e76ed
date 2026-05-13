@@ -298,6 +298,9 @@ function Index() {
             <p className="reveal mx-auto mt-5 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">
               Sabores incríveis em potes generosos de 1,5 litro. Perfeito para compartilhar (ou não 😋).
             </p>
+            <Link to="/cardapio" search={{ cat: "tub" }} className="reveal mt-5 inline-flex items-center gap-2 rounded-full bg-secondary/15 px-5 py-2 text-sm font-semibold text-secondary ring-1 ring-secondary/30 transition-colors hover:bg-secondary/25">
+              Ver todos os potes →
+            </Link>
           </div>
 
           <div className="reveal mt-14">
@@ -361,6 +364,9 @@ function Index() {
             <p className="reveal mx-auto mt-5 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">
               Porção perfeita pra matar a vontade. Cremoso, gelado e do seu jeito.
             </p>
+            <Link to="/cardapio" search={{ cat: "cup" }} className="reveal mt-5 inline-flex items-center gap-2 rounded-full bg-secondary/15 px-5 py-2 text-sm font-semibold text-secondary ring-1 ring-secondary/30 transition-colors hover:bg-secondary/25">
+              Ver todos os copos →
+            </Link>
           </div>
           <div className="reveal mt-14">
             <Carousel opts={{ align: "start", loop: true }} plugins={[autoplayCups.current]} className="mx-auto w-full max-w-5xl">
@@ -420,6 +426,9 @@ function Index() {
             <p className="reveal mx-auto mt-5 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">
               Picolés artesanais com sabores intensos e ingredientes selecionados.
             </p>
+            <Link to="/cardapio" search={{ cat: "popsicle" }} className="reveal mt-5 inline-flex items-center gap-2 rounded-full bg-primary/15 px-5 py-2 text-sm font-semibold text-primary ring-1 ring-primary/30 transition-colors hover:bg-primary/25">
+              Ver todos os picolés →
+            </Link>
           </div>
           <div className="reveal mt-14">
             <Carousel opts={{ align: "start", loop: true }} plugins={[autoplayPops.current]} className="mx-auto w-full max-w-5xl">
@@ -480,6 +489,9 @@ function Index() {
             <p className="reveal mx-auto mt-4 max-w-2xl text-base text-white/90 sm:text-lg">
               Cremoso, gelado e irresistível. Do bowl artesanal ao pote família — o açaí mais querido da sua região.
             </p>
+            <Link to="/cardapio" search={{ cat: "acai" }} className="reveal mt-5 inline-flex items-center gap-2 rounded-full bg-white/15 px-5 py-2 text-sm font-semibold text-white ring-1 ring-white/30 backdrop-blur transition-colors hover:bg-white/25">
+              Ver todos os açaís →
+            </Link>
           </div>
           <div className="reveal mt-14">
             <Carousel opts={{ align: "start", loop: true }} plugins={[autoplayAcai.current]} className="mx-auto w-full max-w-5xl">
