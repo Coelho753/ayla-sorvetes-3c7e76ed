@@ -1,110 +1,147 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { createFileRoute, Link, useSearch } from "@tanstack/react-router";
+import { useEffect, useMemo, useState } from "react";
 import { Loader2, Plus } from "lucide-react";
 import { toast } from "sonner";
-import { api, extractApiError } from "@/lib/api";
 import { useCart, formatBRL } from "@/contexts/CartContext";
-import { useAuth } from "@/contexts/AuthContext";
+import { fetchProducts, groupByCategory, imgOf, type ApiProduct } from "@/lib/products";
+import { tubs, cups, popsicles, acaiProducts, CATEGORY_LABELS, type CategoryKey } from "@/lib/catalog";
+
+type CatTab = CategoryKey | "all";
 
 export const Route = createFileRoute("/cardapio")({
-  head: () => ({ meta: [{ title: "Cardápio — Ayla Sorvetes" }, { name: "description", content: "Veja e peça nossos sabores online." }] }),
+  head: () => ({ meta: [
+    { title: "Cardápio — Ayla Sorvetes" },
+    { name: "description", content: "Veja todos os sabores: potes, copos, picolés e açaí. Peça pelo WhatsApp." },
+  ] }),
+  validateSearch: (s: Record<string, unknown>): { cat?: CatTab } => {
+    const c = s.cat as string | undefined;
+    if (c && ["all", "tub", "cup", "popsicle", "acai"].includes(c)) return { cat: c as CatTab };
+    return {};
+  },
   component: CardapioPage,
 });
 
-type Product = {
-  id: string | number;
-  name: string;
-  price: number;
-  description?: string;
-  image?: string;
-  imageUrl?: string;
-  category?: string;
-};
+type Item = { id: string; name: string; price: number; image?: string; description?: string; category: CategoryKey; badge?: string };
+
+function buildLocal(): Item[] {
+  return [
+    ...tubs.map((t) => ({ id: `local-tub-${t.name}`, name: t.name, price: t.price, image: t.img, category: "tub" as const, badge: "1,5L" })),
+    ...cups.map((c) => ({ id: `local-cup-${c.name}`, name: c.name, price: c.price, image: c.img, description: c.desc, category: "cup" as const, badge: "300ml" })),
+    ...popsicles.map((p) => ({ id: `local-pop-${p.name}`, name: p.name, price: p.price, image: p.img, description: p.desc, category: "popsicle" as const, badge: "Picolé" })),
+    ...acaiProducts.map((a) => ({ id: `local-acai-${a.name}`, name: a.name, price: a.price, image: a.img, description: a.desc, category: "acai" as const, badge: a.size })),
+  ];
+}
+
+function fromRemote(list: ApiProduct[]): Item[] {
+  const grouped = groupByCategory(list);
+  const out: Item[] = [];
+  (["tub", "cup", "popsicle", "acai"] as CategoryKey[]).forEach((cat) => {
+    grouped[cat].forEach((p) => out.push({
+      id: String(p.id),
+      name: p.name,
+      price: Number(p.price) || 0,
+      image: imgOf(p),
+      description: p.description,
+      category: cat,
+      badge: p.size,
+    }));
+  });
+  return out;
+}
 
 function CardapioPage() {
-  const [products, setProducts] = useState<Product[] | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [needsAuth, setNeedsAuth] = useState(false);
+  const search = useSearch({ from: "/cardapio" });
+  const [tab, setTab] = useState<CatTab>(search.cat ?? "all");
+  const [items, setItems] = useState<Item[]>(() => buildLocal());
+  const [loading, setLoading] = useState(true);
   const { add } = useCart();
-  const { isAuthenticated, loading: authLoading } = useAuth();
+
+  useEffect(() => { if (search.cat) setTab(search.cat); }, [search.cat]);
 
   useEffect(() => {
-    if (authLoading) return;
     let alive = true;
-    (async () => {
-      try {
-        const { data } = await api.get<Product[] | { data: Product[] }>("/products");
-        const list = Array.isArray(data) ? data : (data as { data: Product[] }).data ?? [];
-        if (alive) setProducts(list);
-      } catch (err) {
-        if (!alive) return;
-        const status = (err as { response?: { status?: number } })?.response?.status;
-        if (status === 401) setNeedsAuth(true);
-        else setError(extractApiError(err, "Não foi possível carregar os produtos."));
-      }
-    })();
+    fetchProducts().then((list) => {
+      if (!alive) return;
+      if (list && list.length > 0) setItems(fromRemote(list));
+      setLoading(false);
+    });
     return () => { alive = false; };
-  }, [authLoading, isAuthenticated]);
+  }, []);
+
+  const filtered = useMemo(() => tab === "all" ? items : items.filter((i) => i.category === tab), [items, tab]);
+
+  const tabs: { key: CatTab; label: string }[] = [
+    { key: "all", label: "Todos" },
+    { key: "tub", label: CATEGORY_LABELS.tub },
+    { key: "cup", label: CATEGORY_LABELS.cup },
+    { key: "popsicle", label: CATEGORY_LABELS.popsicle },
+    { key: "acai", label: CATEGORY_LABELS.acai },
+  ];
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-10">
-      <header className="mb-8 text-center">
+      <header className="mb-6 text-center">
         <h1 className="font-display text-4xl font-bold">Cardápio</h1>
         <p className="mt-2 text-muted-foreground">Escolha seus favoritos e peça pelo WhatsApp.</p>
       </header>
 
-      {needsAuth && (
-        <div className="rounded-2xl border border-border bg-card p-8 text-center">
-          <p className="font-display text-lg font-semibold">Faça login para ver o cardápio</p>
-          <p className="mt-1 text-sm text-muted-foreground">Nosso catálogo é exclusivo para clientes cadastrados.</p>
-          <div className="mt-4 flex items-center justify-center gap-3">
-            <Link to="/login" className="rounded-full bg-primary px-5 py-2 font-semibold text-primary-foreground hover:opacity-90">Entrar</Link>
-            <Link to="/cadastro" className="rounded-full border border-border px-5 py-2 font-semibold hover:bg-muted">Cadastrar</Link>
-          </div>
+      <nav aria-label="Categorias" className="sticky top-16 z-20 -mx-4 mb-6 overflow-x-auto bg-background/85 px-4 py-2 backdrop-blur">
+        <div className="mx-auto flex max-w-3xl justify-start gap-2 sm:justify-center">
+          {tabs.map((t) => (
+            <button
+              key={t.key}
+              onClick={() => setTab(t.key)}
+              aria-pressed={tab === t.key}
+              className={`min-h-10 whitespace-nowrap rounded-full px-4 py-2 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${tab === t.key ? "bg-primary text-primary-foreground shadow" : "bg-muted text-foreground hover:bg-muted/70"}`}
+            >
+              {t.label}
+            </button>
+          ))}
         </div>
-      )}
+      </nav>
 
-      {error && !needsAuth && (
-        <div className="rounded-xl border border-destructive/40 bg-destructive/5 p-4 text-center text-destructive">{error}</div>
-      )}
-
-      {!products && !error && !needsAuth && (
+      {loading && items.length === 0 && (
         <div className="flex justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
       )}
 
-      {products && products.length === 0 && (
-        <p className="text-center text-muted-foreground">Nenhum produto disponível no momento.</p>
+      {filtered.length === 0 && !loading && (
+        <p className="py-16 text-center text-muted-foreground">Nenhum produto nesta categoria.</p>
       )}
 
-      {products && products.length > 0 && (
+      {filtered.length > 0 && (
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {products.map((p) => {
-            const img = p.image ?? p.imageUrl;
-            return (
-              <article key={p.id} className="group flex flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-shadow hover:shadow-lg">
-                {img && (
-                  <div className="aspect-square overflow-hidden bg-muted">
-                    <img src={img} alt={p.name} className="h-full w-full object-cover transition-transform group-hover:scale-105" />
-                  </div>
-                )}
-                <div className="flex flex-1 flex-col p-4">
-                  <h3 className="font-display text-lg font-bold leading-tight">{p.name}</h3>
-                  {p.description && <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{p.description}</p>}
-                  <div className="mt-auto flex items-center justify-between pt-4">
-                    <span className="font-display text-xl font-bold text-primary">{formatBRL(Number(p.price) || 0)}</span>
-                    <button
-                      onClick={() => { add({ id: p.id, name: p.name, price: Number(p.price) || 0, image: img }); toast.success(`${p.name} adicionado!`); }}
-                      className="inline-flex items-center gap-1 rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90"
-                    >
-                      <Plus className="h-4 w-4" /> Adicionar
-                    </button>
-                  </div>
+          {filtered.map((p) => (
+            <article key={p.id} className="group flex flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-shadow hover:shadow-lg">
+              {p.image && (
+                <div className="aspect-square overflow-hidden bg-muted">
+                  <img src={p.image} alt={p.name} loading="lazy" decoding="async" className="h-full w-full object-cover transition-transform group-hover:scale-105" />
                 </div>
-              </article>
-            );
-          })}
+              )}
+              <div className="flex flex-1 flex-col p-4">
+                <div className="flex items-start justify-between gap-2">
+                  <h3 className="font-display text-lg font-bold leading-tight">{p.name}</h3>
+                  {p.badge && <span className="shrink-0 rounded-full bg-secondary/15 px-2 py-0.5 text-xs font-semibold text-secondary">{p.badge}</span>}
+                </div>
+                {p.description && <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{p.description}</p>}
+                <div className="mt-auto flex items-center justify-between pt-4">
+                  <span className="font-display text-xl font-bold text-primary">{formatBRL(p.price)}</span>
+                  <button
+                    onClick={() => { add({ id: p.id, name: p.name, price: p.price, image: p.image }); toast.success(`${p.name} adicionado!`); }}
+                    className="inline-flex min-h-10 items-center gap-1 rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    aria-label={`Adicionar ${p.name} ao carrinho`}
+                  >
+                    <Plus className="h-4 w-4" /> Adicionar
+                  </button>
+                </div>
+              </div>
+            </article>
+          ))}
         </div>
       )}
+
+      <div className="mt-12 text-center">
+        <Link to="/" className="text-sm font-semibold text-primary hover:underline">← Voltar para a home</Link>
+      </div>
     </main>
   );
 }
