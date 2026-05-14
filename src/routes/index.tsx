@@ -207,6 +207,36 @@ function Index() {
           className="pointer-events-none absolute bottom-24 right-16 hidden md:block w-32 animate-float drop-shadow-2xl"
           style={{ ["--r" as string]: "20deg" }}
         />
+        <img
+          src={floatCone}
+          alt=""
+          aria-hidden="true"
+          width={160}
+          height={160}
+          loading="lazy"
+          className="pointer-events-none absolute bottom-32 left-4 hidden sm:block w-24 md:w-36 animate-float-slow drop-shadow-2xl"
+          style={{ ["--r" as string]: "-8deg" }}
+        />
+        <img
+          src={floatBerry}
+          alt=""
+          aria-hidden="true"
+          width={120}
+          height={120}
+          loading="lazy"
+          className="pointer-events-none absolute top-1/2 left-2 w-16 md:w-24 animate-float opacity-90"
+        />
+        <img
+          src={floatTub}
+          alt=""
+          aria-hidden="true"
+          width={140}
+          height={140}
+          loading="lazy"
+          className="pointer-events-none absolute top-12 right-1/3 hidden md:block w-28 animate-float-slow drop-shadow-2xl"
+          style={{ ["--r" as string]: "6deg" }}
+        />
+
 
         {/* Sparkles */}
         {[
@@ -556,6 +586,24 @@ function Index() {
           loading="lazy"
           className="pointer-events-none absolute -right-4 bottom-10 w-28 md:w-40 animate-float-slow opacity-90"
           style={{ ["--r" as string]: "18deg" }}
+        />
+        <img
+          src={floatTub}
+          alt=""
+          aria-hidden="true"
+          width={140}
+          height={140}
+          loading="lazy"
+          className="pointer-events-none absolute right-1/4 -top-4 hidden md:block w-24 animate-float opacity-90"
+        />
+        <img
+          src={floatSparkle}
+          alt=""
+          aria-hidden="true"
+          width={80}
+          height={80}
+          loading="lazy"
+          className="pointer-events-none absolute left-1/4 bottom-6 w-12 md:w-16 animate-float-slow opacity-90"
         />
 
         <div className="relative z-10 mx-auto max-w-3xl">
