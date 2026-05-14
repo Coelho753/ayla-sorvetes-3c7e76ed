@@ -49,10 +49,6 @@ import acai5L from "@/assets/acai-5l.webp";
 import lifestyleFamily from "@/assets/lifestyle-family.jpg";
 import lifestyleScoops from "@/assets/lifestyle-scoops.jpg";
 import lifestyleAcai from "@/assets/lifestyle-acai.jpg";
-import momentFamilySunset from "@/assets/moment-family-sunset.jpg";
-import momentAcaiSplash from "@/assets/moment-acai-splash.jpg";
-import momentPopsicleRun from "@/assets/moment-popsicle-run.jpg";
-import { Flame, Trophy, Zap } from "lucide-react";
 import Autoplay from "embla-carousel-autoplay";
 import { useRef } from "react";
 import {
