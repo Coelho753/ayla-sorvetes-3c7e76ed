@@ -287,81 +287,6 @@ function Index() {
         </svg>
       </section>
 
-      {/* MOMENTOS ÉPICOS — carrossel cinematográfico */}
-      <section className="relative overflow-hidden px-4 py-20 md:py-28">
-        <div className="mx-auto max-w-6xl">
-          <div className="mx-auto max-w-2xl text-center">
-            <span className="reveal inline-flex items-center gap-2 rounded-full bg-primary/15 px-4 py-1.5 font-display text-xs font-bold uppercase tracking-[0.2em] text-primary ring-1 ring-primary/30">
-              <Flame className="h-3.5 w-3.5" /> Momentos épicos
-            </span>
-            <h2 className="reveal mt-5 font-display text-4xl font-bold leading-[1.05] tracking-tight text-white sm:text-5xl md:text-6xl">
-              O sorvete em <span className="bg-gradient-candy bg-clip-text text-transparent">AÇÃO</span>
-            </h2>
-            <p className="reveal mx-auto mt-5 max-w-xl text-base leading-relaxed text-white/70 sm:text-lg">
-              Da família reunida ao role com os amigos. Toque num painel pra escolher o seu momento.
-            </p>
-          </div>
-
-          <div className="reveal mt-12">
-            <Carousel opts={{ align: "center", loop: true }} className="mx-auto w-full">
-              <CarouselContent className="-ml-4">
-                {[
-                  { img: momentFamilySunset, tag: "FAMÍLIA", title: "PÔR DO SOL", sub: "Ayla compartilhada • Casquinha clássica", icon: Trophy },
-                  { img: momentAcaiSplash, tag: "AÇAÍ", title: "PURO IMPACTO", sub: "Açaí 1L gelado • Frutas vermelhas", icon: Zap },
-                  { img: momentPopsicleRun, tag: "RUA", title: "VERÃO LIVRE", sub: "Picolés coloridos • Energia pura", icon: Flame },
-                ].map((m, i) => (
-                  <CarouselItem key={m.title} className="pl-4 basis-[85%] sm:basis-2/3 lg:basis-1/2">
-                    <article
-                      className="group relative aspect-[4/5] overflow-hidden rounded-3xl ring-1 ring-white/10 shadow-card animate-pop-in"
-                      style={{ animationDelay: `${i * 120}ms` }}
-                    >
-                      <img
-                        src={m.img}
-                        alt={`${m.title} — ${m.sub}`}
-                        loading="lazy"
-                        decoding="async"
-                        width={1024}
-                        height={1280}
-                        className="absolute inset-0 h-full w-full object-cover transition-transform duration-[1200ms] ease-out group-hover:scale-110"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
-                      <div className="absolute right-4 top-4 z-10 flex h-11 w-11 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-button">
-                        <m.icon className="h-5 w-5" aria-hidden="true" />
-                      </div>
-                      <div className="absolute inset-x-0 bottom-0 z-10 p-6 text-white">
-                        <span className="font-display text-[11px] font-bold uppercase tracking-[0.25em] text-primary">{m.tag}</span>
-                        <h3 className="mt-1.5 font-display text-3xl font-bold leading-none tracking-tight sm:text-4xl">{m.title}</h3>
-                        <p className="mt-2 text-sm text-white/85">{m.sub}</p>
-                      </div>
-                    </article>
-                  </CarouselItem>
-                ))}
-              </CarouselContent>
-              <CarouselPrevious className="hidden md:flex -left-4 lg:-left-12 border-white/20 bg-card/70 text-white" />
-              <CarouselNext className="hidden md:flex -right-4 lg:-right-12 border-white/20 bg-card/70 text-white" />
-            </Carousel>
-
-            {/* Chips de categorias estilo Johnny */}
-            <div className="reveal mt-8 flex flex-wrap justify-center gap-3">
-              {[
-                { label: "Casquinha", icon: Sparkles },
-                { label: "Açaí Power", icon: Zap },
-                { label: "Picolé Verão", icon: Flame },
-                { label: "Pote Família", icon: Trophy },
-              ].map((c) => (
-                <span
-                  key={c.label}
-                  className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-2 font-display text-xs font-bold uppercase tracking-[0.18em] text-white/80 transition-all hover:border-primary/50 hover:bg-primary/10 hover:text-primary"
-                >
-                  <c.icon className="h-3.5 w-3.5 text-primary" />
-                  {c.label}
-                </span>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* POTES 1,5L - CARROSSEL */}
       <section id="potes" className="relative overflow-hidden px-6 py-24 md:py-32">
         {/* fundo unificado em <main>; sem overlay local */}
@@ -371,8 +296,8 @@ function Index() {
               🍦 Potes de 1,5L
             </span>
             <h2 className="reveal mt-5 font-display text-4xl font-bold leading-[1.05] tracking-tight sm:text-5xl md:text-6xl">
-              Leve para{" "}
-              <span className="bg-gradient-candy bg-clip-text text-transparent">casa</span>
+              <span className="bg-gradient-candy bg-clip-text text-transparent">POTES</span>{" "}
+              para casa
             </h2>
             <p className="reveal mx-auto mt-5 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">
               Sabores incríveis em potes generosos de 1,5 litro. Perfeito para compartilhar (ou não 😋).
@@ -437,8 +362,8 @@ function Index() {
               🍨 Copos de 300ml
             </span>
             <h2 className="reveal mt-5 font-display text-4xl font-bold leading-[1.05] tracking-tight sm:text-5xl md:text-6xl">
-              Sorvetes{" "}
-              <span className="bg-gradient-candy bg-clip-text text-transparent">individuais</span>
+              <span className="bg-gradient-candy bg-clip-text text-transparent">COPOS</span>{" "}
+              individuais
             </h2>
             <p className="reveal mx-auto mt-5 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">
               Porção perfeita pra matar a vontade. Cremoso, gelado e do seu jeito.
@@ -499,8 +424,8 @@ function Index() {
               🍡 Picolés
             </span>
             <h2 className="reveal mt-5 font-display text-4xl font-bold leading-[1.05] tracking-tight sm:text-5xl md:text-6xl">
-              Picolé no{" "}
-              <span className="bg-gradient-purple bg-clip-text text-transparent">palitinho</span>
+              <span className="bg-gradient-candy bg-clip-text text-transparent">PICOLÉS</span>{" "}
+              no palitinho
             </h2>
             <p className="reveal mx-auto mt-5 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">
               Picolés artesanais com sabores intensos e ingredientes selecionados.
@@ -653,13 +578,13 @@ function Index() {
       </section>
 
       {/* FOOTER */}
-      <footer className="bg-foreground px-6 py-14 text-background/90">
+      <footer className="border-t border-white/10 bg-card px-6 py-14 text-card-foreground">
         <div className="mx-auto flex max-w-6xl flex-col items-center gap-6 text-center md:flex-row md:justify-between md:text-left">
           <div className="flex items-center gap-3">
             <img src={mascot} alt="Ayla Sorvetes" width={64} height={64} className="h-14 w-14" />
             <div>
               <p className="font-display text-2xl font-bold text-white">Ayla Sorvetes</p>
-              <p className="text-xs text-white/60">Feito com muito amor 💜</p>
+              <p className="text-xs text-white/70">Feito com muito amor 💜</p>
             </div>
           </div>
 
@@ -669,20 +594,20 @@ function Index() {
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Instagram"
-              className="flex h-11 w-11 items-center justify-center rounded-full bg-white/10 transition-colors hover:bg-secondary hover:text-secondary-foreground"
+              className="flex h-11 w-11 items-center justify-center rounded-full bg-primary/15 text-primary ring-1 ring-primary/30 transition-colors hover:bg-primary hover:text-primary-foreground"
             >
               <Instagram className="h-5 w-5" />
             </a>
             <a
               href="#"
               aria-label="Facebook"
-              className="flex h-11 w-11 items-center justify-center rounded-full bg-white/10 transition-colors hover:bg-secondary hover:text-secondary-foreground"
+              className="flex h-11 w-11 items-center justify-center rounded-full bg-secondary/20 text-white ring-1 ring-secondary/40 transition-colors hover:bg-secondary hover:text-secondary-foreground"
             >
               <Facebook className="h-5 w-5" />
             </a>
           </div>
         </div>
-        <p className="mt-8 text-center text-xs text-white/50">
+        <p className="mt-8 text-center text-xs text-white/60">
           © {new Date().getFullYear()} Ayla Sorvetes. Todos os direitos reservados.
         </p>
       </footer>
