@@ -3,8 +3,8 @@ import { useEffect } from "react";
 import { Sparkles, MessageCircle, Instagram, Facebook } from "lucide-react";
 
 import mascot from "@/assets/mascot.webp";
-import floatPopsicle from "@/assets/float-popsicle.webp";
-import floatScoop from "@/assets/float-scoop.webp";
+import floatPopsicle from "@/assets/float-popsicle.png";
+import floatScoop from "@/assets/float-scoop.png";
 import tubLimaoSuico from "@/assets/tub-3d-limao-suico.jpg";
 import tubAbacaxiVinho from "@/assets/tub-3d-abacaxi-vinho.jpg";
 import tubAbacaxi from "@/assets/tub-3d-abacaxi.jpg";
