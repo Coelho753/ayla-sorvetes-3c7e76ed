@@ -1,6 +1,8 @@
-# 🛒 Backend — Produtos, Pedidos (WhatsApp) e Usuários
+# 🛒 Backend — Produtos, Pedidos (WhatsApp), Usuários e Fidelidade
 
-A API do site está em `https://sorveteria-b.onrender.com`. O front consome 3 recursos: **products**, **orders** e **users**. Tudo o que o painel `/admin` precisa está documentado abaixo.
+A API do site está em `https://sorveteria-b.onrender.com`. O front consome 4 recursos: **products**, **orders**, **users** e **fidelidade (loyalty)**. Tudo o que o painel `/admin` precisa está documentado abaixo.
+
+> **Atualização — Programa Fidelidade Clube Ayla.** A cada **10 potes comprados e entregues**, o usuário ganha **1 pote grátis**. Isso requer 4 campos novos no banco e mudanças em `PUT /orders/:id`. Veja a seção **6. Fidelidade** ao final.
 
 ---
 
