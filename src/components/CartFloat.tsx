@@ -58,9 +58,11 @@ export function CartFloat() {
       "",
       "*Itens:*",
       ...items.map((i) => `• ${i.name} (${i.quantity}x) — ${formatBRL(i.price * i.quantity)}`),
-      "",
-      `*Total:* ${formatBRL(total)}`,
     ];
+    if (discount > 0 && cheapestTub) {
+      lines.push(`🎁 *Pote grátis (Clube Ayla):* -${formatBRL(discount)} — ${cheapestTub.name}`);
+    }
+    lines.push("", `*Total:* ${formatBRL(totalAfter)}`);
     if (user?.name) lines.push("", `*Cliente:* ${user.name}`);
     const addr = formatAddress();
     if (addr) lines.push(`*Endereço:* ${addr}`);
@@ -71,6 +73,7 @@ export function CartFloat() {
   async function checkout() {
     if (items.length === 0) return;
     setPlacing(true);
+    const loyaltyCreditsUsed = discount > 0 ? 1 : 0;
     // Tenta registrar o pedido no backend (silencioso se endpoint não existir)
     if (user) {
       try {
@@ -78,7 +81,8 @@ export function CartFloat() {
           items: items.map((i) => ({
             id: i.id, name: i.name, price: i.price, quantity: i.quantity,
           })),
-          total,
+          total: totalAfter,
+          loyaltyCreditsUsed,
           address: user.address ?? null,
         });
       } catch {
@@ -95,7 +99,7 @@ export function CartFloat() {
       id: newOrderId(),
       createdAt: new Date().toISOString(),
       items: items.map((i) => ({ ...i })),
-      total,
+      total: totalAfter,
       address: user?.address ?? null,
       customerName: user?.name,
     });
@@ -103,6 +107,7 @@ export function CartFloat() {
     window.open(url, "_blank", "noopener,noreferrer");
     // Limpa o carrinho após enviar pelo WhatsApp
     clear();
+    setUseFreeTub(false);
     setOpen(false);
     toast.success("Pedido enviado! Veja no histórico em Minha conta.");
     setPlacing(false);
