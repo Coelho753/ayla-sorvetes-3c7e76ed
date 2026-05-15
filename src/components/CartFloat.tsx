@@ -224,9 +224,36 @@ export function CartFloat() {
                     + Adicionar endereço de entrega
                   </button>
                 ) : null}
+
+                {canUseFree && (
+                  <label className="mb-3 flex cursor-pointer items-start gap-2 rounded-lg border border-primary/40 bg-primary/5 px-3 py-2 text-xs">
+                    <input
+                      type="checkbox"
+                      checked={useFreeTub}
+                      onChange={(e) => setUseFreeTub(e.target.checked)}
+                      className="mt-0.5 h-4 w-4 accent-primary"
+                    />
+                    <span className="flex-1">
+                      <span className="flex items-center gap-1 font-semibold text-primary">
+                        <Gift className="h-3.5 w-3.5" /> Usar 1 pote grátis (Clube Ayla)
+                      </span>
+                      <span className="text-muted-foreground">
+                        Aplica desconto de {formatBRL(cheapestTub!.price)} no {cheapestTub!.name}.
+                        Você tem {credits} disponível{credits > 1 ? "is" : ""}.
+                      </span>
+                    </span>
+                  </label>
+                )}
+
+                {discount > 0 && (
+                  <div className="mb-2 flex items-center justify-between text-sm text-primary">
+                    <span>Desconto fidelidade</span>
+                    <span className="font-semibold">-{formatBRL(discount)}</span>
+                  </div>
+                )}
                 <div className="mb-3 flex items-center justify-between">
                   <span className="font-display text-lg">Total</span>
-                  <span className="font-display text-2xl font-bold">{formatBRL(total)}</span>
+                  <span className="font-display text-2xl font-bold">{formatBRL(totalAfter)}</span>
                 </div>
                 <button
                   onClick={checkout}
