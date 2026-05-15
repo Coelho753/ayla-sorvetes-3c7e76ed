@@ -335,6 +335,7 @@ function OrdersAdmin({ filter }: { filter: "all" | "whatsapp" }) {
 function UsersAdmin() {
   const [users, setUsers] = useState<AdminUser[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [editing, setEditing] = useState<AdminUser | null>(null);
 
   async function load() {
     try {
@@ -343,11 +344,6 @@ function UsersAdmin() {
     } catch (err) { setError(extractApiError(err)); }
   }
   useEffect(() => { load(); }, []);
-
-  async function changeRole(id: AdminUser["id"], role: string) {
-    try { await api.put(`/users/${id}`, { role }); toast.success("Permissão atualizada"); load(); }
-    catch (err) { toast.error(extractApiError(err)); }
-  }
 
   async function remove(id: AdminUser["id"]) {
     if (!confirm("Excluir este usuário? Essa ação não pode ser desfeita.")) return;
@@ -366,36 +362,182 @@ function UsersAdmin() {
   if (users.length === 0) return <p className="text-muted-foreground">Nenhum usuário cadastrado.</p>;
 
   return (
-    <div className="overflow-x-auto rounded-xl border border-border">
-      <table className="w-full text-sm">
-        <thead className="bg-muted/50 text-left">
-          <tr>
-            <th className="p-3">Nome</th>
-            <th className="p-3">E-mail</th>
-            <th className="p-3">Telefone</th>
-            <th className="p-3">Permissão</th>
-            <th className="p-3 text-right">Ações</th>
-          </tr>
-        </thead>
-        <tbody>
-          {users.map((u) => (
-            <tr key={u.id} className="border-t border-border">
-              <td className="p-3 font-semibold">{u.name ?? "—"}</td>
-              <td className="p-3">{u.email}</td>
-              <td className="p-3 text-muted-foreground">{u.phone ?? "—"}</td>
-              <td className="p-3">
-                <select value={u.role ?? "user"} onChange={(e) => changeRole(u.id, e.target.value)} className="rounded-md border border-input bg-background px-2 py-1">
-                  <option value="user">user</option>
-                  <option value="admin">admin</option>
-                </select>
-              </td>
-              <td className="p-3 text-right">
-                <button onClick={() => remove(u.id)} aria-label={`Excluir ${u.email}`} className="rounded-md p-2 text-destructive hover:bg-destructive/10"><Trash2 className="h-4 w-4" /></button>
-              </td>
+    <>
+      <div className="overflow-x-auto rounded-xl border border-border">
+        <table className="w-full text-sm">
+          <thead className="bg-muted/50 text-left">
+            <tr>
+              <th className="p-3">Nome</th>
+              <th className="p-3">E-mail</th>
+              <th className="p-3">Telefone</th>
+              <th className="p-3">Fidelidade</th>
+              <th className="p-3">Permissão</th>
+              <th className="p-3 text-right">Ações</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {users.map((u) => (
+              <tr key={u.id} className="border-t border-border hover:bg-muted/30">
+                <td className="p-3 font-semibold">{u.name ?? "—"}</td>
+                <td className="p-3">{u.email}</td>
+                <td className="p-3 text-muted-foreground">{u.phone ?? "—"}</td>
+                <td className="p-3 text-xs">
+                  <span className="text-muted-foreground">{u.loyaltyStamps ?? 0}/10</span>
+                  {(u.loyaltyCredits ?? 0) > 0 && (
+                    <span className="ml-2 inline-flex items-center gap-1 rounded-full bg-primary/15 px-2 py-0.5 text-primary">
+                      <Gift className="h-3 w-3" /> {u.loyaltyCredits}
+                    </span>
+                  )}
+                </td>
+                <td className="p-3">
+                  <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${u.role === "admin" ? "bg-secondary/20 text-secondary-foreground" : "bg-muted text-muted-foreground"}`}>{u.role ?? "user"}</span>
+                </td>
+                <td className="p-3 text-right">
+                  <button onClick={() => setEditing(u)} aria-label={`Editar ${u.email}`} className="mr-1 rounded-md p-2 hover:bg-muted"><Pencil className="h-4 w-4" /></button>
+                  <button onClick={() => remove(u.id)} aria-label={`Excluir ${u.email}`} className="rounded-md p-2 text-destructive hover:bg-destructive/10"><Trash2 className="h-4 w-4" /></button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      {editing && <UserDrawer user={editing} onClose={() => setEditing(null)} onSaved={() => { setEditing(null); load(); }} />}
+    </>
+  );
+}
+
+function UserDrawer({ user, onClose, onSaved }: { user: AdminUser; onClose: () => void; onSaved: () => void }) {
+  const [form, setForm] = useState<AdminUser>({ ...user, address: user.address ?? {} });
+  const [busy, setBusy] = useState(false);
+  const [orders, setOrders] = useState<Order[] | null>(null);
+  const [ordersErr, setOrdersErr] = useState<string | null>(null);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const { data } = await api.get<Order[] | { data: Order[] }>(`/orders?userId=${user.id}`);
+        const list = Array.isArray(data) ? data : (data as { data: Order[] }).data ?? [];
+        // fallback front se backend ignorar query
+        const filtered = list.filter((o) => String(o.userId ?? o.user?.email ?? "") === String(user.id) || o.user?.email === user.email);
+        setOrders(filtered.length ? filtered : list);
+      } catch (err) {
+        setOrdersErr(extractApiError(err));
+      }
+    })();
+  }, [user.id, user.email]);
+
+  async function save() {
+    setBusy(true);
+    try {
+      await api.put(`/users/${user.id}`, {
+        name: form.name,
+        nome: form.name,
+        phone: form.phone,
+        telefone: form.phone,
+        role: form.role,
+        address: form.address,
+        endereco: form.address,
+        loyaltyCredits: form.loyaltyCredits,
+        loyaltyStamps: form.loyaltyStamps,
+      });
+      toast.success("Usuário atualizado!");
+      onSaved();
+    } catch (err) { toast.error(extractApiError(err)); }
+    finally { setBusy(false); }
+  }
+
+  async function changeStatus(id: Order["id"], status: string) {
+    try {
+      await api.put(`/orders/${id}`, { status });
+      toast.success("Status atualizado");
+      setOrders((prev) => prev?.map((o) => (o.id === id ? { ...o, status } : o)) ?? null);
+    } catch (err) { toast.error(extractApiError(err)); }
+  }
+
+  const a = form.address ?? {};
+  const setA = (patch: Partial<Address>) => setForm({ ...form, address: { ...a, ...patch } });
+  const inputCls = "w-full rounded-md border border-input bg-background px-3 py-2 text-sm";
+
+  return (
+    <div className="fixed inset-0 z-[60] flex bg-black/50" onClick={onClose}>
+      <div onClick={(e) => e.stopPropagation()} className="ml-auto flex h-full w-full max-w-2xl flex-col overflow-y-auto bg-background shadow-2xl">
+        <header className="flex items-center justify-between border-b border-border px-5 py-4">
+          <div>
+            <h3 className="font-display text-xl font-bold">{user.name ?? user.email}</h3>
+            <p className="text-xs text-muted-foreground">{user.email}</p>
+          </div>
+          <button onClick={onClose} aria-label="Fechar" className="rounded-full p-2 hover:bg-muted"><X className="h-5 w-5" /></button>
+        </header>
+
+        <div className="space-y-5 px-5 py-4">
+          <section className="space-y-3">
+            <h4 className="font-display text-sm font-bold uppercase tracking-wide text-muted-foreground">Perfil</h4>
+            <div className="grid grid-cols-2 gap-3">
+              <input placeholder="Nome" value={form.name ?? ""} onChange={(e) => setForm({ ...form, name: e.target.value })} className={inputCls} />
+              <input placeholder="Telefone" value={form.phone ?? ""} onChange={(e) => setForm({ ...form, phone: e.target.value })} className={inputCls} />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <select value={form.role ?? "user"} onChange={(e) => setForm({ ...form, role: e.target.value })} className={inputCls}>
+                <option value="user">user</option>
+                <option value="admin">admin</option>
+              </select>
+              <div className="grid grid-cols-2 gap-2">
+                <input type="number" min={0} placeholder="Selos" value={form.loyaltyStamps ?? 0} onChange={(e) => setForm({ ...form, loyaltyStamps: Number(e.target.value) })} className={inputCls} title="Selos (0-9)" />
+                <input type="number" min={0} placeholder="Créditos 🎁" value={form.loyaltyCredits ?? 0} onChange={(e) => setForm({ ...form, loyaltyCredits: Number(e.target.value) })} className={inputCls} title="Potes grátis disponíveis" />
+              </div>
+            </div>
+          </section>
+
+          <section className="space-y-3">
+            <h4 className="font-display text-sm font-bold uppercase tracking-wide text-muted-foreground">Endereço</h4>
+            <div className="grid grid-cols-[1fr_100px] gap-3">
+              <input placeholder="CEP" value={a.cep ?? ""} onChange={(e) => setA({ cep: e.target.value })} className={inputCls} />
+              <input placeholder="Número" value={a.numero ?? ""} onChange={(e) => setA({ numero: e.target.value })} className={inputCls} />
+            </div>
+            <input placeholder="Rua" value={a.rua ?? ""} onChange={(e) => setA({ rua: e.target.value })} className={inputCls} />
+            <input placeholder="Complemento" value={a.complemento ?? ""} onChange={(e) => setA({ complemento: e.target.value })} className={inputCls} />
+            <input placeholder="Bairro" value={a.bairro ?? ""} onChange={(e) => setA({ bairro: e.target.value })} className={inputCls} />
+            <div className="grid grid-cols-[1fr_80px] gap-3">
+              <input placeholder="Cidade" value={a.cidade ?? ""} onChange={(e) => setA({ cidade: e.target.value })} className={inputCls} />
+              <input placeholder="UF" maxLength={2} value={a.estado ?? ""} onChange={(e) => setA({ estado: e.target.value.toUpperCase() })} className={inputCls} />
+            </div>
+          </section>
+
+          <button onClick={save} disabled={busy} className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary py-2.5 font-semibold text-primary-foreground disabled:opacity-60">
+            {busy && <Loader2 className="h-4 w-4 animate-spin" />} Salvar alterações
+          </button>
+
+          <section className="space-y-3">
+            <h4 className="font-display text-sm font-bold uppercase tracking-wide text-muted-foreground">Pedidos do usuário</h4>
+            {ordersErr && <p className="text-sm text-destructive">{ordersErr}</p>}
+            {!orders && !ordersErr && <Loader2 className="h-5 w-5 animate-spin text-primary" />}
+            {orders && orders.length === 0 && <p className="text-sm text-muted-foreground">Nenhum pedido encontrado.</p>}
+            {orders && orders.length > 0 && (
+              <ul className="space-y-2">
+                {orders.map((o) => (
+                  <li key={o.id} className="rounded-lg border border-border bg-card p-3 text-sm">
+                    <div className="flex items-center justify-between">
+                      <span className="font-mono text-xs text-muted-foreground">#{String(o.id).slice(0, 8)}</span>
+                      <span className="font-display font-bold text-primary">{formatBRL(Number(o.total) || 0)}</span>
+                    </div>
+                    {o.createdAt && <p className="text-xs text-muted-foreground">{new Date(o.createdAt).toLocaleString("pt-BR")}</p>}
+                    <p className="mt-1 text-xs">
+                      {o.items?.slice(0, 3).map((i) => `${i.quantity}× ${i.name}`).join(", ")}
+                      {o.items && o.items.length > 3 && ` +${o.items.length - 3}`}
+                    </p>
+                    {(o.loyaltyCreditsUsed ?? 0) > 0 && (
+                      <p className="mt-1 inline-flex items-center gap-1 text-xs text-primary"><Gift className="h-3 w-3" /> Pote grátis aplicado</p>
+                    )}
+                    <select value={o.status} onChange={(e) => changeStatus(o.id, e.target.value)} className="mt-2 rounded-md border border-input bg-background px-2 py-1 text-xs">
+                      {STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
+                    </select>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+        </div>
+      </div>
     </div>
   );
 }
