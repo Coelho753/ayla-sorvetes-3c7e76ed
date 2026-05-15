@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { ShoppingCart, Trash2, Plus, Minus, X, Loader2, MapPin, Pencil, Check } from "lucide-react";
+import { ShoppingCart, Trash2, Plus, Minus, X, Loader2, MapPin, Pencil, Check, Gift } from "lucide-react";
 import { useCart, formatBRL } from "@/contexts/CartContext";
 import { useAuth, type Address } from "@/contexts/AuthContext";
 import { WHATSAPP_PHONE } from "@/config/api";
