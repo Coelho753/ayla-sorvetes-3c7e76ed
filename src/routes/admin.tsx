@@ -1,10 +1,11 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Loader2, Plus, Pencil, Trash2, X, MessageCircle } from "lucide-react";
+import { Loader2, Plus, Pencil, Trash2, X, MessageCircle, UserCog, Wallet, Gift } from "lucide-react";
 import { toast } from "sonner";
 import { RequireAuth } from "@/components/RequireAuth";
 import { api, extractApiError } from "@/lib/api";
 import { formatBRL } from "@/contexts/CartContext";
+import type { Address } from "@/contexts/AuthContext";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({ meta: [{ title: "Admin — Ayla Sorvetes" }] }),
@@ -12,8 +13,8 @@ export const Route = createFileRoute("/admin")({
 });
 
 type Product = { id: string | number; name: string; price: number; description?: string; image?: string; category?: string; size?: string; active?: boolean };
-type Order = { id: string | number; total: number; status: string; createdAt?: string; source?: string; customerName?: string; customerPhone?: string; items?: Array<{ name: string; quantity: number; price?: number }>; user?: { name?: string; email?: string }; address?: { street?: string; number?: string; city?: string } };
-type AdminUser = { id: string | number; name?: string; email: string; role?: string; createdAt?: string; phone?: string };
+type Order = { id: string | number; total: number; status: string; createdAt?: string; source?: string; customerName?: string; customerPhone?: string; items?: Array<{ name: string; quantity: number; price?: number }>; user?: { name?: string; email?: string }; userId?: string | number; address?: { street?: string; number?: string; city?: string }; loyaltyCreditsUsed?: number };
+type AdminUser = { id: string | number; name?: string; email: string; role?: string; createdAt?: string; phone?: string; address?: Address; loyaltyStamps?: number; loyaltyCredits?: number };
 
 type Tab = "dashboard" | "products" | "orders" | "whatsapp" | "users";
 
@@ -28,7 +29,23 @@ function AdminPanel() {
   ];
   return (
     <main className="mx-auto max-w-6xl px-4 py-10">
-      <h1 className="font-display text-3xl font-bold">Painel Admin</h1>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="font-display text-3xl font-bold">Painel Admin</h1>
+        <div className="flex gap-2">
+          <Link
+            to="/admin/perfil"
+            className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2 text-sm font-semibold hover:bg-muted"
+          >
+            <UserCog className="h-4 w-4" /> Perfil
+          </Link>
+          <Link
+            to="/admin/financeiro"
+            className="inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-button hover:scale-[1.02]"
+          >
+            <Wallet className="h-4 w-4" /> Financeiro
+          </Link>
+        </div>
+      </div>
       <div className="mt-4 flex flex-wrap gap-2 border-b border-border">
         {tabs.map((t) => (
           <button key={t.key} onClick={() => setTab(t.key)} className={`px-4 py-2 text-sm font-semibold ${tab === t.key ? "border-b-2 border-primary text-primary" : "text-muted-foreground"}`}>
