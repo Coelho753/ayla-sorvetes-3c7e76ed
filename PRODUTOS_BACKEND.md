@@ -141,3 +141,112 @@ Depois disso, o próprio admin promove outros pela aba **Usuários** do painel.
 ## 5. Fallback no front
 
 Quando `/products` retorna vazio ou offline, a home usa `src/lib/catalog.ts`. Quando o backend tem dados, eles têm prioridade.
+
+---
+
+## 6. Fidelidade — Clube Ayla (10 potes = 1 grátis)
+
+### Schema `users` — adicionar
+| Campo | Tipo | Default | Observação |
+|---|---|---|---|
+| `loyaltyStamps` | int | 0 | Selos acumulados desde o último resgate (0–9) |
+| `loyaltyCredits` | int | 0 | Potes grátis disponíveis para resgate |
+
+### Schema `orders` — adicionar
+| Campo | Tipo | Default | Observação |
+|---|---|---|---|
+| `loyaltyCreditsUsed` | int | 0 | Nº de créditos aplicados neste pedido (geralmente 0 ou 1) |
+| `loyaltyStampsEarned` | int | 0 | Quantos selos este pedido gerou. Preenchido apenas quando o pedido vira `entregue` (idempotência) |
+
+### Lógica em `PUT /orders/:id` (admin muda status)
+
+```pseudo
+old = order.status
+new = req.body.status
+
+if new == "entregue" and order.loyaltyStampsEarned == 0:
+    potes = sum(item.quantity for item in order.items if product[item.id].category == "tub")
+    user.loyaltyStamps += potes
+    while user.loyaltyStamps >= 10:
+        user.loyaltyStamps -= 10
+        user.loyaltyCredits += 1
+    order.loyaltyStampsEarned = potes
+    save(user, order)
+
+if new == "cancelado" and old == "entregue" and order.loyaltyStampsEarned > 0:
+    # reverter
+    user.loyaltyStamps -= order.loyaltyStampsEarned
+    while user.loyaltyStamps < 0:
+        user.loyaltyStamps += 10
+        user.loyaltyCredits -= 1   # se ficar negativo, bloquear/avisar
+    order.loyaltyStampsEarned = 0
+    save(user, order)
+```
+
+### Em `POST /orders`
+- Aceitar `loyaltyCreditsUsed` no body.
+- Validar `user.loyaltyCredits >= loyaltyCreditsUsed`.
+- Debitar imediatamente: `user.loyaltyCredits -= loyaltyCreditsUsed`.
+- Se o pedido for cancelado **antes** de virar `entregue`, devolver: `user.loyaltyCredits += order.loyaltyCreditsUsed`.
+
+### Endpoints novos / atualizados
+
+```
+GET /users/me/loyalty   → { stamps: 7, credits: 1, nextRewardIn: 3 }   (opcional, mas útil)
+GET /users/me           → DEVE incluir loyaltyStamps + loyaltyCredits
+GET /users              → DEVE incluir loyaltyStamps + loyaltyCredits
+GET /users/:id          → admin (já implícito em /users mas o front usa /:id também)
+PUT /users/:id          → DEVE aceitar { name, phone, role, address, loyaltyStamps, loyaltyCredits }
+GET /orders?userId=ID   → admin: pedidos de um usuário (o front filtra no client se ignorado)
+GET /orders?from=ISO&to=ISO → admin: filtro por data (opcional, otimização)
+```
+
+### Permissões
+| Endpoint | Anônimo | User | Admin |
+|---|:-:|:-:|:-:|
+| `GET /users/me/loyalty` | ❌ | ✅ | ✅ |
+| `GET /users/:id` | ❌ | ❌ | ✅ |
+
+---
+
+## 7. Criação do usuário admin (ayla@admin.com)
+
+⚠️ **Não enviar a senha em texto plano por chat/email.** Use uma destas opções:
+
+### Opção A — Cadastrar pelo site e promover
+1. Acesse `/cadastro` no site e registre `ayla@admin.com` com a senha desejada.
+2. No shell do banco (Render → Shell ou MongoDB Compass):
+   ```js
+   // Mongo
+   db.users.updateOne({ email: "ayla@admin.com" }, { $set: { role: "admin" } })
+   ```
+   ```sql
+   -- Postgres
+   UPDATE users SET role = 'admin' WHERE email = 'ayla@admin.com';
+   ```
+3. Pronto. Login pelo `/login` normal.
+
+### Opção B — Criar diretamente no banco
+Quem tiver acesso ao backend roda localmente:
+```js
+const bcrypt = require('bcrypt');
+const hash = await bcrypt.hash(SENHA_AQUI, 10);
+db.users.insertOne({
+  name: "Ayla Admin",
+  email: "ayla@admin.com",
+  passwordHash: hash,
+  role: "admin",
+  loyaltyStamps: 0,
+  loyaltyCredits: 0,
+  createdAt: new Date()
+});
+```
+
+### Opção C — Endpoint seed protegido (mais prático)
+Adicionar no backend:
+```
+POST /auth/seed-admin
+Headers: x-seed-token: <env ADMIN_SEED_TOKEN>
+Body: { email, password, name }
+```
+Cria o admin uma única vez se nenhum admin existir. Depois pode ser desabilitado.
