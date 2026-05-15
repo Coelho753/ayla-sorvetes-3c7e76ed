@@ -16,6 +16,8 @@ import { Route as CadastroRouteImport } from './routes/cadastro'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
+import { Route as AdminPerfilRouteImport } from './routes/admin.perfil'
+import { Route as AdminFinanceiroRouteImport } from './routes/admin.financeiro'
 
 const PerfilRoute = PerfilRouteImport.update({
   id: '/perfil',
@@ -52,33 +54,49 @@ const AuthCallbackRoute = AuthCallbackRouteImport.update({
   path: '/auth/callback',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminPerfilRoute = AdminPerfilRouteImport.update({
+  id: '/perfil',
+  path: '/perfil',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminFinanceiroRoute = AdminFinanceiroRouteImport.update({
+  id: '/financeiro',
+  path: '/financeiro',
+  getParentRoute: () => AdminRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/admin': typeof AdminRoute
+  '/admin': typeof AdminRouteWithChildren
   '/cadastro': typeof CadastroRoute
   '/cardapio': typeof CardapioRoute
   '/login': typeof LoginRoute
   '/perfil': typeof PerfilRoute
+  '/admin/financeiro': typeof AdminFinanceiroRoute
+  '/admin/perfil': typeof AdminPerfilRoute
   '/auth/callback': typeof AuthCallbackRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/admin': typeof AdminRoute
+  '/admin': typeof AdminRouteWithChildren
   '/cadastro': typeof CadastroRoute
   '/cardapio': typeof CardapioRoute
   '/login': typeof LoginRoute
   '/perfil': typeof PerfilRoute
+  '/admin/financeiro': typeof AdminFinanceiroRoute
+  '/admin/perfil': typeof AdminPerfilRoute
   '/auth/callback': typeof AuthCallbackRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/admin': typeof AdminRoute
+  '/admin': typeof AdminRouteWithChildren
   '/cadastro': typeof CadastroRoute
   '/cardapio': typeof CardapioRoute
   '/login': typeof LoginRoute
   '/perfil': typeof PerfilRoute
+  '/admin/financeiro': typeof AdminFinanceiroRoute
+  '/admin/perfil': typeof AdminPerfilRoute
   '/auth/callback': typeof AuthCallbackRoute
 }
 export interface FileRouteTypes {
@@ -90,6 +108,8 @@ export interface FileRouteTypes {
     | '/cardapio'
     | '/login'
     | '/perfil'
+    | '/admin/financeiro'
+    | '/admin/perfil'
     | '/auth/callback'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -99,6 +119,8 @@ export interface FileRouteTypes {
     | '/cardapio'
     | '/login'
     | '/perfil'
+    | '/admin/financeiro'
+    | '/admin/perfil'
     | '/auth/callback'
   id:
     | '__root__'
@@ -108,12 +130,14 @@ export interface FileRouteTypes {
     | '/cardapio'
     | '/login'
     | '/perfil'
+    | '/admin/financeiro'
+    | '/admin/perfil'
     | '/auth/callback'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AdminRoute: typeof AdminRoute
+  AdminRoute: typeof AdminRouteWithChildren
   CadastroRoute: typeof CadastroRoute
   CardapioRoute: typeof CardapioRoute
   LoginRoute: typeof LoginRoute
@@ -172,12 +196,38 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthCallbackRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/perfil': {
+      id: '/admin/perfil'
+      path: '/perfil'
+      fullPath: '/admin/perfil'
+      preLoaderRoute: typeof AdminPerfilRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/financeiro': {
+      id: '/admin/financeiro'
+      path: '/financeiro'
+      fullPath: '/admin/financeiro'
+      preLoaderRoute: typeof AdminFinanceiroRouteImport
+      parentRoute: typeof AdminRoute
+    }
   }
 }
 
+interface AdminRouteChildren {
+  AdminFinanceiroRoute: typeof AdminFinanceiroRoute
+  AdminPerfilRoute: typeof AdminPerfilRoute
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminFinanceiroRoute: AdminFinanceiroRoute,
+  AdminPerfilRoute: AdminPerfilRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AdminRoute: AdminRoute,
+  AdminRoute: AdminRouteWithChildren,
   CadastroRoute: CadastroRoute,
   CardapioRoute: CardapioRoute,
   LoginRoute: LoginRoute,
@@ -187,12 +237,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-  }
-}

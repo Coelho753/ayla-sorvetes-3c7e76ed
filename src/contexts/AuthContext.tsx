@@ -17,8 +17,11 @@ export type User = {
   firstName?: string;
   lastName?: string;
   email: string;
+  phone?: string;
   role?: string;
   address?: Address;
+  loyaltyStamps?: number;
+  loyaltyCredits?: number;
 };
 
 type RegisterPayload = {
@@ -78,8 +81,11 @@ function normalizeUser(raw: Record<string, unknown> | null | undefined): User | 
     name: fullName || [firstName, lastName].filter(Boolean).join(" ") || undefined,
     firstName,
     lastName,
+    phone: (raw.phone as string) ?? (raw.telefone as string) ?? undefined,
     role: (raw.role as string) ?? undefined,
     address: normalizeAddress((raw.endereco ?? raw.address) as Record<string, unknown> | undefined),
+    loyaltyStamps: typeof raw.loyaltyStamps === "number" ? (raw.loyaltyStamps as number) : undefined,
+    loyaltyCredits: typeof raw.loyaltyCredits === "number" ? (raw.loyaltyCredits as number) : undefined,
   };
 }
 

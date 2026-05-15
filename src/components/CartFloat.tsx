@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { ShoppingCart, Trash2, Plus, Minus, X, Loader2, MapPin, Pencil, Check } from "lucide-react";
+import { ShoppingCart, Trash2, Plus, Minus, X, Loader2, MapPin, Pencil, Check, Gift } from "lucide-react";
 import { useCart, formatBRL } from "@/contexts/CartContext";
 import { useAuth, type Address } from "@/contexts/AuthContext";
 import { WHATSAPP_PHONE } from "@/config/api";
@@ -16,7 +16,26 @@ export function CartFloat() {
   const [editingAddr, setEditingAddr] = useState(false);
   const [addrDraft, setAddrDraft] = useState<Address>({});
   const [savingAddr, setSavingAddr] = useState(false);
+  const [useFreeTub, setUseFreeTub] = useState(false);
   const navigate = useNavigate();
+
+  // Heurística: itens com "pote" no nome são considerados potes (categoria tub).
+  // O backend valida de fato pelo productId.category.
+  const cheapestTub = useMemo(() => {
+    const tubs = items.filter((i) => /pote/i.test(i.name));
+    if (tubs.length === 0) return null;
+    return tubs.reduce((min, it) => (it.price < min.price ? it : min), tubs[0]);
+  }, [items]);
+
+  const credits = user?.loyaltyCredits ?? 0;
+  const canUseFree = credits > 0 && !!cheapestTub;
+  const discount = useFreeTub && canUseFree ? cheapestTub!.price : 0;
+  const totalAfter = Math.max(0, total - discount);
+
+  // Reset toggle se condições mudarem
+  useEffect(() => {
+    if (!canUseFree && useFreeTub) setUseFreeTub(false);
+  }, [canUseFree, useFreeTub]);
 
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
@@ -39,9 +58,11 @@ export function CartFloat() {
       "",
       "*Itens:*",
       ...items.map((i) => `• ${i.name} (${i.quantity}x) — ${formatBRL(i.price * i.quantity)}`),
-      "",
-      `*Total:* ${formatBRL(total)}`,
     ];
+    if (discount > 0 && cheapestTub) {
+      lines.push(`🎁 *Pote grátis (Clube Ayla):* -${formatBRL(discount)} — ${cheapestTub.name}`);
+    }
+    lines.push("", `*Total:* ${formatBRL(totalAfter)}`);
     if (user?.name) lines.push("", `*Cliente:* ${user.name}`);
     const addr = formatAddress();
     if (addr) lines.push(`*Endereço:* ${addr}`);
@@ -52,6 +73,7 @@ export function CartFloat() {
   async function checkout() {
     if (items.length === 0) return;
     setPlacing(true);
+    const loyaltyCreditsUsed = discount > 0 ? 1 : 0;
     // Tenta registrar o pedido no backend (silencioso se endpoint não existir)
     if (user) {
       try {
@@ -59,7 +81,8 @@ export function CartFloat() {
           items: items.map((i) => ({
             id: i.id, name: i.name, price: i.price, quantity: i.quantity,
           })),
-          total,
+          total: totalAfter,
+          loyaltyCreditsUsed,
           address: user.address ?? null,
         });
       } catch {
@@ -76,7 +99,7 @@ export function CartFloat() {
       id: newOrderId(),
       createdAt: new Date().toISOString(),
       items: items.map((i) => ({ ...i })),
-      total,
+      total: totalAfter,
       address: user?.address ?? null,
       customerName: user?.name,
     });
@@ -84,6 +107,7 @@ export function CartFloat() {
     window.open(url, "_blank", "noopener,noreferrer");
     // Limpa o carrinho após enviar pelo WhatsApp
     clear();
+    setUseFreeTub(false);
     setOpen(false);
     toast.success("Pedido enviado! Veja no histórico em Minha conta.");
     setPlacing(false);
@@ -200,9 +224,36 @@ export function CartFloat() {
                     + Adicionar endereço de entrega
                   </button>
                 ) : null}
+
+                {canUseFree && (
+                  <label className="mb-3 flex cursor-pointer items-start gap-2 rounded-lg border border-primary/40 bg-primary/5 px-3 py-2 text-xs">
+                    <input
+                      type="checkbox"
+                      checked={useFreeTub}
+                      onChange={(e) => setUseFreeTub(e.target.checked)}
+                      className="mt-0.5 h-4 w-4 accent-primary"
+                    />
+                    <span className="flex-1">
+                      <span className="flex items-center gap-1 font-semibold text-primary">
+                        <Gift className="h-3.5 w-3.5" /> Usar 1 pote grátis (Clube Ayla)
+                      </span>
+                      <span className="text-muted-foreground">
+                        Aplica desconto de {formatBRL(cheapestTub!.price)} no {cheapestTub!.name}.
+                        Você tem {credits} disponível{credits > 1 ? "is" : ""}.
+                      </span>
+                    </span>
+                  </label>
+                )}
+
+                {discount > 0 && (
+                  <div className="mb-2 flex items-center justify-between text-sm text-primary">
+                    <span>Desconto fidelidade</span>
+                    <span className="font-semibold">-{formatBRL(discount)}</span>
+                  </div>
+                )}
                 <div className="mb-3 flex items-center justify-between">
                   <span className="font-display text-lg">Total</span>
-                  <span className="font-display text-2xl font-bold">{formatBRL(total)}</span>
+                  <span className="font-display text-2xl font-bold">{formatBRL(totalAfter)}</span>
                 </div>
                 <button
                   onClick={checkout}
