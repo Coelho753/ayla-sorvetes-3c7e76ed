@@ -7,6 +7,7 @@ import { WHATSAPP_PHONE } from "@/config/api";
 import { api } from "@/lib/api";
 import { toast } from "sonner";
 import { saveOrder, newOrderId } from "@/lib/orders";
+import { useLoyalty } from "@/hooks/use-loyalty";
 
 export function CartFloat() {
   const { count, items, total, setQuantity, remove, clear, syncing } = useCart();
