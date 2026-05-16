@@ -1,17 +1,15 @@
 import { Gift, IceCreamCone } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLoyalty } from "@/hooks/use-loyalty";
 
 /**
- * Programa de fidelidade: a cada 10 potes comprados (e entregues),
- * o cliente ganha 1 pote grátis. Os selos e créditos vivem no backend
- * (campos `loyaltyStamps` e `loyaltyCredits` no usuário).
+ * Programa de fidelidade: a cada 10 potes comprados,
+ * o cliente ganha 1 pote grátis.
  */
 export function LoyaltyBadge({ compact = false }: { compact?: boolean }) {
   const { user } = useAuth();
+  const { stamps, credits, target } = useLoyalty();
   if (!user) return null;
-  const stamps = user.loyaltyStamps ?? 0;
-  const credits = user.loyaltyCredits ?? 0;
-  const target = 10;
   const pct = Math.min(100, (stamps / target) * 100);
   const left = Math.max(0, target - stamps);
 

@@ -7,6 +7,7 @@ import { WHATSAPP_PHONE } from "@/config/api";
 import { api } from "@/lib/api";
 import { toast } from "sonner";
 import { saveOrder, newOrderId } from "@/lib/orders";
+import { useLoyalty } from "@/hooks/use-loyalty";
 
 export function CartFloat() {
   const { count, items, total, setQuantity, remove, clear, syncing } = useCart();
@@ -18,17 +19,18 @@ export function CartFloat() {
   const [savingAddr, setSavingAddr] = useState(false);
   const [useFreeTub, setUseFreeTub] = useState(false);
   const navigate = useNavigate();
+  const { stamps: loyaltyStamps, credits: loyaltyCredits, addTubs, consumeCredit } = useLoyalty();
 
   // Heurística: itens com "pote" no nome são considerados potes (categoria tub).
   // O backend valida de fato pelo productId.category.
+  const tubItems = useMemo(() => items.filter((i) => /pote/i.test(i.name)), [items]);
   const cheapestTub = useMemo(() => {
-    const tubs = items.filter((i) => /pote/i.test(i.name));
-    if (tubs.length === 0) return null;
-    return tubs.reduce((min, it) => (it.price < min.price ? it : min), tubs[0]);
-  }, [items]);
+    if (tubItems.length === 0) return null;
+    return tubItems.reduce((min, it) => (it.price < min.price ? it : min), tubItems[0]);
+  }, [tubItems]);
+  const tubQty = useMemo(() => tubItems.reduce((s, i) => s + i.quantity, 0), [tubItems]);
 
-  const credits = user?.loyaltyCredits ?? 0;
-  const canUseFree = credits > 0 && !!cheapestTub;
+  const canUseFree = loyaltyCredits > 0 && !!cheapestTub;
   const discount = useFreeTub && canUseFree ? cheapestTub!.price : 0;
   const totalAfter = Math.max(0, total - discount);
 
@@ -105,6 +107,18 @@ export function CartFloat() {
     });
     const url = `https://wa.me/${WHATSAPP_PHONE}?text=${encodeURIComponent(buildMessage())}`;
     window.open(url, "_blank", "noopener,noreferrer");
+    // Atualiza fidelidade local (fallback enquanto o backend não confirma entrega)
+    if (user) {
+      if (loyaltyCreditsUsed > 0) consumeCredit();
+      if (tubQty > 0) {
+        addTubs(tubQty);
+        const newTotal = loyaltyStamps + tubQty;
+        const newCredits = Math.floor(newTotal / 10) - Math.floor(loyaltyStamps / 10);
+        if (newCredits > 0) {
+          toast.success(`🎁 Parabéns! Você ganhou ${newCredits} pote${newCredits > 1 ? "s" : ""} grátis no Clube Ayla!`);
+        }
+      }
+    }
     // Limpa o carrinho após enviar pelo WhatsApp
     clear();
     setUseFreeTub(false);
@@ -239,7 +253,7 @@ export function CartFloat() {
                       </span>
                       <span className="text-muted-foreground">
                         Aplica desconto de {formatBRL(cheapestTub!.price)} no {cheapestTub!.name}.
-                        Você tem {credits} disponível{credits > 1 ? "is" : ""}.
+                        Você tem {loyaltyCredits} disponível{loyaltyCredits > 1 ? "is" : ""}.
                       </span>
                     </span>
                   </label>
