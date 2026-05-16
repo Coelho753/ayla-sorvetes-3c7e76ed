@@ -241,7 +241,7 @@ export function CartFloat() {
                       </span>
                       <span className="text-muted-foreground">
                         Aplica desconto de {formatBRL(cheapestTub!.price)} no {cheapestTub!.name}.
-                        Você tem {credits} disponível{credits > 1 ? "is" : ""}.
+                        Você tem {loyaltyCredits} disponível{loyaltyCredits > 1 ? "is" : ""}.
                       </span>
                     </span>
                   </label>
