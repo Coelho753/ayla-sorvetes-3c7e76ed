@@ -107,6 +107,18 @@ export function CartFloat() {
     });
     const url = `https://wa.me/${WHATSAPP_PHONE}?text=${encodeURIComponent(buildMessage())}`;
     window.open(url, "_blank", "noopener,noreferrer");
+    // Atualiza fidelidade local (fallback enquanto o backend não confirma entrega)
+    if (user) {
+      if (loyaltyCreditsUsed > 0) consumeCredit();
+      if (tubQty > 0) {
+        addTubs(tubQty);
+        const newTotal = loyaltyStamps + tubQty;
+        const newCredits = Math.floor(newTotal / 10) - Math.floor(loyaltyStamps / 10);
+        if (newCredits > 0) {
+          toast.success(`🎁 Parabéns! Você ganhou ${newCredits} pote${newCredits > 1 ? "s" : ""} grátis no Clube Ayla!`);
+        }
+      }
+    }
     // Limpa o carrinho após enviar pelo WhatsApp
     clear();
     setUseFreeTub(false);
