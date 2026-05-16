@@ -19,17 +19,18 @@ export function CartFloat() {
   const [savingAddr, setSavingAddr] = useState(false);
   const [useFreeTub, setUseFreeTub] = useState(false);
   const navigate = useNavigate();
+  const { stamps: loyaltyStamps, credits: loyaltyCredits, addTubs, consumeCredit } = useLoyalty();
 
   // Heurística: itens com "pote" no nome são considerados potes (categoria tub).
   // O backend valida de fato pelo productId.category.
+  const tubItems = useMemo(() => items.filter((i) => /pote/i.test(i.name)), [items]);
   const cheapestTub = useMemo(() => {
-    const tubs = items.filter((i) => /pote/i.test(i.name));
-    if (tubs.length === 0) return null;
-    return tubs.reduce((min, it) => (it.price < min.price ? it : min), tubs[0]);
-  }, [items]);
+    if (tubItems.length === 0) return null;
+    return tubItems.reduce((min, it) => (it.price < min.price ? it : min), tubItems[0]);
+  }, [tubItems]);
+  const tubQty = useMemo(() => tubItems.reduce((s, i) => s + i.quantity, 0), [tubItems]);
 
-  const credits = user?.loyaltyCredits ?? 0;
-  const canUseFree = credits > 0 && !!cheapestTub;
+  const canUseFree = loyaltyCredits > 0 && !!cheapestTub;
   const discount = useFreeTub && canUseFree ? cheapestTub!.price : 0;
   const totalAfter = Math.max(0, total - discount);
 
