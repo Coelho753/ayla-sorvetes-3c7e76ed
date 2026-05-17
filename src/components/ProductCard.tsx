@@ -55,16 +55,20 @@ export function ProductCard({
       }`}
     >
       {/* IMAGEM */}
-      <div className="relative aspect-square overflow-hidden">
-        <img
-          src={img}
-          alt={name}
-          loading="lazy"
-          decoding="async"
-          width={600}
-          height={600}
-          className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
-        />
+      <div className="relative aspect-square overflow-hidden bg-muted/30">
+        {img ? (
+          <img
+            src={img}
+            alt={name}
+            loading="lazy"
+            decoding="async"
+            width={600}
+            height={600}
+            className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+          />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center text-4xl" aria-hidden="true">🍦</div>
+        )}
         {/* Rating chip topo-esquerda */}
         <span className="absolute left-3 top-3 z-10 inline-flex items-center gap-1 rounded-full bg-black/70 px-2.5 py-1 text-xs font-bold text-white backdrop-blur-md ring-1 ring-white/15">
           <Star className="h-3 w-3 fill-primary text-primary" aria-hidden="true" />
