@@ -352,6 +352,7 @@ function Index() {
                         name={t.name}
                         price={t.price}
                         img={t.img}
+                        category={t.category}
                         badge="1,5L"
                       />
                     </div>
@@ -414,6 +415,7 @@ function Index() {
                         desc={c.desc}
                         price={c.price}
                         img={c.img}
+                        category={c.category}
                         badge="300ml"
                       />
                     </div>
@@ -476,6 +478,7 @@ function Index() {
                         desc={p.desc}
                         price={p.price}
                         img={p.img}
+                        category={p.category}
                         badge="Picolé"
                       />
                     </div>
@@ -539,6 +542,7 @@ function Index() {
                         desc={a.desc}
                         price={a.price}
                         img={a.img}
+                        category={a.category}
                         badge={a.size}
                         variant="acai"
                       />
