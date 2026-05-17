@@ -108,3 +108,27 @@ export const CATEGORY_LABELS: Record<CategoryKey, string> = {
   popsicle: "Picolés",
   acai: "Açaí",
 };
+
+// Mapa de imagens locais por categoria + nome normalizado.
+// Usado como fallback quando o backend não retorna `image`
+// (ex.: produtos importados via /admin que só têm nome/preço/descrição).
+const norm = (s: string) =>
+  s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+
+const imageMap: Record<string, string> = {};
+tubs.forEach((p) => { imageMap[`tub::${norm(p.name)}`] = p.img; });
+cups.forEach((p) => { imageMap[`cup::${norm(p.name)}`] = p.img; });
+popsicles.forEach((p) => { imageMap[`popsicle::${norm(p.name)}`] = p.img; });
+acaiProducts.forEach((p) => { imageMap[`acai::${norm(p.name)}`] = p.img; });
+
+export function localImageFor(category: string | undefined, name: string | undefined): string | undefined {
+  if (!name) return undefined;
+  const cat = (category ?? "").toLowerCase();
+  const catKey =
+    cat === "pote" ? "tub" :
+    cat === "copo" ? "cup" :
+    cat === "picole" || cat === "picolé" ? "popsicle" :
+    cat === "açaí" ? "acai" :
+    cat;
+  return imageMap[`${catKey}::${norm(name)}`];
+}
