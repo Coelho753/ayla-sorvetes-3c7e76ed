@@ -6,6 +6,7 @@ import { RequireAuth } from "@/components/RequireAuth";
 import { api, extractApiError } from "@/lib/api";
 import { formatBRL } from "@/contexts/CartContext";
 import type { Address } from "@/contexts/AuthContext";
+import { tubs, cups, popsicles, acaiProducts } from "@/lib/catalog";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({ meta: [{ title: "Admin — Ayla Sorvetes" }] }),
