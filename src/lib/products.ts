@@ -1,4 +1,5 @@
 import { api } from "./api";
+import { localImageFor } from "./catalog";
 
 export type Category = "tub" | "cup" | "popsicle" | "acai";
 
@@ -44,5 +45,7 @@ export function groupByCategory(list: ApiProduct[]): GroupedProducts {
 }
 
 export function imgOf(p: ApiProduct): string | undefined {
-  return p.image ?? p.imageUrl;
+  const v = p.image ?? p.imageUrl;
+  if (v && v.trim()) return v;
+  return localImageFor(p.category as string | undefined, p.name);
 }
