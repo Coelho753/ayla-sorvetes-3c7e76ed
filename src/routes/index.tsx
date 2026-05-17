@@ -348,7 +348,7 @@ function Index() {
                   <CarouselItem key={t.name} className="pl-4 sm:basis-1/2 lg:basis-1/3">
                     <div className="animate-pop-in h-full" style={{ animationDelay: `${i * 90}ms` }}>
                       <ProductCard
-                        id={`tub-${t.name}`}
+                        id={t.id}
                         name={t.name}
                         price={t.price}
                         img={t.img}
@@ -410,7 +410,7 @@ function Index() {
                   <CarouselItem key={c.name} className="pl-4 sm:basis-1/2 lg:basis-1/3">
                     <div className="animate-pop-in h-full" style={{ animationDelay: `${i * 80}ms` }}>
                       <ProductCard
-                        id={`cup-${c.name}`}
+                        id={c.id}
                         name={c.name}
                         desc={c.desc}
                         price={c.price}
@@ -473,7 +473,7 @@ function Index() {
                   <CarouselItem key={p.name} className="pl-4 sm:basis-1/2 lg:basis-1/3">
                     <div className="animate-pop-in h-full" style={{ animationDelay: `${i * 80}ms` }}>
                       <ProductCard
-                        id={`pop-${p.name}`}
+                        id={p.id}
                         name={p.name}
                         desc={p.desc}
                         price={p.price}
@@ -537,7 +537,7 @@ function Index() {
                   <CarouselItem key={a.name} className="pl-4 sm:basis-1/2 lg:basis-1/3">
                     <div className="animate-pop-in h-full" style={{ animationDelay: `${i * 100}ms` }}>
                       <ProductCard
-                        id={`acai-${a.name}`}
+                        id={a.id}
                         name={a.name}
                         desc={a.desc}
                         price={a.price}
