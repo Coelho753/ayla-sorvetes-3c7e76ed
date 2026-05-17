@@ -160,10 +160,10 @@ function Index() {
     return () => { alive = false; };
   }, []);
 
-  const tubsView = remote?.tub.length ? remote.tub.map((p) => ({ name: p.name, img: imgOf(p) ?? "", price: Number(p.price) || TUB_PRICE })) : tubs;
-  const cupsView = remote?.cup.length ? remote.cup.map((p) => ({ name: p.name, img: imgOf(p) ?? "", price: Number(p.price) || CUP_PRICE, desc: p.description })) : cups;
-  const popsiclesView = remote?.popsicle.length ? remote.popsicle.map((p) => ({ name: p.name, img: imgOf(p) ?? "", price: Number(p.price) || POPSICLE_PRICE, desc: p.description })) : popsicles;
-  const acaiView = remote?.acai.length ? remote.acai.map((p) => ({ name: p.name, img: imgOf(p) ?? "", price: Number(p.price) || 0, desc: p.description, size: p.size ?? "" })) : acaiProducts;
+  const tubsView = remote?.tub.length ? remote.tub.map((p) => ({ id: String(p.id), name: p.name, img: imgOf(p) ?? "", price: Number(p.price) || TUB_PRICE, category: "tub" })) : tubs.map((p) => ({ ...p, id: `local-tub-${p.name}`, category: "tub" }));
+  const cupsView = remote?.cup.length ? remote.cup.map((p) => ({ id: String(p.id), name: p.name, img: imgOf(p) ?? "", price: Number(p.price) || CUP_PRICE, desc: p.description, category: "cup" })) : cups.map((p) => ({ ...p, id: `local-cup-${p.name}`, category: "cup" }));
+  const popsiclesView = remote?.popsicle.length ? remote.popsicle.map((p) => ({ id: String(p.id), name: p.name, img: imgOf(p) ?? "", price: Number(p.price) || POPSICLE_PRICE, desc: p.description, category: "popsicle" })) : popsicles.map((p) => ({ ...p, id: `local-pop-${p.name}`, category: "popsicle" }));
+  const acaiView = remote?.acai.length ? remote.acai.map((p) => ({ id: String(p.id), name: p.name, img: imgOf(p) ?? "", price: Number(p.price) || 0, desc: p.description, size: p.size ?? "", category: "acai" })) : acaiProducts.map((p) => ({ ...p, id: `local-acai-${p.name}`, category: "acai" }));
 
   useEffect(() => {
     document.title = "Ayla Sorvetes — Os sorvetes mais irresistíveis da sua região 🍦";
@@ -348,10 +348,11 @@ function Index() {
                   <CarouselItem key={t.name} className="pl-4 sm:basis-1/2 lg:basis-1/3">
                     <div className="animate-pop-in h-full" style={{ animationDelay: `${i * 90}ms` }}>
                       <ProductCard
-                        id={`tub-${t.name}`}
+                        id={t.id}
                         name={t.name}
                         price={t.price}
                         img={t.img}
+                        category={t.category}
                         badge="1,5L"
                       />
                     </div>
@@ -409,11 +410,12 @@ function Index() {
                   <CarouselItem key={c.name} className="pl-4 sm:basis-1/2 lg:basis-1/3">
                     <div className="animate-pop-in h-full" style={{ animationDelay: `${i * 80}ms` }}>
                       <ProductCard
-                        id={`cup-${c.name}`}
+                        id={c.id}
                         name={c.name}
                         desc={c.desc}
                         price={c.price}
                         img={c.img}
+                        category={c.category}
                         badge="300ml"
                       />
                     </div>
@@ -471,11 +473,12 @@ function Index() {
                   <CarouselItem key={p.name} className="pl-4 sm:basis-1/2 lg:basis-1/3">
                     <div className="animate-pop-in h-full" style={{ animationDelay: `${i * 80}ms` }}>
                       <ProductCard
-                        id={`pop-${p.name}`}
+                        id={p.id}
                         name={p.name}
                         desc={p.desc}
                         price={p.price}
                         img={p.img}
+                        category={p.category}
                         badge="Picolé"
                       />
                     </div>
@@ -534,11 +537,12 @@ function Index() {
                   <CarouselItem key={a.name} className="pl-4 sm:basis-1/2 lg:basis-1/3">
                     <div className="animate-pop-in h-full" style={{ animationDelay: `${i * 100}ms` }}>
                       <ProductCard
-                        id={`acai-${a.name}`}
+                        id={a.id}
                         name={a.name}
                         desc={a.desc}
                         price={a.price}
                         img={a.img}
+                        category={a.category}
                         badge={a.size}
                         variant="acai"
                       />

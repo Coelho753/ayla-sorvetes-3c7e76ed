@@ -21,9 +21,13 @@ export function CartFloat() {
   const navigate = useNavigate();
   const { stamps: loyaltyStamps, credits: loyaltyCredits, addTubs, consumeCredit } = useLoyalty();
 
-  // Heurística: itens com "pote" no nome são considerados potes (categoria tub).
-  // O backend valida de fato pelo productId.category.
-  const tubItems = useMemo(() => items.filter((i) => /pote/i.test(i.name)), [items]);
+  // Itens de fidelidade: usa a categoria salva no carrinho; mantém fallback
+  // por prefixo/id para pedidos antigos salvos antes da categoria existir.
+  const tubItems = useMemo(() => items.filter((i) => {
+    const cat = (i.category ?? "").toLowerCase();
+    const id = String(i.id).toLowerCase();
+    return cat === "tub" || cat === "pote" || id.startsWith("tub-") || id.startsWith("local-tub-");
+  }), [items]);
   const cheapestTub = useMemo(() => {
     if (tubItems.length === 0) return null;
     return tubItems.reduce((min, it) => (it.price < min.price ? it : min), tubItems[0]);
@@ -81,10 +85,12 @@ export function CartFloat() {
       try {
         await api.post("/orders", {
           items: items.map((i) => ({
-            id: i.id, name: i.name, price: i.price, quantity: i.quantity,
+            id: i.id, productId: i.id, name: i.name, price: i.price, quantity: i.quantity, category: i.category,
           })),
           total: totalAfter,
+          source: "site",
           loyaltyCreditsUsed,
+          loyaltyTubQuantity: tubQty,
           address: user.address ?? null,
         });
       } catch {

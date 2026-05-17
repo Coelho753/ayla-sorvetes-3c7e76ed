@@ -8,6 +8,7 @@ export type CartItem = {
   price: number;
   quantity: number;
   image?: string;
+  category?: string;
 };
 
 type CartContextValue = {
@@ -34,8 +35,9 @@ function normalizeItems(raw: unknown): CartItem[] {
       const price = Number(x.price ?? x.preco ?? 0);
       const quantity = Number(x.quantity ?? x.qty ?? x.quantidade ?? 1);
       const image = (x.image ?? x.imagem) as string | undefined;
+      const category = (x.category ?? x.categoria) as string | undefined;
       if (!id || !name) return null;
-      return { id, name, price, quantity, image };
+      return { id, name, price, quantity, image, category };
     })
     .filter(Boolean) as CartItem[];
 }

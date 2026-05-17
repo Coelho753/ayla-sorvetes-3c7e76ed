@@ -126,7 +126,7 @@ function CardapioPage() {
                 <div className="mt-auto flex items-center justify-between pt-4">
                   <span className="font-display text-xl font-bold text-primary">{formatBRL(p.price)}</span>
                   <button
-                    onClick={() => { add({ id: p.id, name: p.name, price: p.price, image: p.image }); toast.success(`${p.name} adicionado!`); }}
+                    onClick={() => { add({ id: p.id, name: p.name, price: p.price, image: p.image, category: p.category }); toast.success(`${p.name} adicionado!`); }}
                     className="inline-flex min-h-10 items-center gap-1 rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     aria-label={`Adicionar ${p.name} ao carrinho`}
                   >

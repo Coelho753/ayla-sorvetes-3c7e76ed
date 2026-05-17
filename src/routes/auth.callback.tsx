@@ -21,7 +21,7 @@ function OAuthCallback() {
       tokenStorage.set(access, refresh ?? null);
       refreshUser().finally(() => {
         toast.success("Login com Google concluído!");
-        navigate({ to: "/" });
+        navigate({ to: "/", replace: true });
       });
     } else {
       toast.error("Não foi possível concluir o login com Google.");

@@ -8,6 +8,7 @@ type ProductCardProps = {
   name: string;
   price: number;
   img: string;
+  category?: string;
   badge?: string;
   desc?: string;
   /** Variante visual: padrão (escuro) ou açaí (roxo intenso) */
@@ -30,6 +31,7 @@ export function ProductCard({
   name,
   price,
   img,
+  category,
   badge,
   desc,
   variant = "default",
@@ -42,7 +44,7 @@ export function ProductCard({
   const brandLabel = brand ?? (isAcai ? "AÇAÍ" : "AYLA");
 
   function handleAdd() {
-    add({ id, name, price, image: img }, qty);
+    add({ id, name, price, image: img, category }, qty);
     toast.success(`${qty}x ${name} no carrinho!`);
   }
 
