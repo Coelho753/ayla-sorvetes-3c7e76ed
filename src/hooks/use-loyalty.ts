@@ -59,9 +59,8 @@ export function useLoyalty() {
   const addTubs = useCallback(
     (qty: number) => {
       if (!user || qty <= 0) return;
-      const cur = read(user.id);
-      let newStamps = cur.stamps + qty;
-      let newCredits = cur.credits;
+      let newStamps = stamps + qty;
+      let newCredits = credits;
       while (newStamps >= TARGET) {
         newStamps -= TARGET;
         newCredits += 1;
@@ -70,17 +69,16 @@ export function useLoyalty() {
       write(user.id, next);
       setLocal(next);
     },
-    [user?.id], // eslint-disable-line react-hooks/exhaustive-deps
+    [credits, stamps, user],
   );
 
   const consumeCredit = useCallback(() => {
     if (!user) return;
-    const cur = read(user.id);
-    if (cur.credits <= 0) return;
-    const next = { stamps: cur.stamps, credits: cur.credits - 1 };
+    if (credits <= 0) return;
+    const next = { stamps, credits: credits - 1 };
     write(user.id, next);
     setLocal(next);
-  }, [user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [credits, stamps, user]);
 
   return { stamps, credits, target: TARGET, addTubs, consumeCredit };
 }
