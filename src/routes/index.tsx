@@ -160,10 +160,10 @@ function Index() {
     return () => { alive = false; };
   }, []);
 
-  const tubsView = remote?.tub.length ? remote.tub.map((p) => ({ name: p.name, img: imgOf(p) ?? "", price: Number(p.price) || TUB_PRICE })) : tubs;
-  const cupsView = remote?.cup.length ? remote.cup.map((p) => ({ name: p.name, img: imgOf(p) ?? "", price: Number(p.price) || CUP_PRICE, desc: p.description })) : cups;
-  const popsiclesView = remote?.popsicle.length ? remote.popsicle.map((p) => ({ name: p.name, img: imgOf(p) ?? "", price: Number(p.price) || POPSICLE_PRICE, desc: p.description })) : popsicles;
-  const acaiView = remote?.acai.length ? remote.acai.map((p) => ({ name: p.name, img: imgOf(p) ?? "", price: Number(p.price) || 0, desc: p.description, size: p.size ?? "" })) : acaiProducts;
+  const tubsView = remote?.tub.length ? remote.tub.map((p) => ({ name: p.name, img: imgOf(p) ?? "", price: Number(p.price) || TUB_PRICE, category: "tub" })) : tubs.map((p) => ({ ...p, category: "tub" }));
+  const cupsView = remote?.cup.length ? remote.cup.map((p) => ({ name: p.name, img: imgOf(p) ?? "", price: Number(p.price) || CUP_PRICE, desc: p.description, category: "cup" })) : cups.map((p) => ({ ...p, category: "cup" }));
+  const popsiclesView = remote?.popsicle.length ? remote.popsicle.map((p) => ({ name: p.name, img: imgOf(p) ?? "", price: Number(p.price) || POPSICLE_PRICE, desc: p.description, category: "popsicle" })) : popsicles.map((p) => ({ ...p, category: "popsicle" }));
+  const acaiView = remote?.acai.length ? remote.acai.map((p) => ({ name: p.name, img: imgOf(p) ?? "", price: Number(p.price) || 0, desc: p.description, size: p.size ?? "", category: "acai" })) : acaiProducts.map((p) => ({ ...p, category: "acai" }));
 
   useEffect(() => {
     document.title = "Ayla Sorvetes — Os sorvetes mais irresistíveis da sua região 🍦";
