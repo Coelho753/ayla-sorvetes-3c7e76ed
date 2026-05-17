@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { z } from "zod";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
@@ -17,11 +17,15 @@ const schema = z.object({
 });
 
 function LoginPage() {
-  const { login } = useAuth();
+  const { login, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    if (isAuthenticated) navigate({ to: "/", replace: true });
+  }, [isAuthenticated, navigate]);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -31,7 +35,7 @@ function LoginPage() {
     try {
       await login(parsed.data.email, parsed.data.password);
       toast.success("Bem-vindo(a) de volta!");
-      navigate({ to: "/" });
+      navigate({ to: "/", replace: true });
     } catch (err) {
       toast.error((err as Error).message);
     } finally { setBusy(false); }
