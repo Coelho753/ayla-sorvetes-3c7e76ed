@@ -1,4 +1,5 @@
 import { api } from "./api";
+import { localImageFor } from "./catalog";
 
 export type Category = "tub" | "cup" | "popsicle" | "acai";
 
