@@ -553,9 +553,6 @@ function UserDrawer({ user, onClose, onSaved }: { user: AdminUser; onClose: () =
                       {o.items?.slice(0, 3).map((i) => `${i.quantity}× ${i.name}`).join(", ")}
                       {o.items && o.items.length > 3 && ` +${o.items.length - 3}`}
                     </p>
-                    {(o.loyaltyCreditsUsed ?? 0) > 0 && (
-                      <p className="mt-1 inline-flex items-center gap-1 text-xs text-primary"><Gift className="h-3 w-3" /> Pote grátis aplicado</p>
-                    )}
                     <select value={o.status} onChange={(e) => changeStatus(o.id, e.target.value)} className="mt-2 rounded-md border border-input bg-background px-2 py-1 text-xs">
                       {STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
                     </select>
