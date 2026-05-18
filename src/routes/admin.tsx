@@ -69,6 +69,7 @@ function AdminPanel() {
       <div className="mt-6">
         {tab === "dashboard" && <Dashboard />}
         {tab === "products" && <ProductsAdmin />}
+        {tab === "wholesale" && <WholesaleAdmin />}
         {tab === "orders" && <OrdersAdmin filter="all" />}
         {tab === "whatsapp" && <OrdersAdmin filter="whatsapp" />}
         {tab === "users" && <UsersAdmin />}
