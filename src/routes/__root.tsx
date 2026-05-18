@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Outlet, Link, createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
 import { Toaster } from "sonner";
 
@@ -8,6 +9,7 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { AuthBar } from "@/components/AuthBar";
 import { CartFloat } from "@/components/CartFloat";
 import { AddressGate } from "@/components/AddressGate";
+import { loadWholesaleFromBackend } from "@/lib/wholesale";
 
 function NotFoundComponent() {
   return (
@@ -82,6 +84,7 @@ function RootShell({ children }: { children: React.ReactNode }) {
 }
 
 function RootComponent() {
+  useEffect(() => { loadWholesaleFromBackend(); }, []);
   return (
     <AuthProvider>
       <CartProvider>
