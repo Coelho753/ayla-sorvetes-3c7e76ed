@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
-import { Minus, Plus, Plus as PlusIcon, Sparkles, Star } from "lucide-react";
+import { useState } from "react";
+import { Minus, Plus, Plus as PlusIcon, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { useCart, formatBRL } from "@/contexts/CartContext";
 
@@ -14,14 +14,6 @@ type ProductCardProps = {
   variant?: "default" | "acai";
   brand?: string;
 };
-
-function pseudoRating(id: string) {
-  let h = 0;
-  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
-  const rating = 4.5 + ((h % 50) / 100);
-  const reviews = 28 + (h % 130);
-  return { rating: Math.round(rating * 10) / 10, reviews };
-}
 
 export function ProductCard({
   id,
@@ -38,7 +30,6 @@ export function ProductCard({
   const [qty, setQty] = useState(1);
   const [bumping, setBumping] = useState(false);
   const isAcai = variant === "acai";
-  const { rating, reviews } = useMemo(() => pseudoRating(id), [id]);
   const brandLabel = brand ?? (isAcai ? "AÇAÍ" : "AYLA");
 
   function handleAdd() {
@@ -90,12 +81,6 @@ export function ProductCard({
           <div className="flex h-full w-full items-center justify-center text-4xl" aria-hidden="true">🍦</div>
         )}
 
-        {/* Rating chip */}
-        <span className="absolute left-3 top-3 z-10 inline-flex items-center gap-1 rounded-full bg-white/95 px-2.5 py-1 text-xs font-bold text-foreground shadow-sm ring-1 ring-black/5 backdrop-blur">
-          <Star className="h-3 w-3 fill-sunny text-sunny" aria-hidden="true" />
-          {rating.toFixed(1)}
-        </span>
-
         {/* "+" rápido */}
         <button
           type="button"
@@ -126,20 +111,6 @@ export function ProductCard({
         {desc && (
           <p className="mt-1.5 line-clamp-2 text-xs leading-snug text-muted-foreground">{desc}</p>
         )}
-
-        {/* Stars + reviews */}
-        <div className="mt-3 flex items-center gap-1.5">
-          <div className="flex" aria-label={`Avaliação ${rating} de 5`}>
-            {Array.from({ length: 5 }).map((_, i) => (
-              <Star
-                key={i}
-                className={`h-3.5 w-3.5 ${i < Math.round(rating) ? "fill-sunny text-sunny" : "text-muted-foreground/30"}`}
-                aria-hidden="true"
-              />
-            ))}
-          </div>
-          <span className="text-xs text-muted-foreground">({reviews})</span>
-        </div>
 
         {/* Preço + qty */}
         <div className="mt-3 flex items-center justify-between">
