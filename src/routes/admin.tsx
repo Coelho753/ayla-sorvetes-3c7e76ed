@@ -1,12 +1,22 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Loader2, Plus, Pencil, Trash2, X, MessageCircle, UserCog, Wallet, Gift } from "lucide-react";
+import { Loader2, Plus, Pencil, Trash2, X, MessageCircle, UserCog, Wallet, Package } from "lucide-react";
 import { toast } from "sonner";
 import { RequireAuth } from "@/components/RequireAuth";
 import { api, extractApiError } from "@/lib/api";
 import { formatBRL } from "@/contexts/CartContext";
 import type { Address } from "@/contexts/AuthContext";
 import { tubs, cups, popsicles, acaiProducts } from "@/lib/catalog";
+import {
+  getCategoryPrices,
+  getProductPrices,
+  setCategoryWholesale,
+  setProductWholesale,
+  DEFAULT_WHOLESALE_DISCOUNT,
+  WHOLESALE_THRESHOLD,
+  CATEGORY_LABEL,
+  type WholesaleCategory,
+} from "@/lib/wholesale";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({ meta: [{ title: "Admin — Ayla Sorvetes" }] }),
@@ -14,20 +24,22 @@ export const Route = createFileRoute("/admin")({
 });
 
 type Product = { id: string | number; name: string; price: number; description?: string; image?: string; category?: string; size?: string; active?: boolean };
-type Order = { id: string | number; total: number; status: string; createdAt?: string; source?: string; customerName?: string; customerPhone?: string; items?: Array<{ name: string; quantity: number; price?: number }>; user?: { name?: string; email?: string }; userId?: string | number; address?: { street?: string; number?: string; city?: string }; loyaltyCreditsUsed?: number };
-type AdminUser = { id: string | number; name?: string; email: string; role?: string; createdAt?: string; phone?: string; address?: Address; loyaltyStamps?: number; loyaltyCredits?: number };
+type Order = { id: string | number; total: number; status: string; createdAt?: string; source?: string; customerName?: string; customerPhone?: string; items?: Array<{ name: string; quantity: number; price?: number }>; user?: { name?: string; email?: string }; userId?: string | number; address?: { street?: string; number?: string; city?: string } };
+type AdminUser = { id: string | number; name?: string; email: string; role?: string; createdAt?: string; phone?: string; address?: Address };
 
-type Tab = "dashboard" | "products" | "orders" | "whatsapp" | "users";
+type Tab = "dashboard" | "products" | "wholesale" | "orders" | "whatsapp" | "users";
 
 function AdminPanel() {
   const [tab, setTab] = useState<Tab>("dashboard");
   const tabs: { key: Tab; label: string }[] = [
     { key: "dashboard", label: "Dashboard" },
     { key: "products", label: "Produtos" },
+    { key: "wholesale", label: "Atacado" },
     { key: "orders", label: "Pedidos" },
     { key: "whatsapp", label: "WhatsApp" },
     { key: "users", label: "Usuários" },
   ];
+
   return (
     <main className="mx-auto max-w-6xl px-4 py-10">
       <div className="flex flex-wrap items-center justify-between gap-3">
