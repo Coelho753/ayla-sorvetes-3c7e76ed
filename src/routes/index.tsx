@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect } from "react";
-import { Sparkles, MessageCircle, Instagram, Facebook } from "lucide-react";
+import { Sparkles, MessageCircle, Instagram } from "lucide-react";
 
 import mascot from "@/assets/mascot.webp";
 import floatPopsicle from "@/assets/float-popsicle.png";
@@ -65,6 +65,7 @@ import {
 
 import { WhatsAppFloat } from "@/components/WhatsAppFloat";
 import { ProductCard } from "@/components/ProductCard";
+import { WholesaleProgress } from "@/components/WholesaleProgress";
 import { WHATSAPP_LINK } from "@/lib/whatsapp";
 import { useReveal } from "@/hooks/use-reveal";
 import { useImagePreload } from "@/hooks/use-image-preload";
@@ -321,6 +322,7 @@ function Index() {
       <section id="potes" className="relative overflow-hidden px-6 py-24 md:py-32">
         {/* fundo unificado em <main>; sem overlay local */}
         <div className="mx-auto max-w-6xl">
+          <WholesaleProgress className="mb-10" />
           <div className="mx-auto max-w-2xl text-center">
             <span className="reveal inline-block rounded-full bg-secondary/15 px-4 py-1.5 font-display text-xs font-bold uppercase tracking-[0.2em] text-secondary ring-1 ring-secondary/20">
               🍦 Potes de 1,5L
