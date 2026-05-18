@@ -368,3 +368,22 @@
   gap: 3rem;
 }
 
+/* Espaço inferior para não sobrepor os botões flutuantes (carrinho + WhatsApp) */
+body {
+  padding-bottom: calc(7rem + env(safe-area-inset-bottom, 0px));
+}
+
+/* Animações suaves para entrada de produtos */
+@keyframes pop-in {
+  0% { opacity: 0; transform: translateY(12px) scale(.96); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+.animate-pop-in { animation: pop-in .45s cubic-bezier(.2,.8,.2,1) both; }
+
+/* Reduz motion conforme preferência do usuário */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .001ms !important;
+    transition-duration: .001ms !important;
+  }
+}
