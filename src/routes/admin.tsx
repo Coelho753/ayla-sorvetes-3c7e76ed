@@ -566,3 +566,121 @@ function UserDrawer({ user, onClose, onSaved }: { user: AdminUser; onClose: () =
     </div>
   );
 }
+
+function WholesaleAdmin() {
+  const [products, setProducts] = useState<Product[] | null>(null);
+  const [catPrices, setCatPrices] = useState<Record<string, number>>(getCategoryPrices());
+  const [prodPrices, setProdPrices] = useState<Record<string, number>>(getProductPrices());
+  const [catInput, setCatInput] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const { data } = await api.get<Product[] | { data: Product[] }>("/products");
+        setProducts(Array.isArray(data) ? data : (data as { data: Product[] }).data ?? []);
+      } catch { setProducts([]); }
+    })();
+  }, []);
+
+  function applyCategory(cat: WholesaleCategory) {
+    const raw = catInput[cat];
+    if (!raw) { toast.error("Informe um preço."); return; }
+    const v = Number(raw.replace(",", "."));
+    if (!v || v <= 0) { toast.error("Preço inválido."); return; }
+    setCategoryWholesale(cat, v);
+    setCatPrices(getCategoryPrices());
+    toast.success(`Preço de atacado de ${CATEGORY_LABEL[cat]} aplicado em massa.`);
+  }
+  function clearCategory(cat: WholesaleCategory) {
+    setCategoryWholesale(cat, null);
+    setCatPrices(getCategoryPrices());
+  }
+  function applyProduct(p: Product, raw: string) {
+    if (!raw) { setProductWholesale(p.id, null); setProdPrices(getProductPrices()); return; }
+    const v = Number(raw.replace(",", "."));
+    if (!v || v <= 0) return;
+    setProductWholesale(p.id, v);
+    setProdPrices(getProductPrices());
+  }
+
+  const cats: WholesaleCategory[] = ["tub", "cup", "popsicle"];
+
+  return (
+    <div className="space-y-6">
+      <div className="rounded-xl border border-primary/30 bg-primary/5 p-4 text-sm">
+        <p className="font-semibold">Como funciona</p>
+        <p className="mt-1 text-muted-foreground">
+          A partir de <strong>{WHOLESALE_THRESHOLD} unidades</strong> da mesma categoria no carrinho,
+          o cliente paga o preço de atacado. Sem configuração, aplica {Math.round(DEFAULT_WHOLESALE_DISCOUNT * 100)}% de desconto.
+          Preço por produto (abaixo) tem prioridade sobre o preço da categoria.
+        </p>
+      </div>
+
+      <section className="rounded-xl border border-border p-5">
+        <h3 className="font-display text-lg font-bold">Por categoria (envio em massa)</h3>
+        <p className="text-xs text-muted-foreground">Define um valor único aplicado a TODOS os itens da categoria.</p>
+        <div className="mt-4 grid gap-3 sm:grid-cols-3">
+          {cats.map((c) => (
+            <div key={c} className="rounded-lg border border-border p-3">
+              <p className="font-semibold capitalize">{CATEGORY_LABEL[c]}</p>
+              <p className="text-xs text-muted-foreground">
+                Atual: {catPrices[c] ? formatBRL(catPrices[c]) : <em>{Math.round(DEFAULT_WHOLESALE_DISCOUNT * 100)}% off</em>}
+              </p>
+              <div className="mt-2 flex gap-1">
+                <input
+                  type="number" step="0.01" min={0}
+                  placeholder="R$ atacado"
+                  value={catInput[c] ?? ""}
+                  onChange={(e) => setCatInput({ ...catInput, [c]: e.target.value })}
+                  className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
+                />
+                <button onClick={() => applyCategory(c)} className="rounded-md bg-primary px-3 py-1.5 text-xs font-bold text-primary-foreground">Aplicar</button>
+                {catPrices[c] != null && (
+                  <button onClick={() => clearCategory(c)} className="rounded-md border border-border px-2 py-1.5 text-xs">Limpar</button>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="rounded-xl border border-border p-5">
+        <h3 className="font-display text-lg font-bold">Por produto (override)</h3>
+        <p className="text-xs text-muted-foreground">Sobrescreve o preço da categoria apenas para o produto selecionado.</p>
+        {!products ? (
+          <Loader2 className="mx-auto mt-4 h-6 w-6 animate-spin text-primary" />
+        ) : (
+          <div className="mt-3 overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-muted/50 text-left">
+                <tr><th className="p-2">Produto</th><th className="p-2">Categoria</th><th className="p-2">Preço cheio</th><th className="p-2">Atacado</th></tr>
+              </thead>
+              <tbody>
+                {products.filter((p) => ["tub","cup","popsicle"].includes((p.category ?? "").toLowerCase())).map((p) => (
+                  <tr key={p.id} className="border-t border-border">
+                    <td className="p-2 font-semibold">{p.name}</td>
+                    <td className="p-2 text-muted-foreground">{p.category}</td>
+                    <td className="p-2">{formatBRL(Number(p.price) || 0)}</td>
+                    <td className="p-2">
+                      <input
+                        type="number" step="0.01" min={0}
+                        defaultValue={prodPrices[String(p.id)] ?? ""}
+                        placeholder="—"
+                        onBlur={(e) => applyProduct(p, e.target.value)}
+                        className="w-28 rounded-md border border-input bg-background px-2 py-1 text-sm"
+                      />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
+
+      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+        <Package className="h-3.5 w-3.5" /> Valores salvos localmente (até o backend ganhar o campo <code>wholesalePrice</code>).
+      </div>
+    </div>
+  );
+}
