@@ -10,8 +10,9 @@ import { tubs, cups, popsicles, acaiProducts } from "@/lib/catalog";
 import {
   getCategoryPrices,
   getProductPrices,
-  setCategoryWholesale,
-  setProductWholesale,
+  saveCategoryWholesale,
+  saveProductWholesale,
+  loadWholesaleFromBackend,
   DEFAULT_WHOLESALE_DISCOUNT,
   WHOLESALE_THRESHOLD,
   CATEGORY_LABEL,
@@ -599,26 +600,43 @@ function WholesaleAdmin() {
         setProducts(Array.isArray(data) ? data : (data as { data: Product[] }).data ?? []);
       } catch { setProducts([]); }
     })();
+    loadWholesaleFromBackend().then(() => {
+      setCatPrices(getCategoryPrices());
+      setProdPrices(getProductPrices());
+    });
   }, []);
 
-  function applyCategory(cat: WholesaleCategory) {
+  async function applyCategory(cat: WholesaleCategory) {
     const raw = catInput[cat];
     if (!raw) { toast.error("Informe um preço."); return; }
     const v = Number(raw.replace(",", "."));
     if (!v || v <= 0) { toast.error("Preço inválido."); return; }
-    setCategoryWholesale(cat, v);
-    setCatPrices(getCategoryPrices());
-    toast.success(`Preço de atacado de ${CATEGORY_LABEL[cat]} aplicado em massa.`);
+    try {
+      await saveCategoryWholesale(cat, v);
+      setCatPrices(getCategoryPrices());
+      toast.success(`Preço de atacado de ${CATEGORY_LABEL[cat]} aplicado em massa.`);
+    } catch (err) {
+      setCatPrices(getCategoryPrices());
+      toast.error(extractApiError(err, "Falha ao salvar no servidor (mantido localmente)."));
+    }
   }
-  function clearCategory(cat: WholesaleCategory) {
-    setCategoryWholesale(cat, null);
+  async function clearCategory(cat: WholesaleCategory) {
+    try { await saveCategoryWholesale(cat, null); } catch { /* mantém local */ }
     setCatPrices(getCategoryPrices());
   }
-  function applyProduct(p: Product, raw: string) {
-    if (!raw) { setProductWholesale(p.id, null); setProdPrices(getProductPrices()); return; }
+  async function applyProduct(p: Product, raw: string) {
+    if (!raw) {
+      try { await saveProductWholesale(p.id, null); } catch { /* mantém local */ }
+      setProdPrices(getProductPrices());
+      return;
+    }
     const v = Number(raw.replace(",", "."));
     if (!v || v <= 0) return;
-    setProductWholesale(p.id, v);
+    try {
+      await saveProductWholesale(p.id, v);
+    } catch (err) {
+      toast.error(extractApiError(err, "Falha ao salvar no servidor (mantido localmente)."));
+    }
     setProdPrices(getProductPrices());
   }
 
@@ -698,7 +716,7 @@ function WholesaleAdmin() {
       </section>
 
       <div className="flex items-center gap-2 text-xs text-muted-foreground">
-        <Package className="h-3.5 w-3.5" /> Valores salvos localmente (até o backend ganhar o campo <code>wholesalePrice</code>).
+        <Package className="h-3.5 w-3.5" /> Valores sincronizados com o backend (<code>/wholesale</code>). Em caso de falha, ficam salvos localmente.
       </div>
     </div>
   );

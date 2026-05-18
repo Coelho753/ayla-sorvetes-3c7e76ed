@@ -1,24 +1,18 @@
 /**
  * Preço de atacado (substitui o antigo Clube Ayla).
- *
- * Regras:
- * - A partir de `WHOLESALE_THRESHOLD` itens da mesma categoria no carrinho,
- *   todos os itens daquela categoria passam a usar o preço de atacado.
- * - Preço de atacado pode ser definido pelo admin:
- *     a) por produto individual (override)
- *     b) por categoria (aplica em massa a todos da categoria)
- *   Se nada estiver configurado, aplica DEFAULT_WHOLESALE_DISCOUNT (35% off).
- *
- * Persistência: localStorage (até o backend ganhar os campos).
+ * Fonte da verdade: backend `/wholesale`. localStorage é cache para
+ * exibir preço offline e como fallback enquanto o GET não retorna.
  */
+import { api } from "@/lib/api";
 
-export const WHOLESALE_THRESHOLD = 3;
-export const DEFAULT_WHOLESALE_DISCOUNT = 0.35;
+export let WHOLESALE_THRESHOLD = 3;
+export let DEFAULT_WHOLESALE_DISCOUNT = 0.35;
 export const WHOLESALE_CATEGORIES = ["tub", "cup", "popsicle"] as const;
 export type WholesaleCategory = (typeof WHOLESALE_CATEGORIES)[number];
 
 const KEY_PRODUCT = "ayla.wholesale.products"; // { [productId]: number }
 const KEY_CATEGORY = "ayla.wholesale.categories"; // { [category]: number }
+const KEY_CONFIG = "ayla.wholesale.config";
 
 type Map = Record<string, number>;
 
@@ -61,6 +55,71 @@ export function setCategoryWholesale(category: string, price: number | null) {
   if (price == null || Number.isNaN(price)) delete m[key];
   else m[key] = price;
   writeJson(KEY_CATEGORY, m);
+}
+
+/* ============================================================
+ * Integração com o backend (`/wholesale`)
+ * ========================================================== */
+
+type WholesalePayload = {
+  config?: { threshold?: number; defaultDiscount?: number };
+  categories?: Record<string, number>;
+  products?: Record<string, number>;
+};
+
+function applyConfig(cfg?: WholesalePayload["config"]) {
+  if (!cfg) return;
+  if (typeof cfg.threshold === "number" && cfg.threshold > 0) WHOLESALE_THRESHOLD = cfg.threshold;
+  if (typeof cfg.defaultDiscount === "number" && cfg.defaultDiscount >= 0 && cfg.defaultDiscount < 1)
+    DEFAULT_WHOLESALE_DISCOUNT = cfg.defaultDiscount;
+  try { window.localStorage.setItem(KEY_CONFIG, JSON.stringify({ threshold: WHOLESALE_THRESHOLD, defaultDiscount: DEFAULT_WHOLESALE_DISCOUNT })); } catch {}
+}
+
+// hidrata config do localStorage no boot (antes do GET responder)
+try {
+  const raw = typeof window !== "undefined" ? window.localStorage.getItem(KEY_CONFIG) : null;
+  if (raw) applyConfig(JSON.parse(raw));
+} catch { /* ignore */ }
+
+export async function loadWholesaleFromBackend(): Promise<boolean> {
+  try {
+    const { data } = await api.get<WholesalePayload>("/wholesale");
+    applyConfig(data.config);
+    if (data.categories) writeJson(KEY_CATEGORY, data.categories);
+    if (data.products) writeJson(KEY_PRODUCT, data.products);
+    window.dispatchEvent(new CustomEvent("wholesale:changed"));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export async function saveCategoryWholesale(category: WholesaleCategory, price: number | null) {
+  try {
+    if (price == null) await api.delete(`/wholesale/category/${category}`);
+    else await api.put("/wholesale/category", { category, price });
+  } catch (err) {
+    setCategoryWholesale(category, price); // mantém cache local
+    throw err;
+  }
+  setCategoryWholesale(category, price);
+}
+
+export async function saveProductWholesale(productId: string | number, price: number | null) {
+  try {
+    if (price == null) await api.delete(`/wholesale/product/${productId}`);
+    else await api.put("/wholesale/product", { productId, price });
+  } catch (err) {
+    setProductWholesale(productId, price);
+    throw err;
+  }
+  setProductWholesale(productId, price);
+}
+
+export async function saveWholesaleConfig(cfg: { threshold?: number; defaultDiscount?: number }) {
+  await api.put("/wholesale/config", cfg);
+  applyConfig(cfg);
+  window.dispatchEvent(new CustomEvent("wholesale:changed"));
 }
 
 /** Resolve o preço de atacado de um item específico. */
