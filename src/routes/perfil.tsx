@@ -4,7 +4,7 @@ import { z } from "zod";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { RequireAuth } from "@/components/RequireAuth";
-import { LoyaltyBadge } from "@/components/LoyaltyBadge";
+
 import { useAuth, type Address } from "@/contexts/AuthContext";
 import { api, extractApiError } from "@/lib/api";
 import { loadOrders, type Order } from "@/lib/orders";
@@ -100,9 +100,6 @@ function Profile() {
       <h1 className="font-display text-3xl font-bold">Minha conta</h1>
       <p className="mt-1 text-muted-foreground">Atualize seus dados, endereço e senha.</p>
 
-      <div className="mt-6">
-        <LoyaltyBadge />
-      </div>
 
       <form onSubmit={saveProfile} className="mt-8 space-y-4 rounded-xl border border-border p-5">
         <h2 className="font-display text-xl font-semibold">Dados</h2>

@@ -1,12 +1,22 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Loader2, Plus, Pencil, Trash2, X, MessageCircle, UserCog, Wallet, Gift } from "lucide-react";
+import { Loader2, Plus, Pencil, Trash2, X, MessageCircle, UserCog, Wallet, Package } from "lucide-react";
 import { toast } from "sonner";
 import { RequireAuth } from "@/components/RequireAuth";
 import { api, extractApiError } from "@/lib/api";
 import { formatBRL } from "@/contexts/CartContext";
 import type { Address } from "@/contexts/AuthContext";
 import { tubs, cups, popsicles, acaiProducts } from "@/lib/catalog";
+import {
+  getCategoryPrices,
+  getProductPrices,
+  setCategoryWholesale,
+  setProductWholesale,
+  DEFAULT_WHOLESALE_DISCOUNT,
+  WHOLESALE_THRESHOLD,
+  CATEGORY_LABEL,
+  type WholesaleCategory,
+} from "@/lib/wholesale";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({ meta: [{ title: "Admin — Ayla Sorvetes" }] }),
@@ -14,20 +24,22 @@ export const Route = createFileRoute("/admin")({
 });
 
 type Product = { id: string | number; name: string; price: number; description?: string; image?: string; category?: string; size?: string; active?: boolean };
-type Order = { id: string | number; total: number; status: string; createdAt?: string; source?: string; customerName?: string; customerPhone?: string; items?: Array<{ name: string; quantity: number; price?: number }>; user?: { name?: string; email?: string }; userId?: string | number; address?: { street?: string; number?: string; city?: string }; loyaltyCreditsUsed?: number };
-type AdminUser = { id: string | number; name?: string; email: string; role?: string; createdAt?: string; phone?: string; address?: Address; loyaltyStamps?: number; loyaltyCredits?: number };
+type Order = { id: string | number; total: number; status: string; createdAt?: string; source?: string; customerName?: string; customerPhone?: string; items?: Array<{ name: string; quantity: number; price?: number }>; user?: { name?: string; email?: string }; userId?: string | number; address?: { street?: string; number?: string; city?: string } };
+type AdminUser = { id: string | number; name?: string; email: string; role?: string; createdAt?: string; phone?: string; address?: Address };
 
-type Tab = "dashboard" | "products" | "orders" | "whatsapp" | "users";
+type Tab = "dashboard" | "products" | "wholesale" | "orders" | "whatsapp" | "users";
 
 function AdminPanel() {
   const [tab, setTab] = useState<Tab>("dashboard");
   const tabs: { key: Tab; label: string }[] = [
     { key: "dashboard", label: "Dashboard" },
     { key: "products", label: "Produtos" },
+    { key: "wholesale", label: "Atacado" },
     { key: "orders", label: "Pedidos" },
     { key: "whatsapp", label: "WhatsApp" },
     { key: "users", label: "Usuários" },
   ];
+
   return (
     <main className="mx-auto max-w-6xl px-4 py-10">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -57,6 +69,7 @@ function AdminPanel() {
       <div className="mt-6">
         {tab === "dashboard" && <Dashboard />}
         {tab === "products" && <ProductsAdmin />}
+        {tab === "wholesale" && <WholesaleAdmin />}
         {tab === "orders" && <OrdersAdmin filter="all" />}
         {tab === "whatsapp" && <OrdersAdmin filter="whatsapp" />}
         {tab === "users" && <UsersAdmin />}
@@ -400,7 +413,7 @@ function UsersAdmin() {
               <th className="p-3">Nome</th>
               <th className="p-3">E-mail</th>
               <th className="p-3">Telefone</th>
-              <th className="p-3">Fidelidade</th>
+              
               <th className="p-3">Permissão</th>
               <th className="p-3 text-right">Ações</th>
             </tr>
@@ -411,14 +424,7 @@ function UsersAdmin() {
                 <td className="p-3 font-semibold">{u.name ?? "—"}</td>
                 <td className="p-3">{u.email}</td>
                 <td className="p-3 text-muted-foreground">{u.phone ?? "—"}</td>
-                <td className="p-3 text-xs">
-                  <span className="text-muted-foreground">{u.loyaltyStamps ?? 0}/10</span>
-                  {(u.loyaltyCredits ?? 0) > 0 && (
-                    <span className="ml-2 inline-flex items-center gap-1 rounded-full bg-primary/15 px-2 py-0.5 text-primary">
-                      <Gift className="h-3 w-3" /> {u.loyaltyCredits}
-                    </span>
-                  )}
-                </td>
+                
                 <td className="p-3">
                   <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${u.role === "admin" ? "bg-secondary/20 text-secondary-foreground" : "bg-muted text-muted-foreground"}`}>{u.role ?? "user"}</span>
                 </td>
@@ -467,8 +473,6 @@ function UserDrawer({ user, onClose, onSaved }: { user: AdminUser; onClose: () =
         role: form.role,
         address: form.address,
         endereco: form.address,
-        loyaltyCredits: form.loyaltyCredits,
-        loyaltyStamps: form.loyaltyStamps,
       });
       toast.success("Usuário atualizado!");
       onSaved();
@@ -506,16 +510,10 @@ function UserDrawer({ user, onClose, onSaved }: { user: AdminUser; onClose: () =
               <input placeholder="Nome" value={form.name ?? ""} onChange={(e) => setForm({ ...form, name: e.target.value })} className={inputCls} />
               <input placeholder="Telefone" value={form.phone ?? ""} onChange={(e) => setForm({ ...form, phone: e.target.value })} className={inputCls} />
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <select value={form.role ?? "user"} onChange={(e) => setForm({ ...form, role: e.target.value })} className={inputCls}>
-                <option value="user">user</option>
-                <option value="admin">admin</option>
-              </select>
-              <div className="grid grid-cols-2 gap-2">
-                <input type="number" min={0} placeholder="Selos" value={form.loyaltyStamps ?? 0} onChange={(e) => setForm({ ...form, loyaltyStamps: Number(e.target.value) })} className={inputCls} title="Selos (0-9)" />
-                <input type="number" min={0} placeholder="Créditos 🎁" value={form.loyaltyCredits ?? 0} onChange={(e) => setForm({ ...form, loyaltyCredits: Number(e.target.value) })} className={inputCls} title="Potes grátis disponíveis" />
-              </div>
-            </div>
+            <select value={form.role ?? "user"} onChange={(e) => setForm({ ...form, role: e.target.value })} className={inputCls}>
+              <option value="user">user</option>
+              <option value="admin">admin</option>
+            </select>
           </section>
 
           <section className="space-y-3">
@@ -555,9 +553,6 @@ function UserDrawer({ user, onClose, onSaved }: { user: AdminUser; onClose: () =
                       {o.items?.slice(0, 3).map((i) => `${i.quantity}× ${i.name}`).join(", ")}
                       {o.items && o.items.length > 3 && ` +${o.items.length - 3}`}
                     </p>
-                    {(o.loyaltyCreditsUsed ?? 0) > 0 && (
-                      <p className="mt-1 inline-flex items-center gap-1 text-xs text-primary"><Gift className="h-3 w-3" /> Pote grátis aplicado</p>
-                    )}
                     <select value={o.status} onChange={(e) => changeStatus(o.id, e.target.value)} className="mt-2 rounded-md border border-input bg-background px-2 py-1 text-xs">
                       {STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
                     </select>
@@ -567,6 +562,124 @@ function UserDrawer({ user, onClose, onSaved }: { user: AdminUser; onClose: () =
             )}
           </section>
         </div>
+      </div>
+    </div>
+  );
+}
+
+function WholesaleAdmin() {
+  const [products, setProducts] = useState<Product[] | null>(null);
+  const [catPrices, setCatPrices] = useState<Record<string, number>>(getCategoryPrices());
+  const [prodPrices, setProdPrices] = useState<Record<string, number>>(getProductPrices());
+  const [catInput, setCatInput] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const { data } = await api.get<Product[] | { data: Product[] }>("/products");
+        setProducts(Array.isArray(data) ? data : (data as { data: Product[] }).data ?? []);
+      } catch { setProducts([]); }
+    })();
+  }, []);
+
+  function applyCategory(cat: WholesaleCategory) {
+    const raw = catInput[cat];
+    if (!raw) { toast.error("Informe um preço."); return; }
+    const v = Number(raw.replace(",", "."));
+    if (!v || v <= 0) { toast.error("Preço inválido."); return; }
+    setCategoryWholesale(cat, v);
+    setCatPrices(getCategoryPrices());
+    toast.success(`Preço de atacado de ${CATEGORY_LABEL[cat]} aplicado em massa.`);
+  }
+  function clearCategory(cat: WholesaleCategory) {
+    setCategoryWholesale(cat, null);
+    setCatPrices(getCategoryPrices());
+  }
+  function applyProduct(p: Product, raw: string) {
+    if (!raw) { setProductWholesale(p.id, null); setProdPrices(getProductPrices()); return; }
+    const v = Number(raw.replace(",", "."));
+    if (!v || v <= 0) return;
+    setProductWholesale(p.id, v);
+    setProdPrices(getProductPrices());
+  }
+
+  const cats: WholesaleCategory[] = ["tub", "cup", "popsicle"];
+
+  return (
+    <div className="space-y-6">
+      <div className="rounded-xl border border-primary/30 bg-primary/5 p-4 text-sm">
+        <p className="font-semibold">Como funciona</p>
+        <p className="mt-1 text-muted-foreground">
+          A partir de <strong>{WHOLESALE_THRESHOLD} unidades</strong> da mesma categoria no carrinho,
+          o cliente paga o preço de atacado. Sem configuração, aplica {Math.round(DEFAULT_WHOLESALE_DISCOUNT * 100)}% de desconto.
+          Preço por produto (abaixo) tem prioridade sobre o preço da categoria.
+        </p>
+      </div>
+
+      <section className="rounded-xl border border-border p-5">
+        <h3 className="font-display text-lg font-bold">Por categoria (envio em massa)</h3>
+        <p className="text-xs text-muted-foreground">Define um valor único aplicado a TODOS os itens da categoria.</p>
+        <div className="mt-4 grid gap-3 sm:grid-cols-3">
+          {cats.map((c) => (
+            <div key={c} className="rounded-lg border border-border p-3">
+              <p className="font-semibold capitalize">{CATEGORY_LABEL[c]}</p>
+              <p className="text-xs text-muted-foreground">
+                Atual: {catPrices[c] ? formatBRL(catPrices[c]) : <em>{Math.round(DEFAULT_WHOLESALE_DISCOUNT * 100)}% off</em>}
+              </p>
+              <div className="mt-2 flex gap-1">
+                <input
+                  type="number" step="0.01" min={0}
+                  placeholder="R$ atacado"
+                  value={catInput[c] ?? ""}
+                  onChange={(e) => setCatInput({ ...catInput, [c]: e.target.value })}
+                  className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
+                />
+                <button onClick={() => applyCategory(c)} className="rounded-md bg-primary px-3 py-1.5 text-xs font-bold text-primary-foreground">Aplicar</button>
+                {catPrices[c] != null && (
+                  <button onClick={() => clearCategory(c)} className="rounded-md border border-border px-2 py-1.5 text-xs">Limpar</button>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="rounded-xl border border-border p-5">
+        <h3 className="font-display text-lg font-bold">Por produto (override)</h3>
+        <p className="text-xs text-muted-foreground">Sobrescreve o preço da categoria apenas para o produto selecionado.</p>
+        {!products ? (
+          <Loader2 className="mx-auto mt-4 h-6 w-6 animate-spin text-primary" />
+        ) : (
+          <div className="mt-3 overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-muted/50 text-left">
+                <tr><th className="p-2">Produto</th><th className="p-2">Categoria</th><th className="p-2">Preço cheio</th><th className="p-2">Atacado</th></tr>
+              </thead>
+              <tbody>
+                {products.filter((p) => ["tub","cup","popsicle"].includes((p.category ?? "").toLowerCase())).map((p) => (
+                  <tr key={p.id} className="border-t border-border">
+                    <td className="p-2 font-semibold">{p.name}</td>
+                    <td className="p-2 text-muted-foreground">{p.category}</td>
+                    <td className="p-2">{formatBRL(Number(p.price) || 0)}</td>
+                    <td className="p-2">
+                      <input
+                        type="number" step="0.01" min={0}
+                        defaultValue={prodPrices[String(p.id)] ?? ""}
+                        placeholder="—"
+                        onBlur={(e) => applyProduct(p, e.target.value)}
+                        className="w-28 rounded-md border border-input bg-background px-2 py-1 text-sm"
+                      />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
+
+      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+        <Package className="h-3.5 w-3.5" /> Valores salvos localmente (até o backend ganhar o campo <code>wholesalePrice</code>).
       </div>
     </div>
   );

@@ -366,23 +366,7 @@ function Index() {
         </div>
       </section>
 
-      {/* BANNER LIFESTYLE 1 */}
-      <section
-        className="lifestyle-banner"
-        style={{ backgroundImage: `url(${lifestyleScoops})` }}
-        aria-label="Sorvetes artesanais cremosos"
-      >
-        <div className="lifestyle-banner__content">
-          <div className="reveal max-w-2xl">
-            <p className="font-display text-xs font-bold uppercase tracking-[0.3em] text-sunny drop-shadow">
-              ✨ Feitos com amor
-            </p>
-            <h3 className="mt-3 font-display text-3xl font-bold leading-tight text-white drop-shadow-lg sm:text-5xl md:text-6xl">
-              Cremosidade que <span className="text-sunny">derrete</span> na boca
-            </h3>
-          </div>
-        </div>
-      </section>
+      {/* (banner lifestyle removido) */}
 
       {/* COPOS 300ML */}
       <section id="copos" className="relative overflow-hidden px-6 py-24 md:py-32">
@@ -429,23 +413,7 @@ function Index() {
         </div>
       </section>
 
-      {/* BANNER LIFESTYLE 2 */}
-      <section
-        className="lifestyle-banner"
-        style={{ backgroundImage: `url(${lifestyleFamily})` }}
-        aria-label="Família feliz com sorvete"
-      >
-        <div className="lifestyle-banner__content">
-          <div className="reveal max-w-2xl">
-            <p className="font-display text-xs font-bold uppercase tracking-[0.3em] text-sunny drop-shadow">
-              👨‍👩‍👧‍👦 Momentos em família
-            </p>
-            <h3 className="mt-3 font-display text-3xl font-bold leading-tight text-white drop-shadow-lg sm:text-5xl md:text-6xl">
-              O sabor que une <span className="text-sunny">todo mundo</span>
-            </h3>
-          </div>
-        </div>
-      </section>
+      {/* (banner lifestyle removido) */}
 
       {/* PICOLÉS */}
       <section id="picoles" className="relative overflow-hidden px-6 py-24 md:py-32">
@@ -492,23 +460,7 @@ function Index() {
         </div>
       </section>
 
-      {/* BANNER LIFESTYLE 3 - AÇAÍ */}
-      <section
-        className="lifestyle-banner"
-        style={{ backgroundImage: `url(${lifestyleAcai})` }}
-        aria-label="Açaí premium"
-      >
-        <div className="lifestyle-banner__content">
-          <div className="reveal max-w-2xl">
-            <p className="font-display text-xs font-bold uppercase tracking-[0.3em] text-sunny drop-shadow">
-              💜 Açaí Premium
-            </p>
-            <h3 className="mt-3 font-display text-3xl font-bold leading-tight text-white drop-shadow-lg sm:text-5xl md:text-6xl">
-              Direto da <span className="text-sunny">Amazônia</span>
-            </h3>
-          </div>
-        </div>
-      </section>
+      {/* (banner lifestyle removido) */}
 
       {/* AÇAÍ - ABA ESPECIAL */}
       <section id="acai" className="relative overflow-hidden bg-gradient-purple px-6 py-24 text-white md:py-32">
@@ -630,13 +582,13 @@ function Index() {
       </section>
 
       {/* FOOTER */}
-      <footer className="border-t border-white/10 bg-card px-6 py-14 text-card-foreground">
+      <footer className="border-t border-border bg-card px-6 py-14 text-card-foreground">
         <div className="mx-auto flex max-w-6xl flex-col items-center gap-6 text-center md:flex-row md:justify-between md:text-left">
           <div className="flex items-center gap-3">
             <img src={mascot} alt="Ayla Sorvetes" width={64} height={64} className="h-14 w-14" />
             <div>
-              <p className="font-display text-2xl font-bold text-white">Ayla Sorvetes</p>
-              <p className="text-xs text-white/70">Feito com muito amor 💜</p>
+              <p className="font-display text-2xl font-bold text-foreground">Ayla Sorvetes</p>
+              <p className="text-xs text-muted-foreground">Feito com muito amor 💜</p>
             </div>
           </div>
 
@@ -653,13 +605,13 @@ function Index() {
             <a
               href="#"
               aria-label="Facebook"
-              className="flex h-11 w-11 items-center justify-center rounded-full bg-secondary/20 text-white ring-1 ring-secondary/40 transition-colors hover:bg-secondary hover:text-secondary-foreground"
+              className="flex h-11 w-11 items-center justify-center rounded-full bg-secondary/20 text-secondary ring-1 ring-secondary/40 transition-colors hover:bg-secondary hover:text-secondary-foreground"
             >
               <Facebook className="h-5 w-5" />
             </a>
           </div>
         </div>
-        <p className="mt-8 text-center text-xs text-white/60">
+        <p className="mt-8 text-center text-xs text-muted-foreground">
           © {new Date().getFullYear()} Ayla Sorvetes. Todos os direitos reservados.
         </p>
       </footer>
