@@ -473,8 +473,6 @@ function UserDrawer({ user, onClose, onSaved }: { user: AdminUser; onClose: () =
         role: form.role,
         address: form.address,
         endereco: form.address,
-        loyaltyCredits: form.loyaltyCredits,
-        loyaltyStamps: form.loyaltyStamps,
       });
       toast.success("Usuário atualizado!");
       onSaved();
