@@ -604,13 +604,6 @@ function Index() {
             >
               <Instagram className="h-5 w-5" />
             </a>
-            <a
-              href="#"
-              aria-label="Facebook"
-              className="flex h-11 w-11 items-center justify-center rounded-full bg-secondary/20 text-secondary ring-1 ring-secondary/40 transition-colors hover:bg-secondary hover:text-secondary-foreground"
-            >
-              <Facebook className="h-5 w-5" />
-            </a>
           </div>
         </div>
         <p className="mt-8 text-center text-xs text-muted-foreground">
