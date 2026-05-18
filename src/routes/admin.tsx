@@ -27,7 +27,7 @@ type Product = { id: string | number; name: string; price: number; description?:
 type Order = { id: string | number; total: number; status: string; createdAt?: string; source?: string; customerName?: string; customerPhone?: string; items?: Array<{ name: string; quantity: number; price?: number }>; user?: { name?: string; email?: string }; userId?: string | number; address?: { street?: string; number?: string; city?: string } };
 type AdminUser = { id: string | number; name?: string; email: string; role?: string; createdAt?: string; phone?: string; address?: Address };
 
-type Tab = "dashboard" | "products" | "wholesale" | "orders" | "whatsapp" | "users";
+type Tab = "dashboard" | "products" | "wholesale" | "orders" | "users";
 
 function AdminPanel() {
   const [tab, setTab] = useState<Tab>("dashboard");
@@ -36,7 +36,6 @@ function AdminPanel() {
     { key: "products", label: "Produtos" },
     { key: "wholesale", label: "Atacado" },
     { key: "orders", label: "Pedidos" },
-    { key: "whatsapp", label: "WhatsApp" },
     { key: "users", label: "Usuários" },
   ];
 
@@ -61,7 +60,7 @@ function AdminPanel() {
       </div>
       <div className="mt-4 flex flex-wrap gap-2 border-b border-border">
         {tabs.map((t) => (
-          <button key={t.key} onClick={() => setTab(t.key)} className={`px-4 py-2 text-sm font-semibold ${tab === t.key ? "border-b-2 border-primary text-primary" : "text-muted-foreground"}`}>
+          <button key={t.key} onClick={() => setTab(t.key)} className={`px-4 py-2 text-sm font-semibold transition-colors ${tab === t.key ? "border-b-2 border-primary text-primary" : "text-muted-foreground hover:text-foreground"}`}>
             {t.label}
           </button>
         ))}
@@ -70,8 +69,7 @@ function AdminPanel() {
         {tab === "dashboard" && <Dashboard />}
         {tab === "products" && <ProductsAdmin />}
         {tab === "wholesale" && <WholesaleAdmin />}
-        {tab === "orders" && <OrdersAdmin filter="all" />}
-        {tab === "whatsapp" && <OrdersAdmin filter="whatsapp" />}
+        {tab === "orders" && <OrdersAdmin />}
         {tab === "users" && <UsersAdmin />}
       </div>
     </main>
@@ -288,23 +286,25 @@ function ProductModal({ product, onClose, onSaved }: { product: Product; onClose
 
 const STATUSES = ["pendente", "pago", "preparando", "enviado", "entregue", "cancelado"] as const;
 
-function OrdersAdmin({ filter }: { filter: "all" | "whatsapp" }) {
+function OrdersAdmin() {
   const [orders, setOrders] = useState<Order[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [filter, setFilter] = useState<"all" | "whatsapp" | "site">("all");
 
   async function load() {
     try {
-      const url = filter === "whatsapp" ? "/orders?source=whatsapp" : "/orders";
-      const { data } = await api.get<Order[] | { data: Order[] }>(url);
+      const { data } = await api.get<Order[] | { data: Order[] }>("/orders");
       const list = Array.isArray(data) ? data : (data as { data: Order[] }).data ?? [];
-      // Fallback no front: se backend ignorar o filtro, filtra aqui
-      const filtered = filter === "whatsapp"
-        ? list.filter((o) => (o.source ?? "").toLowerCase() === "whatsapp")
-        : list;
-      setOrders(filtered);
+      setOrders(list);
     } catch (err) { setError(extractApiError(err)); }
   }
-  useEffect(() => { load(); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [filter]);
+  useEffect(() => { load(); }, []);
+
+  const visible = useMemo(() => {
+    if (!orders) return [];
+    if (filter === "all") return orders;
+    return orders.filter((o) => (o.source ?? "site").toLowerCase() === filter);
+  }, [orders, filter]);
 
   async function changeStatus(id: Order["id"], status: string) {
     try { await api.put(`/orders/${id}`, { status }); toast.success("Status atualizado"); load(); }
@@ -319,13 +319,32 @@ function OrdersAdmin({ filter }: { filter: "all" | "whatsapp" }) {
 
   if (error) return <p className="text-destructive">{error}</p>;
   if (!orders) return <Loader2 className="mx-auto h-8 w-8 animate-spin text-primary" />;
-  if (orders.length === 0) return (
-    <p className="text-muted-foreground">
-      {filter === "whatsapp"
-        ? "Nenhum pedido via WhatsApp ainda. Configure o backend para receber e armazenar pedidos com source=\"whatsapp\" (ver PRODUTOS_BACKEND.md)."
-        : "Nenhum pedido ainda."}
-    </p>
-  );
+
+  const tabs: { key: typeof filter; label: string }[] = [
+    { key: "all", label: `Todos (${orders.length})` },
+    { key: "site", label: `Site (${orders.filter((o) => (o.source ?? "site").toLowerCase() === "site").length})` },
+    { key: "whatsapp", label: `WhatsApp (${orders.filter((o) => (o.source ?? "").toLowerCase() === "whatsapp").length})` },
+  ];
+
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-wrap gap-2">
+        {tabs.map((t) => (
+          <button
+            key={t.key}
+            onClick={() => setFilter(t.key)}
+            className={`rounded-full px-4 py-1.5 text-xs font-semibold transition-colors ${
+              filter === t.key ? "bg-primary text-primary-foreground" : "bg-muted text-foreground hover:bg-muted/70"
+            }`}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      {visible.length === 0 ? (
+        <p className="text-muted-foreground">Nenhum pedido nesta visão.</p>
+      ) : (
 
   return (
     <div className="overflow-x-auto rounded-xl border border-border">
