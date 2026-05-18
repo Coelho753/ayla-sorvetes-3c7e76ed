@@ -424,7 +424,7 @@ function UsersAdmin() {
                 <td className="p-3 font-semibold">{u.name ?? "—"}</td>
                 <td className="p-3">{u.email}</td>
                 <td className="p-3 text-muted-foreground">{u.phone ?? "—"}</td>
-                <td className="p-3 text-xs">
+                
                 <td className="p-3">
                   <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${u.role === "admin" ? "bg-secondary/20 text-secondary-foreground" : "bg-muted text-muted-foreground"}`}>{u.role ?? "user"}</span>
                 </td>
