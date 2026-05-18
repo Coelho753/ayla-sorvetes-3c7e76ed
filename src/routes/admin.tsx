@@ -345,51 +345,51 @@ function OrdersAdmin() {
       {visible.length === 0 ? (
         <p className="text-muted-foreground">Nenhum pedido nesta visão.</p>
       ) : (
-
-  return (
-    <div className="overflow-x-auto rounded-xl border border-border">
-      <table className="w-full text-sm">
-        <thead className="bg-muted/50 text-left">
-          <tr>
-            <th className="p-3">#</th>
-            <th className="p-3">Cliente</th>
-            <th className="p-3">Itens</th>
-            <th className="p-3">Total</th>
-            <th className="p-3">Origem</th>
-            <th className="p-3">Status</th>
-            <th className="p-3 text-right">Ações</th>
-          </tr>
-        </thead>
-        <tbody>
-          {orders.map((o) => (
-            <tr key={o.id} className="border-t border-border align-top">
-              <td className="p-3 font-mono text-xs">{String(o.id).slice(0, 8)}</td>
-              <td className="p-3">
-                <div className="font-semibold">{o.customerName ?? o.user?.name ?? o.user?.email ?? "—"}</div>
-                {o.customerPhone && <div className="text-xs text-muted-foreground">{o.customerPhone}</div>}
-              </td>
-              <td className="p-3 text-xs text-muted-foreground">
-                {o.items?.slice(0, 3).map((i) => `${i.quantity}× ${i.name}`).join(", ") ?? "—"}
-                {o.items && o.items.length > 3 && ` +${o.items.length - 3}`}
-              </td>
-              <td className="p-3 font-semibold">{formatBRL(Number(o.total) || 0)}</td>
-              <td className="p-3">
-                {(o.source ?? "").toLowerCase() === "whatsapp" ? (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-whatsapp/15 px-2 py-0.5 text-xs font-semibold text-whatsapp"><MessageCircle className="h-3 w-3" /> WhatsApp</span>
-                ) : <span className="text-xs text-muted-foreground">{o.source ?? "site"}</span>}
-              </td>
-              <td className="p-3">
-                <select value={o.status} onChange={(e) => changeStatus(o.id, e.target.value)} className="rounded-md border border-input bg-background px-2 py-1">
-                  {STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
-                </select>
-              </td>
-              <td className="p-3 text-right">
-                <button onClick={() => remove(o.id)} aria-label="Excluir pedido" className="rounded-md p-2 text-destructive hover:bg-destructive/10"><Trash2 className="h-4 w-4" /></button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+        <div className="overflow-x-auto rounded-xl border border-border">
+          <table className="w-full text-sm">
+            <thead className="bg-muted/50 text-left">
+              <tr>
+                <th className="p-3">#</th>
+                <th className="p-3">Cliente</th>
+                <th className="p-3">Itens</th>
+                <th className="p-3">Total</th>
+                <th className="p-3">Origem</th>
+                <th className="p-3">Status</th>
+                <th className="p-3 text-right">Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              {visible.map((o) => (
+                <tr key={o.id} className="border-t border-border align-top hover:bg-muted/30">
+                  <td className="p-3 font-mono text-xs">{String(o.id).slice(0, 8)}</td>
+                  <td className="p-3">
+                    <div className="font-semibold">{o.customerName ?? o.user?.name ?? o.user?.email ?? "—"}</div>
+                    {o.customerPhone && <div className="text-xs text-muted-foreground">{o.customerPhone}</div>}
+                  </td>
+                  <td className="p-3 text-xs text-muted-foreground">
+                    {o.items?.slice(0, 3).map((i) => `${i.quantity}× ${i.name}`).join(", ") ?? "—"}
+                    {o.items && o.items.length > 3 && ` +${o.items.length - 3}`}
+                  </td>
+                  <td className="p-3 font-semibold">{formatBRL(Number(o.total) || 0)}</td>
+                  <td className="p-3">
+                    {(o.source ?? "").toLowerCase() === "whatsapp" ? (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-whatsapp/15 px-2 py-0.5 text-xs font-semibold text-whatsapp"><MessageCircle className="h-3 w-3" /> WhatsApp</span>
+                    ) : <span className="text-xs text-muted-foreground">{o.source ?? "site"}</span>}
+                  </td>
+                  <td className="p-3">
+                    <select value={o.status} onChange={(e) => changeStatus(o.id, e.target.value)} className="rounded-md border border-input bg-background px-2 py-1">
+                      {STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
+                    </select>
+                  </td>
+                  <td className="p-3 text-right">
+                    <button onClick={() => remove(o.id)} aria-label="Excluir pedido" className="rounded-md p-2 text-destructive hover:bg-destructive/10"><Trash2 className="h-4 w-4" /></button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }
