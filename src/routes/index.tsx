@@ -413,23 +413,7 @@ function Index() {
         </div>
       </section>
 
-      {/* BANNER LIFESTYLE 2 */}
-      <section
-        className="lifestyle-banner"
-        style={{ backgroundImage: `url(${lifestyleFamily})` }}
-        aria-label="Família feliz com sorvete"
-      >
-        <div className="lifestyle-banner__content">
-          <div className="reveal max-w-2xl">
-            <p className="font-display text-xs font-bold uppercase tracking-[0.3em] text-sunny drop-shadow">
-              👨‍👩‍👧‍👦 Momentos em família
-            </p>
-            <h3 className="mt-3 font-display text-3xl font-bold leading-tight text-white drop-shadow-lg sm:text-5xl md:text-6xl">
-              O sabor que une <span className="text-sunny">todo mundo</span>
-            </h3>
-          </div>
-        </div>
-      </section>
+      {/* (banner lifestyle removido) */}
 
       {/* PICOLÉS */}
       <section id="picoles" className="relative overflow-hidden px-6 py-24 md:py-32">
