@@ -582,13 +582,13 @@ function Index() {
       </section>
 
       {/* FOOTER */}
-      <footer className="border-t border-white/10 bg-card px-6 py-14 text-card-foreground">
+      <footer className="border-t border-border bg-card px-6 py-14 text-card-foreground">
         <div className="mx-auto flex max-w-6xl flex-col items-center gap-6 text-center md:flex-row md:justify-between md:text-left">
           <div className="flex items-center gap-3">
             <img src={mascot} alt="Ayla Sorvetes" width={64} height={64} className="h-14 w-14" />
             <div>
-              <p className="font-display text-2xl font-bold text-white">Ayla Sorvetes</p>
-              <p className="text-xs text-white/70">Feito com muito amor 💜</p>
+              <p className="font-display text-2xl font-bold text-foreground">Ayla Sorvetes</p>
+              <p className="text-xs text-muted-foreground">Feito com muito amor 💜</p>
             </div>
           </div>
 
@@ -605,13 +605,13 @@ function Index() {
             <a
               href="#"
               aria-label="Facebook"
-              className="flex h-11 w-11 items-center justify-center rounded-full bg-secondary/20 text-white ring-1 ring-secondary/40 transition-colors hover:bg-secondary hover:text-secondary-foreground"
+              className="flex h-11 w-11 items-center justify-center rounded-full bg-secondary/20 text-secondary ring-1 ring-secondary/40 transition-colors hover:bg-secondary hover:text-secondary-foreground"
             >
               <Facebook className="h-5 w-5" />
             </a>
           </div>
         </div>
-        <p className="mt-8 text-center text-xs text-white/60">
+        <p className="mt-8 text-center text-xs text-muted-foreground">
           © {new Date().getFullYear()} Ayla Sorvetes. Todos os direitos reservados.
         </p>
       </footer>
