@@ -4,7 +4,7 @@ import { z } from "zod";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { RequireAuth } from "@/components/RequireAuth";
-import { LoyaltyBadge } from "@/components/LoyaltyBadge";
+
 import { useAuth, type Address } from "@/contexts/AuthContext";
 import { api, extractApiError } from "@/lib/api";
 import { loadOrders, type Order } from "@/lib/orders";
