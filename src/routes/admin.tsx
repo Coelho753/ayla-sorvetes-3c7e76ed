@@ -413,7 +413,7 @@ function UsersAdmin() {
               <th className="p-3">Nome</th>
               <th className="p-3">E-mail</th>
               <th className="p-3">Telefone</th>
-              <th className="p-3">Fidelidade</th>
+              
               <th className="p-3">Permissão</th>
               <th className="p-3 text-right">Ações</th>
             </tr>
