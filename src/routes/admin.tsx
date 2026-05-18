@@ -425,13 +425,6 @@ function UsersAdmin() {
                 <td className="p-3">{u.email}</td>
                 <td className="p-3 text-muted-foreground">{u.phone ?? "—"}</td>
                 <td className="p-3 text-xs">
-                  <span className="text-muted-foreground">{u.loyaltyStamps ?? 0}/10</span>
-                  {(u.loyaltyCredits ?? 0) > 0 && (
-                    <span className="ml-2 inline-flex items-center gap-1 rounded-full bg-primary/15 px-2 py-0.5 text-primary">
-                      <Gift className="h-3 w-3" /> {u.loyaltyCredits}
-                    </span>
-                  )}
-                </td>
                 <td className="p-3">
                   <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${u.role === "admin" ? "bg-secondary/20 text-secondary-foreground" : "bg-muted text-muted-foreground"}`}>{u.role ?? "user"}</span>
                 </td>
