@@ -366,23 +366,7 @@ function Index() {
         </div>
       </section>
 
-      {/* BANNER LIFESTYLE 1 */}
-      <section
-        className="lifestyle-banner"
-        style={{ backgroundImage: `url(${lifestyleScoops})` }}
-        aria-label="Sorvetes artesanais cremosos"
-      >
-        <div className="lifestyle-banner__content">
-          <div className="reveal max-w-2xl">
-            <p className="font-display text-xs font-bold uppercase tracking-[0.3em] text-sunny drop-shadow">
-              ✨ Feitos com amor
-            </p>
-            <h3 className="mt-3 font-display text-3xl font-bold leading-tight text-white drop-shadow-lg sm:text-5xl md:text-6xl">
-              Cremosidade que <span className="text-sunny">derrete</span> na boca
-            </h3>
-          </div>
-        </div>
-      </section>
+      {/* (banner lifestyle removido) */}
 
       {/* COPOS 300ML */}
       <section id="copos" className="relative overflow-hidden px-6 py-24 md:py-32">
