@@ -460,23 +460,7 @@ function Index() {
         </div>
       </section>
 
-      {/* BANNER LIFESTYLE 3 - AÇAÍ */}
-      <section
-        className="lifestyle-banner"
-        style={{ backgroundImage: `url(${lifestyleAcai})` }}
-        aria-label="Açaí premium"
-      >
-        <div className="lifestyle-banner__content">
-          <div className="reveal max-w-2xl">
-            <p className="font-display text-xs font-bold uppercase tracking-[0.3em] text-sunny drop-shadow">
-              💜 Açaí Premium
-            </p>
-            <h3 className="mt-3 font-display text-3xl font-bold leading-tight text-white drop-shadow-lg sm:text-5xl md:text-6xl">
-              Direto da <span className="text-sunny">Amazônia</span>
-            </h3>
-          </div>
-        </div>
-      </section>
+      {/* (banner lifestyle removido) */}
 
       {/* AÇAÍ - ABA ESPECIAL */}
       <section id="acai" className="relative overflow-hidden bg-gradient-purple px-6 py-24 text-white md:py-32">
