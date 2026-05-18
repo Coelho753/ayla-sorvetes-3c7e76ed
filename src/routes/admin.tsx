@@ -510,16 +510,10 @@ function UserDrawer({ user, onClose, onSaved }: { user: AdminUser; onClose: () =
               <input placeholder="Nome" value={form.name ?? ""} onChange={(e) => setForm({ ...form, name: e.target.value })} className={inputCls} />
               <input placeholder="Telefone" value={form.phone ?? ""} onChange={(e) => setForm({ ...form, phone: e.target.value })} className={inputCls} />
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <select value={form.role ?? "user"} onChange={(e) => setForm({ ...form, role: e.target.value })} className={inputCls}>
-                <option value="user">user</option>
-                <option value="admin">admin</option>
-              </select>
-              <div className="grid grid-cols-2 gap-2">
-                <input type="number" min={0} placeholder="Selos" value={form.loyaltyStamps ?? 0} onChange={(e) => setForm({ ...form, loyaltyStamps: Number(e.target.value) })} className={inputCls} title="Selos (0-9)" />
-                <input type="number" min={0} placeholder="Créditos 🎁" value={form.loyaltyCredits ?? 0} onChange={(e) => setForm({ ...form, loyaltyCredits: Number(e.target.value) })} className={inputCls} title="Potes grátis disponíveis" />
-              </div>
-            </div>
+            <select value={form.role ?? "user"} onChange={(e) => setForm({ ...form, role: e.target.value })} className={inputCls}>
+              <option value="user">user</option>
+              <option value="admin">admin</option>
+            </select>
           </section>
 
           <section className="space-y-3">
