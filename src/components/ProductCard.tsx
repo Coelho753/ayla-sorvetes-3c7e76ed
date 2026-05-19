@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Minus, Plus, Plus as PlusIcon, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { useCart, formatBRL } from "@/contexts/CartContext";
+import { safeImageUrl } from "@/lib/safe-url";
 
 type ProductCardProps = {
   id: string;
@@ -31,6 +32,7 @@ export function ProductCard({
   const [bumping, setBumping] = useState(false);
   const isAcai = variant === "acai";
   const brandLabel = brand ?? (isAcai ? "AÇAÍ" : "AYLA");
+  const safeImg = safeImageUrl(img);
 
   function handleAdd() {
     add({ id, name, price, image: img, category }, qty);
@@ -67,9 +69,9 @@ export function ProductCard({
           className="pointer-events-none absolute inset-0 z-[1] -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent opacity-0 transition-all duration-700 group-hover:translate-x-full group-hover:opacity-100"
         />
 
-        {img ? (
+        {safeImg ? (
           <img
-            src={img}
+            src={safeImg}
             alt={name}
             loading="lazy"
             decoding="async"

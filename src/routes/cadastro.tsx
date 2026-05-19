@@ -11,18 +11,27 @@ export const Route = createFileRoute("/cadastro")({
   component: RegisterPage,
 });
 
+// Regex que recusa caracteres de controle e tags HTML básicas
+const safeText = /^[^<>{}$`\\]+$/;
+
 const schema = z.object({
-  firstName: z.string().trim().min(2, "Nome muito curto").max(60),
-  lastName: z.string().trim().min(2, "Sobrenome muito curto").max(80),
-  email: z.string().trim().email("Email inválido").max(255),
-  password: z.string().min(6, "Senha precisa de ao menos 6 caracteres").max(100),
-  cep: z.string().trim().min(8, "CEP inválido").max(10),
-  rua: z.string().trim().min(2, "Rua obrigatória").max(120),
-  numero: z.string().trim().min(1, "Número obrigatório").max(10),
-  complemento: z.string().trim().max(60).optional().or(z.literal("")),
-  bairro: z.string().trim().min(2, "Bairro obrigatório").max(80),
-  cidade: z.string().trim().min(2, "Cidade obrigatória").max(80),
-  estado: z.string().trim().length(2, "UF com 2 letras"),
+  firstName: z.string().trim().min(2, "Nome muito curto").max(60).regex(safeText, "Caracteres inválidos no nome"),
+  lastName: z.string().trim().min(2, "Sobrenome muito curto").max(80).regex(safeText, "Caracteres inválidos no sobrenome"),
+  email: z.string().trim().toLowerCase().email("Email inválido").max(255),
+  password: z
+    .string()
+    .min(10, "Senha precisa de ao menos 10 caracteres")
+    .max(100, "Senha muito longa")
+    .regex(/[A-Z]/, "Inclua pelo menos 1 letra maiúscula")
+    .regex(/[a-z]/, "Inclua pelo menos 1 letra minúscula")
+    .regex(/[0-9]/, "Inclua pelo menos 1 número"),
+  cep: z.string().trim().regex(/^\d{5}-?\d{3}$/, "CEP inválido").max(10),
+  rua: z.string().trim().min(2, "Rua obrigatória").max(120).regex(safeText, "Caracteres inválidos"),
+  numero: z.string().trim().min(1, "Número obrigatório").max(10).regex(/^[\w\s-]+$/, "Número inválido"),
+  complemento: z.string().trim().max(60).regex(safeText, "Caracteres inválidos").optional().or(z.literal("")),
+  bairro: z.string().trim().min(2, "Bairro obrigatório").max(80).regex(safeText, "Caracteres inválidos"),
+  cidade: z.string().trim().min(2, "Cidade obrigatória").max(80).regex(safeText, "Caracteres inválidos"),
+  estado: z.string().trim().length(2, "UF com 2 letras").regex(/^[A-Za-z]{2}$/, "UF inválida"),
 });
 
 type Form = z.infer<typeof schema>;
@@ -128,14 +137,17 @@ function RegisterPage() {
   );
 }
 
-function Field({ label, value, onChange, type = "text", onBlur }: {
-  label: string; value: string; onChange: (v: string) => void; type?: string; onBlur?: () => void;
+function Field({ label, value, onChange, type = "text", onBlur, maxLength = 255, autoComplete }: {
+  label: string; value: string; onChange: (v: string) => void; type?: string; onBlur?: () => void; maxLength?: number; autoComplete?: string;
 }) {
   return (
     <label className="block">
       <span className="text-sm font-semibold">{label}</span>
       <input
         type={type}
+        maxLength={maxLength}
+        autoComplete={autoComplete}
+        spellCheck={false}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         onBlur={onBlur}
