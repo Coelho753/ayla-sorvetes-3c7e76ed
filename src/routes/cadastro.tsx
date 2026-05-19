@@ -137,14 +137,17 @@ function RegisterPage() {
   );
 }
 
-function Field({ label, value, onChange, type = "text", onBlur }: {
-  label: string; value: string; onChange: (v: string) => void; type?: string; onBlur?: () => void;
+function Field({ label, value, onChange, type = "text", onBlur, maxLength = 255, autoComplete }: {
+  label: string; value: string; onChange: (v: string) => void; type?: string; onBlur?: () => void; maxLength?: number; autoComplete?: string;
 }) {
   return (
     <label className="block">
       <span className="text-sm font-semibold">{label}</span>
       <input
         type={type}
+        maxLength={maxLength}
+        autoComplete={autoComplete}
+        spellCheck={false}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         onBlur={onBlur}

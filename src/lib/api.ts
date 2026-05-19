@@ -104,6 +104,9 @@ api.interceptors.response.use(
 
 export function extractApiError(err: unknown, fallback = "Algo deu errado. Tente novamente."): string {
   if (axios.isAxiosError(err)) {
+    // Falhas de rede sem resposta — não vazar URL/stack interna
+    if (!err.response) return "Sem conexão com o servidor. Tente novamente.";
+    if (err.response.status >= 500) return "O servidor está temporariamente indisponível.";
     const data = err.response?.data as
       | { message?: string | string[]; error?: string; errors?: Array<{ msg?: string; path?: string }> }
       | undefined;
@@ -111,9 +114,14 @@ export function extractApiError(err: unknown, fallback = "Algo deu errado. Tente
       return data.errors.map((e) => (e.path ? `${e.path}: ${e.msg}` : e.msg)).filter(Boolean).join(" • ");
     }
     const msg = data?.message ?? data?.error;
-    if (Array.isArray(msg)) return msg.join(", ");
-    if (typeof msg === "string") return msg;
-    if (err.message) return err.message;
+    // Filtra mensagens internas (stack traces, secrets, paths)
+    const isInternal = (s: string) =>
+      /secretOrPrivateKey|ECONN|ENOTFOUND|stack|at \w+\s\(|node_modules|process\.env/i.test(s);
+    if (Array.isArray(msg)) {
+      const safe = msg.filter((m) => !isInternal(m));
+      if (safe.length) return safe.join(", ");
+    }
+    if (typeof msg === "string" && !isInternal(msg)) return msg;
   }
   return fallback;
 }
