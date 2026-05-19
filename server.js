@@ -73,6 +73,31 @@ async function tryStatic(pathname, res) {
 const server = createServer(async (req, res) => {
   try {
     const pathname = new URL(req.url, `http://${req.headers.host}`).pathname;
+    // Security headers — aplicados a TODA resposta
+    res.setHeader("X-Content-Type-Options", "nosniff");
+    res.setHeader("X-Frame-Options", "DENY");
+    res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
+    res.setHeader("Permissions-Policy", "geolocation=(), microphone=(), camera=(), payment=()");
+    res.setHeader("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
+    res.setHeader("X-XSS-Protection", "0");
+    res.setHeader("Cross-Origin-Opener-Policy", "same-origin");
+    res.setHeader(
+      "Content-Security-Policy",
+      [
+        "default-src 'self'",
+        "base-uri 'self'",
+        "frame-ancestors 'none'",
+        "object-src 'none'",
+        "form-action 'self'",
+        "img-src 'self' data: https:",
+        "font-src 'self' https://fonts.gstatic.com data:",
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+        "script-src 'self' 'unsafe-inline'",
+        "connect-src 'self' https://sorveteria-b.onrender.com https://viacep.com.br https://fonts.googleapis.com https://fonts.gstatic.com",
+        "upgrade-insecure-requests",
+      ].join("; "),
+    );
+
     if (req.method === "GET" && pathname !== "/" && (await tryStatic(pathname, res))) return;
 
     const webReq = nodeReqToWebRequest(req);

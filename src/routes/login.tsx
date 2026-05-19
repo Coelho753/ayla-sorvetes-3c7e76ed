@@ -13,7 +13,7 @@ export const Route = createFileRoute("/login")({
 
 const schema = z.object({
   email: z.string().trim().email("Email inválido").max(255),
-  password: z.string().min(6, "Senha precisa de ao menos 6 caracteres").max(100),
+  password: z.string().min(8, "Senha precisa de ao menos 8 caracteres").max(100),
 });
 
 function LoginPage() {
