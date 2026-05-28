@@ -30,7 +30,7 @@ const MIME = {
   ".map": "application/json; charset=utf-8",
 };
 
-const worker = (await import("./dist/server/index.js")).default;
+const worker = (await import("./dist/server/server.js")).default;
 
 function nodeReqToWebRequest(req) {
   const host = req.headers.host || `localhost:${PORT}`;
