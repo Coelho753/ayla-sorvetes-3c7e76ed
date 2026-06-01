@@ -1,10 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { ArrowLeft, Download, Loader2, TrendingUp, ShoppingBag, Receipt, MessageCircle } from "lucide-react";
+import { ArrowLeft, Download, Loader2, TrendingUp, ShoppingBag, Receipt, MessageCircle, Pencil, Save, X } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import { RequireAuth } from "@/components/RequireAuth";
 import { api, extractApiError } from "@/lib/api";
 import { formatBRL } from "@/contexts/CartContext";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/admin/financeiro")({
   head: () => ({ meta: [{ title: "Financeiro — Admin Ayla" }] }),
@@ -35,6 +36,10 @@ function Financeiro() {
   const [orders, setOrders] = useState<Order[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [period, setPeriod] = useState<Period>("30d");
+  const [editId, setEditId] = useState<string | number | null>(null);
+  const [editTotal, setEditTotal] = useState<string>("");
+  const [editStatus, setEditStatus] = useState<string>("");
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -110,6 +115,26 @@ function Financeiro() {
 
   if (error) return <main className="mx-auto max-w-6xl px-4 py-10"><p className="text-destructive">{error}</p></main>;
   if (!orders) return <main className="mx-auto max-w-6xl px-4 py-10"><Loader2 className="mx-auto h-8 w-8 animate-spin text-primary" /></main>;
+
+  function startEdit(o: Order) {
+    setEditId(o.id);
+    setEditTotal(String(o.total ?? 0));
+    setEditStatus(o.status ?? "novo");
+  }
+  function cancelEdit() { setEditId(null); }
+  async function saveEdit(o: Order) {
+    const total = Number(String(editTotal).replace(",", "."));
+    if (!Number.isFinite(total) || total < 0) { toast.error("Valor inválido"); return; }
+    setSaving(true);
+    try {
+      await api.put(`/orders/${o.id}`, { total, status: editStatus });
+      setOrders((cur) => cur?.map((x) => (x.id === o.id ? { ...x, total, status: editStatus } : x)) ?? cur);
+      setEditId(null);
+      toast.success("Pedido atualizado");
+    } catch (err) {
+      toast.error(extractApiError(err, "Falha ao salvar"));
+    } finally { setSaving(false); }
+  }
 
   const periods: { key: Period; label: string }[] = [
     { key: "today", label: "Hoje" },
@@ -188,6 +213,77 @@ function Financeiro() {
               ))}
             </tbody>
           </table>
+        )}
+      </section>
+
+      <section className="mt-6 rounded-xl border border-border p-5">
+        <h3 className="font-display text-lg font-bold">Pedidos do período (edite valores e status)</h3>
+        {filtered.length === 0 ? (
+          <p className="mt-2 text-sm text-muted-foreground">Sem pedidos.</p>
+        ) : (
+          <div className="mt-3 overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="text-left text-xs uppercase text-muted-foreground">
+                <tr>
+                  <th className="pb-2">#</th>
+                  <th className="pb-2">Data</th>
+                  <th className="pb-2">Status</th>
+                  <th className="pb-2 text-right">Total</th>
+                  <th className="pb-2 text-right">Ações</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.map((o) => {
+                  const editing = editId === o.id;
+                  return (
+                    <tr key={o.id} className="border-t border-border">
+                      <td className="py-2 font-mono text-xs">{String(o.id).slice(0, 8)}</td>
+                      <td className="py-2 text-xs text-muted-foreground">{o.createdAt ? new Date(o.createdAt).toLocaleString("pt-BR") : "—"}</td>
+                      <td className="py-2">
+                        {editing ? (
+                          <select value={editStatus} onChange={(e) => setEditStatus(e.target.value)} className="rounded-md border border-input bg-background px-2 py-1 text-xs">
+                            {["novo", "preparando", "enviado", "entregue", "cancelado"].map((s) => (
+                              <option key={s} value={s}>{s}</option>
+                            ))}
+                          </select>
+                        ) : (
+                          <span className="rounded-full bg-muted px-2 py-0.5 text-xs">{o.status}</span>
+                        )}
+                      </td>
+                      <td className="py-2 text-right font-semibold">
+                        {editing ? (
+                          <input
+                            inputMode="decimal"
+                            value={editTotal}
+                            onChange={(e) => setEditTotal(e.target.value)}
+                            className="w-28 rounded-md border border-input bg-background px-2 py-1 text-right text-sm"
+                          />
+                        ) : (
+                          formatBRL(Number(o.total ?? 0))
+                        )}
+                      </td>
+                      <td className="py-2 text-right">
+                        {editing ? (
+                          <div className="inline-flex gap-1">
+                            <button disabled={saving} onClick={() => saveEdit(o)} className="rounded-md bg-primary p-1.5 text-primary-foreground disabled:opacity-50" aria-label="Salvar">
+                              {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
+                            </button>
+                            <button onClick={cancelEdit} className="rounded-md border border-border p-1.5" aria-label="Cancelar">
+                              <X className="h-3.5 w-3.5" />
+                            </button>
+                          </div>
+                        ) : (
+                          <button onClick={() => startEdit(o)} className="rounded-md border border-border p-1.5 hover:bg-muted" aria-label="Editar">
+                            <Pencil className="h-3.5 w-3.5" />
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         )}
       </section>
     </main>
