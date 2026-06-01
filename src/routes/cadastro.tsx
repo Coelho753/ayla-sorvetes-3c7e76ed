@@ -24,7 +24,8 @@ const schema = z.object({
     .max(100, "Senha muito longa")
     .regex(/[A-Z]/, "Inclua pelo menos 1 letra maiúscula")
     .regex(/[a-z]/, "Inclua pelo menos 1 letra minúscula")
-    .regex(/[0-9]/, "Inclua pelo menos 1 número"),
+    .regex(/[0-9]/, "Inclua pelo menos 1 número")
+    .regex(/[^A-Za-z0-9]/, "Inclua pelo menos 1 caractere especial (ex: !@#$%)"),
   cep: z.string().trim().regex(/^\d{5}-?\d{3}$/, "CEP inválido").max(10),
   rua: z.string().trim().min(2, "Rua obrigatória").max(120).regex(safeText, "Caracteres inválidos"),
   numero: z.string().trim().min(1, "Número obrigatório").max(10).regex(/^[\w\s-]+$/, "Número inválido"),
