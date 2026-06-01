@@ -3,7 +3,7 @@ import { z } from "zod";
 import { toast } from "sonner";
 import { Loader2, MapPin } from "lucide-react";
 import { useAuth, type Address } from "@/contexts/AuthContext";
-import { api, extractApiError } from "@/lib/api";
+import { api } from "@/lib/api";
 
 const addressSchema = z.object({
   cep: z.string().trim().min(8, "CEP inválido").max(10),
