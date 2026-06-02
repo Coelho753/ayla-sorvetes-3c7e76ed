@@ -4,7 +4,6 @@ import { z } from "zod";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { Loader2 } from "lucide-react";
-import { GoogleButton } from "@/components/GoogleButton";
 
 export const Route = createFileRoute("/cadastro")({
   head: () => ({ meta: [{ title: "Cadastro — Ayla Sorvetes" }, { name: "description", content: "Crie sua conta na Ayla Sorvetes." }] }),
@@ -99,14 +98,7 @@ function RegisterPage() {
       <h1 className="font-display text-3xl font-bold">Criar conta</h1>
       <p className="mt-1 text-muted-foreground">Cadastre-se para salvar pedidos e endereço.</p>
 
-      <div className="mt-6">
-        <GoogleButton label="Cadastrar com Google" />
-        <div className="my-5 flex items-center gap-3 text-xs text-muted-foreground">
-          <span className="h-px flex-1 bg-border" /> ou com email <span className="h-px flex-1 bg-border" />
-        </div>
-      </div>
-
-      <form onSubmit={onSubmit} className="space-y-4">
+      <form onSubmit={onSubmit} className="mt-6 space-y-4">
         <div className="grid grid-cols-2 gap-3">
           <Field label="Nome" value={form.firstName} onChange={(v) => set("firstName", v)} />
           <Field label="Sobrenome" value={form.lastName} onChange={(v) => set("lastName", v)} />
