@@ -15,7 +15,6 @@ import { Route as CardapioRouteImport } from './routes/cardapio'
 import { Route as CadastroRouteImport } from './routes/cadastro'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
 import { Route as AdminPerfilRouteImport } from './routes/admin.perfil'
 import { Route as AdminFinanceiroRouteImport } from './routes/admin.financeiro'
 
@@ -49,11 +48,6 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthCallbackRoute = AuthCallbackRouteImport.update({
-  id: '/auth/callback',
-  path: '/auth/callback',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AdminPerfilRoute = AdminPerfilRouteImport.update({
   id: '/perfil',
   path: '/perfil',
@@ -74,7 +68,6 @@ export interface FileRoutesByFullPath {
   '/perfil': typeof PerfilRoute
   '/admin/financeiro': typeof AdminFinanceiroRoute
   '/admin/perfil': typeof AdminPerfilRoute
-  '/auth/callback': typeof AuthCallbackRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -85,7 +78,6 @@ export interface FileRoutesByTo {
   '/perfil': typeof PerfilRoute
   '/admin/financeiro': typeof AdminFinanceiroRoute
   '/admin/perfil': typeof AdminPerfilRoute
-  '/auth/callback': typeof AuthCallbackRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -97,7 +89,6 @@ export interface FileRoutesById {
   '/perfil': typeof PerfilRoute
   '/admin/financeiro': typeof AdminFinanceiroRoute
   '/admin/perfil': typeof AdminPerfilRoute
-  '/auth/callback': typeof AuthCallbackRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -110,7 +101,6 @@ export interface FileRouteTypes {
     | '/perfil'
     | '/admin/financeiro'
     | '/admin/perfil'
-    | '/auth/callback'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -121,7 +111,6 @@ export interface FileRouteTypes {
     | '/perfil'
     | '/admin/financeiro'
     | '/admin/perfil'
-    | '/auth/callback'
   id:
     | '__root__'
     | '/'
@@ -132,7 +121,6 @@ export interface FileRouteTypes {
     | '/perfil'
     | '/admin/financeiro'
     | '/admin/perfil'
-    | '/auth/callback'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -142,7 +130,6 @@ export interface RootRouteChildren {
   CardapioRoute: typeof CardapioRoute
   LoginRoute: typeof LoginRoute
   PerfilRoute: typeof PerfilRoute
-  AuthCallbackRoute: typeof AuthCallbackRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -189,13 +176,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/auth/callback': {
-      id: '/auth/callback'
-      path: '/auth/callback'
-      fullPath: '/auth/callback'
-      preLoaderRoute: typeof AuthCallbackRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/admin/perfil': {
       id: '/admin/perfil'
       path: '/perfil'
@@ -232,7 +212,6 @@ const rootRouteChildren: RootRouteChildren = {
   CardapioRoute: CardapioRoute,
   LoginRoute: LoginRoute,
   PerfilRoute: PerfilRoute,
-  AuthCallbackRoute: AuthCallbackRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

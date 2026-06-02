@@ -93,7 +93,7 @@ const server = createServer(async (req, res) => {
         "font-src 'self' https://fonts.gstatic.com data:",
         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
         "script-src 'self' 'unsafe-inline'",
-        "connect-src 'self' https://sorveteria-b.onrender.com https://viacep.com.br https://fonts.googleapis.com https://fonts.gstatic.com",
+        "connect-src 'self' https://sorveteria-b-m8k4.onrender.com https://viacep.com.br https://fonts.googleapis.com https://fonts.gstatic.com",
         "upgrade-insecure-requests",
       ].join("; "),
     );
