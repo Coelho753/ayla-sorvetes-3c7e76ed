@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Loader2, Plus, Pencil, Trash2, X, MessageCircle, UserCog, Wallet, Package } from "lucide-react";
+import { Loader2, Plus, Pencil, Trash2, X, MessageCircle, UserCog, Wallet, Package, Save, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 import { RequireAuth } from "@/components/RequireAuth";
 import { api, extractApiError } from "@/lib/api";
@@ -108,10 +108,10 @@ function Dashboard() {
   return (
     <div className="space-y-6">
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Card title="Total de vendas" value={formatBRL(stats.totalSales)} />
-        <Card title="Pedidos" value={String(stats.count)} />
-        <Card title="Ticket médio" value={formatBRL(stats.ticket)} />
-        <Card title="Via WhatsApp" value={String(stats.fromWhats)} />
+        <EditableCard storageKey="totalSales" title="Total de vendas" computed={stats.totalSales} kind="currency" />
+        <EditableCard storageKey="count" title="Pedidos" computed={stats.count} kind="int" />
+        <EditableCard storageKey="ticket" title="Ticket médio" computed={stats.ticket} kind="currency" />
+        <EditableCard storageKey="fromWhats" title="Via WhatsApp" computed={stats.fromWhats} kind="int" />
       </div>
       <div className="rounded-xl border border-border p-5">
         <h3 className="font-display text-lg font-bold">Mais vendidos</h3>
@@ -129,11 +129,81 @@ function Dashboard() {
   );
 }
 
-function Card({ title, value }: { title: string; value: string }) {
+const OVERRIDE_PREFIX = "ayla.admin.dashboard.";
+
+function EditableCard({ storageKey, title, computed, kind }: { storageKey: string; title: string; computed: number; kind: "currency" | "int" }) {
+  const key = `${OVERRIDE_PREFIX}${storageKey}`;
+  const [override, setOverride] = useState<number | null>(() => {
+    if (typeof window === "undefined") return null;
+    const v = window.localStorage.getItem(key);
+    return v === null ? null : Number(v);
+  });
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState("");
+
+  const display = override ?? computed;
+  const formatted = kind === "currency" ? formatBRL(display) : String(Math.round(display));
+
+  function start() {
+    setDraft(String(override ?? (kind === "currency" ? computed.toFixed(2) : Math.round(computed))));
+    setEditing(true);
+  }
+  function save() {
+    const n = Number(String(draft).replace(",", "."));
+    if (!Number.isFinite(n) || n < 0) { toast.error("Valor inválido"); return; }
+    window.localStorage.setItem(key, String(n));
+    setOverride(n);
+    setEditing(false);
+    toast.success("Valor atualizado");
+  }
+  function reset() {
+    window.localStorage.removeItem(key);
+    setOverride(null);
+    setEditing(false);
+    toast.success("Valor restaurado");
+  }
+
   return (
     <div className="rounded-xl border border-border bg-card p-5">
-      <p className="text-sm text-muted-foreground">{title}</p>
-      <p className="mt-2 font-display text-2xl font-bold">{value}</p>
+      <div className="flex items-start justify-between gap-2">
+        <p className="text-sm text-muted-foreground">{title}</p>
+        {!editing ? (
+          <div className="flex gap-1">
+            {override !== null && (
+              <button onClick={reset} className="rounded-md p-1 text-muted-foreground hover:bg-muted" aria-label="Restaurar valor automático" title="Restaurar automático">
+                <RotateCcw className="h-3.5 w-3.5" />
+              </button>
+            )}
+            <button onClick={start} className="rounded-md p-1 text-muted-foreground hover:bg-muted" aria-label={`Editar ${title}`}>
+              <Pencil className="h-3.5 w-3.5" />
+            </button>
+          </div>
+        ) : (
+          <div className="flex gap-1">
+            <button onClick={save} className="rounded-md bg-primary p-1 text-primary-foreground" aria-label="Salvar">
+              <Save className="h-3.5 w-3.5" />
+            </button>
+            <button onClick={() => setEditing(false)} className="rounded-md border border-border p-1" aria-label="Cancelar">
+              <X className="h-3.5 w-3.5" />
+            </button>
+          </div>
+        )}
+      </div>
+      {editing ? (
+        <input
+          autoFocus
+          inputMode="decimal"
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          onKeyDown={(e) => { if (e.key === "Enter") save(); if (e.key === "Escape") setEditing(false); }}
+          className="mt-2 w-full rounded-md border border-input bg-background px-2 py-1 font-display text-2xl font-bold outline-none focus:ring-2 focus:ring-primary"
+        />
+      ) : (
+        <p className="mt-2 font-display text-2xl font-bold">{formatted}</p>
+      )}
+      {override !== null && !editing && (
+        <p className="mt-1 text-[10px] uppercase tracking-wide text-primary">Manual</p>
+      )}
     </div>
   );
 }
