@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { ArrowLeft, Download, Loader2, TrendingUp, ShoppingBag, Receipt, MessageCircle, Pencil, Save, X } from "lucide-react";
+import { ArrowLeft, Download, Loader2, TrendingUp, ShoppingBag, Receipt, MessageCircle, Pencil, Save, X, Plus, Trash2, RotateCcw } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import { RequireAuth } from "@/components/RequireAuth";
 import { api, extractApiError } from "@/lib/api";
@@ -22,6 +22,27 @@ type Order = {
 };
 
 type Period = "today" | "7d" | "30d" | "month" | "all";
+
+type ExternalSale = { id: string; date: string; description: string; value: number };
+const EXT_KEY = "ayla.admin.external-sales";
+const TOP_OVERRIDE_KEY = "ayla.admin.top-products"; // map name -> { qty, revenue }
+
+function loadExternal(): ExternalSale[] {
+  if (typeof window === "undefined") return [];
+  try { return JSON.parse(window.localStorage.getItem(EXT_KEY) ?? "[]") as ExternalSale[]; } catch { return []; }
+}
+function saveExternal(list: ExternalSale[]) {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(EXT_KEY, JSON.stringify(list));
+}
+function loadTopOverrides(): Record<string, { qty: number; revenue: number }> {
+  if (typeof window === "undefined") return {};
+  try { return JSON.parse(window.localStorage.getItem(TOP_OVERRIDE_KEY) ?? "{}"); } catch { return {}; }
+}
+function saveTopOverrides(o: Record<string, { qty: number; revenue: number }>) {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(TOP_OVERRIDE_KEY, JSON.stringify(o));
+}
 
 function startOfPeriod(p: Period): Date {
   const now = new Date();
