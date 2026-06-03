@@ -427,46 +427,38 @@ function Index() {
 
       {/* PICOLÉS */}
       <section id="picoles" className="relative overflow-hidden px-6 py-24 md:py-32">
-        {/* fundo unificado em <main>; sem overlay local */}
-        <div className="mx-auto max-w-6xl">
+        <div className="mx-auto max-w-6xl space-y-20">
           <div className="mx-auto max-w-2xl text-center">
             <span className="reveal inline-block rounded-full bg-primary/15 px-4 py-1.5 font-display text-xs font-bold uppercase tracking-[0.2em] text-primary ring-1 ring-primary/20">
               🍡 Picolés
             </span>
             <h2 className="reveal mt-5 font-display text-4xl font-bold leading-[1.05] tracking-tight sm:text-5xl md:text-6xl">
               <span className="bg-gradient-candy bg-clip-text text-transparent">PICOLÉS</span>{" "}
-              no palitinho
+              por categoria
             </h2>
             <p className="reveal mx-auto mt-5 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">
-              Picolés artesanais com sabores intensos e ingredientes selecionados.
+              Cada linha tem o seu carrossel. Escolha a categoria e adicione ao carrinho.
             </p>
-            <Link to="/cardapio" search={{ cat: "popsicle" }} className="reveal mt-5 inline-flex items-center gap-2 rounded-full bg-primary/15 px-5 py-2 text-sm font-semibold text-primary ring-1 ring-primary/30 transition-colors hover:bg-primary/25">
-              Ver todos os picolés →
-            </Link>
           </div>
-          <div className="reveal mt-14">
-            <Carousel opts={{ align: "start", loop: true }} plugins={[autoplayPops.current]} className="mx-auto w-full max-w-5xl">
-              <CarouselContent className="-ml-4">
-                {popsiclesView.map((p, i) => (
-                  <CarouselItem key={p.name} className="pl-4 sm:basis-1/2 lg:basis-1/3">
-                    <div className="animate-pop-in h-full" style={{ animationDelay: `${i * 80}ms` }}>
-                      <ProductCard
-                        id={p.id}
-                        name={p.name}
-                        desc={p.desc}
-                        price={p.price}
-                        img={p.img}
-                        category={p.category}
-                        badge="Picolé"
-                      />
-                    </div>
-                  </CarouselItem>
-                ))}
-              </CarouselContent>
-              <CarouselPrevious className="hidden md:flex -left-4 lg:-left-12 bg-card" />
-              <CarouselNext className="hidden md:flex -right-4 lg:-right-12 bg-card" />
-            </Carousel>
-          </div>
+
+          <PopsicleCarousel
+            title={POPSICLE_SUB_LABEL.agua}
+            items={popsiclesAgua}
+            autoplay={autoplayPopsAgua.current}
+            badge="Água"
+          />
+          <PopsicleCarousel
+            title={POPSICLE_SUB_LABEL.premium}
+            items={popsiclesPremium}
+            autoplay={autoplayPopsPremium.current}
+            badge="Premium"
+          />
+          <PopsicleCarousel
+            title={POPSICLE_SUB_LABEL.ski}
+            items={popsiclesSki}
+            autoplay={autoplayPopsSki.current}
+            badge="Ski"
+          />
         </div>
       </section>
 
