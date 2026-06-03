@@ -46,6 +46,17 @@ import acai5L from "@/assets/acai-5l.webp";
 export const TUB_PRICE = 35.0;
 export const CUP_PRICE = 12.0;
 export const POPSICLE_PRICE = 7.0;
+export const POPSICLE_PREMIUM_PRICE = 9.0;
+export const POPSICLE_SKI_PRICE = 8.0;
+
+// Sub-categorias de picolé conforme padronizadas pelo cliente.
+export type PopsicleSub = "agua" | "leite" | "premium" | "ski";
+export const POPSICLE_SUB_LABEL: Record<PopsicleSub, string> = {
+  agua: "Picolé base água",
+  leite: "Picolé base leite",
+  premium: "Picolé Premium",
+  ski: "Picolé Ski",
+};
 
 export const tubs = [
   { name: "Limão Suíço", img: tubLimaoSuico },
@@ -92,6 +103,29 @@ export const popsicles = [
   { name: "Groselha", desc: "Sabor clássico e marcante de groselha.", img: popsicle3dGroselha },
   { name: "Chocolate", desc: "Chocolate intenso e cremoso em picolé.", img: popsicle3dChocolate },
 ].map((p) => ({ ...p, price: POPSICLE_PRICE }));
+
+// Sub-coleções de picolé conforme cardápio oficial. Cada item aparece em
+// APENAS um carrossel — não há duplicação cruzada.
+export const popsiclesAgua = [
+  { name: "Groselha", desc: "Sabor clássico e marcante.", img: popsicle3dGroselha },
+  { name: "Manga", desc: "Tropical e refrescante.", img: popsicle3dManga },
+  { name: "Limão", desc: "Cítrico e refrescante.", img: popsicleLimao },
+  { name: "Uva", desc: "Doce e refrescante de uva.", img: popsicle3dGroselha },
+  { name: "Abacaxi", desc: "Tropical na medida certa.", img: popsicle3dManga },
+  { name: "Pinta Língua", desc: "Diversão colorida que pinta a língua.", img: popsicle3dChiclete },
+].map((p) => ({ ...p, price: POPSICLE_PRICE, sub: "agua" as PopsicleSub }));
+
+export const popsiclesPremium = [
+  { name: "Leitinho", desc: "Cremoso de leite condensado.", img: popsicle3dLeitinho },
+  { name: "Brigadeiro", desc: "Chocolate puro com granulado.", img: popsicle3dChocolate },
+  { name: "Torta de Limão", desc: "Picolé com crocante de biscoito.", img: popsicleLimao },
+].map((p) => ({ ...p, price: POPSICLE_PREMIUM_PRICE, sub: "premium" as PopsicleSub }));
+
+export const popsiclesSki = [
+  { name: "Skimo", desc: "Cobertura crocante e recheio cremoso.", img: popsicle3dSkimoCoco },
+  { name: "Ski Coco", desc: "Coco com cobertura de chocolate.", img: popsicle3dSkimoCoco },
+  { name: "Tentação", desc: "Chocolate com cobertura irresistível.", img: popsicleTentacao },
+].map((p) => ({ ...p, price: POPSICLE_SKI_PRICE, sub: "ski" as PopsicleSub }));
 
 export const acaiProducts = [
   { name: "Açaí Premium 1L", desc: "Pote com guaraná e frutos vermelhos.", img: acai1L, size: "1L", price: 45.0 },
