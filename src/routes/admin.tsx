@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Loader2, Plus, Pencil, Trash2, X, MessageCircle, UserCog, Wallet, Package, Save, RotateCcw } from "lucide-react";
+import { Loader2, Plus, Pencil, Trash2, X, MessageCircle, UserCog, Wallet, Package, Save, RotateCcw, LayoutDashboard, ShoppingCart, Users as UsersIcon, Truck, ArrowLeft, CheckCircle2, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import { RequireAuth } from "@/components/RequireAuth";
 import { api, extractApiError } from "@/lib/api";
@@ -28,51 +28,79 @@ type Product = { id: string | number; name: string; price: number; description?:
 type Order = { id: string | number; total: number; status: string; createdAt?: string; source?: string; customerName?: string; customerPhone?: string; items?: Array<{ name: string; quantity: number; price?: number }>; user?: { name?: string; email?: string }; userId?: string | number; address?: { street?: string; number?: string; city?: string } };
 type AdminUser = { id: string | number; name?: string; email: string; role?: string; createdAt?: string; phone?: string; address?: Address };
 
-type Tab = "dashboard" | "products" | "wholesale" | "orders" | "users";
+type Tab = "hub" | "dashboard" | "products" | "wholesale" | "orders" | "users";
 
 function AdminPanel() {
-  const [tab, setTab] = useState<Tab>("dashboard");
-  const tabs: { key: Tab; label: string }[] = [
-    { key: "dashboard", label: "Dashboard" },
-    { key: "products", label: "Produtos" },
-    { key: "wholesale", label: "Atacado" },
-    { key: "orders", label: "Pedidos" },
-    { key: "users", label: "Usuários" },
+  const [tab, setTab] = useState<Tab>("hub");
+
+  const hubCards: { key: Tab; title: string; desc: string; icon: typeof LayoutDashboard }[] = [
+    { key: "dashboard", title: "Dashboard", desc: "Visão geral e métricas", icon: LayoutDashboard },
+    { key: "products", title: "Produtos", desc: "Cadastrar, editar e excluir", icon: Package },
+    { key: "wholesale", title: "Atacado", desc: "Preços por categoria/produto", icon: Truck },
+    { key: "orders", title: "Pedidos", desc: "Confirmar pagamento e entregas", icon: ShoppingCart },
+    { key: "users", title: "Usuários", desc: "Editar perfil, senha e papéis", icon: UsersIcon },
   ];
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-10">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="font-display text-3xl font-bold">Painel Admin</h1>
-        <div className="flex gap-2">
-          <Link
-            to="/admin/perfil"
-            className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2 text-sm font-semibold hover:bg-muted"
-          >
-            <UserCog className="h-4 w-4" /> Perfil
-          </Link>
+        <div className="flex items-center gap-3">
+          {tab !== "hub" && (
+            <button
+              onClick={() => setTab("hub")}
+              className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-2 text-sm font-semibold hover:bg-muted"
+            >
+              <ArrowLeft className="h-4 w-4" /> Painel
+            </button>
+          )}
+          <h1 className="font-display text-3xl font-bold">Painel Admin</h1>
+        </div>
+        <Link
+          to="/admin/perfil"
+          className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2 text-sm font-semibold hover:bg-muted"
+        >
+          <UserCog className="h-4 w-4" /> Perfil
+        </Link>
+      </div>
+
+      {tab === "hub" ? (
+        <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {hubCards.map((c) => {
+            const Icon = c.icon;
+            return (
+              <button
+                key={c.key}
+                onClick={() => setTab(c.key)}
+                className="group relative flex min-h-44 flex-col items-start gap-3 rounded-3xl bg-primary p-6 text-left text-primary-foreground shadow-button transition-all hover:-translate-y-1 hover:shadow-glow focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/40"
+              >
+                <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/15 ring-1 ring-white/30">
+                  <Icon className="h-7 w-7" />
+                </span>
+                <h2 className="font-display text-2xl font-bold">{c.title}</h2>
+                <p className="text-sm text-primary-foreground/85">{c.desc}</p>
+              </button>
+            );
+          })}
           <Link
             to="/admin/financeiro"
-            className="inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-button hover:scale-[1.02]"
+            className="group relative flex min-h-44 flex-col items-start gap-3 rounded-3xl bg-primary p-6 text-left text-primary-foreground shadow-button transition-all hover:-translate-y-1 hover:shadow-glow focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/40"
           >
-            <Wallet className="h-4 w-4" /> Financeiro
+            <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/15 ring-1 ring-white/30">
+              <Wallet className="h-7 w-7" />
+            </span>
+            <h2 className="font-display text-2xl font-bold">Financeiro</h2>
+            <p className="text-sm text-primary-foreground/85">Receita, vendas externas e relatórios</p>
           </Link>
         </div>
-      </div>
-      <div className="mt-4 flex flex-wrap gap-2 border-b border-border">
-        {tabs.map((t) => (
-          <button key={t.key} onClick={() => setTab(t.key)} className={`px-4 py-2 text-sm font-semibold transition-colors ${tab === t.key ? "border-b-2 border-primary text-primary" : "text-muted-foreground hover:text-foreground"}`}>
-            {t.label}
-          </button>
-        ))}
-      </div>
-      <div className="mt-6">
-        {tab === "dashboard" && <Dashboard />}
-        {tab === "products" && <ProductsAdmin />}
-        {tab === "wholesale" && <WholesaleAdmin />}
-        {tab === "orders" && <OrdersAdmin />}
-        {tab === "users" && <UsersAdmin />}
-      </div>
+      ) : (
+        <div className="mt-8">
+          {tab === "dashboard" && <Dashboard />}
+          {tab === "products" && <ProductsAdmin />}
+          {tab === "wholesale" && <WholesaleAdmin />}
+          {tab === "orders" && <OrdersAdmin />}
+          {tab === "users" && <UsersAdmin />}
+        </div>
+      )}
     </main>
   );
 }
