@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Outlet, Link, createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
+import { Outlet, Link, createRootRoute, HeadContent, Scripts, useRouterState, useNavigate } from "@tanstack/react-router";
 import { Toaster } from "sonner";
 
 import appCss from "../styles.css?url";
@@ -9,6 +9,7 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { AuthBar } from "@/components/AuthBar";
 import { CartFloat } from "@/components/CartFloat";
 import { AddressGate } from "@/components/AddressGate";
+import { useAuth } from "@/contexts/AuthContext";
 import { loadWholesaleFromBackend } from "@/lib/wholesale";
 
 function NotFoundComponent() {
@@ -93,8 +94,24 @@ function RootComponent() {
         <Outlet />
         <CartFloat />
         <AddressGate />
+        <LoginGate />
         <Toaster richColors position="top-center" />
       </CartProvider>
     </AuthProvider>
   );
+}
+
+const PUBLIC_PATHS = new Set(["/login", "/cadastro"]);
+
+function LoginGate() {
+  const { user, loading } = useAuth();
+  const path = useRouterState({ select: (r) => r.location.pathname });
+  const navigate = useNavigate();
+  useEffect(() => {
+    if (loading) return;
+    if (!user && !PUBLIC_PATHS.has(path)) {
+      navigate({ to: "/login" });
+    }
+  }, [user, loading, path, navigate]);
+  return null;
 }

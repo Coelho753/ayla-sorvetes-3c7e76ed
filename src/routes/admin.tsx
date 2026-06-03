@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Loader2, Plus, Pencil, Trash2, X, MessageCircle, UserCog, Wallet, Package, Save, RotateCcw } from "lucide-react";
+import { Loader2, Plus, Pencil, Trash2, X, MessageCircle, UserCog, Wallet, Package, Save, RotateCcw, LayoutDashboard, ShoppingCart, Users as UsersIcon, Truck, ArrowLeft, CheckCircle2, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import { RequireAuth } from "@/components/RequireAuth";
 import { api, extractApiError } from "@/lib/api";
@@ -28,51 +28,79 @@ type Product = { id: string | number; name: string; price: number; description?:
 type Order = { id: string | number; total: number; status: string; createdAt?: string; source?: string; customerName?: string; customerPhone?: string; items?: Array<{ name: string; quantity: number; price?: number }>; user?: { name?: string; email?: string }; userId?: string | number; address?: { street?: string; number?: string; city?: string } };
 type AdminUser = { id: string | number; name?: string; email: string; role?: string; createdAt?: string; phone?: string; address?: Address };
 
-type Tab = "dashboard" | "products" | "wholesale" | "orders" | "users";
+type Tab = "hub" | "dashboard" | "products" | "wholesale" | "orders" | "users";
 
 function AdminPanel() {
-  const [tab, setTab] = useState<Tab>("dashboard");
-  const tabs: { key: Tab; label: string }[] = [
-    { key: "dashboard", label: "Dashboard" },
-    { key: "products", label: "Produtos" },
-    { key: "wholesale", label: "Atacado" },
-    { key: "orders", label: "Pedidos" },
-    { key: "users", label: "Usuários" },
+  const [tab, setTab] = useState<Tab>("hub");
+
+  const hubCards: { key: Tab; title: string; desc: string; icon: typeof LayoutDashboard }[] = [
+    { key: "dashboard", title: "Dashboard", desc: "Visão geral e métricas", icon: LayoutDashboard },
+    { key: "products", title: "Produtos", desc: "Cadastrar, editar e excluir", icon: Package },
+    { key: "wholesale", title: "Atacado", desc: "Preços por categoria/produto", icon: Truck },
+    { key: "orders", title: "Pedidos", desc: "Confirmar pagamento e entregas", icon: ShoppingCart },
+    { key: "users", title: "Usuários", desc: "Editar perfil, senha e papéis", icon: UsersIcon },
   ];
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-10">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="font-display text-3xl font-bold">Painel Admin</h1>
-        <div className="flex gap-2">
-          <Link
-            to="/admin/perfil"
-            className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2 text-sm font-semibold hover:bg-muted"
-          >
-            <UserCog className="h-4 w-4" /> Perfil
-          </Link>
+        <div className="flex items-center gap-3">
+          {tab !== "hub" && (
+            <button
+              onClick={() => setTab("hub")}
+              className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-2 text-sm font-semibold hover:bg-muted"
+            >
+              <ArrowLeft className="h-4 w-4" /> Painel
+            </button>
+          )}
+          <h1 className="font-display text-3xl font-bold">Painel Admin</h1>
+        </div>
+        <Link
+          to="/admin/perfil"
+          className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2 text-sm font-semibold hover:bg-muted"
+        >
+          <UserCog className="h-4 w-4" /> Perfil
+        </Link>
+      </div>
+
+      {tab === "hub" ? (
+        <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {hubCards.map((c) => {
+            const Icon = c.icon;
+            return (
+              <button
+                key={c.key}
+                onClick={() => setTab(c.key)}
+                className="group relative flex min-h-44 flex-col items-start gap-3 rounded-3xl bg-primary p-6 text-left text-primary-foreground shadow-button transition-all hover:-translate-y-1 hover:shadow-glow focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/40"
+              >
+                <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/15 ring-1 ring-white/30">
+                  <Icon className="h-7 w-7" />
+                </span>
+                <h2 className="font-display text-2xl font-bold">{c.title}</h2>
+                <p className="text-sm text-primary-foreground/85">{c.desc}</p>
+              </button>
+            );
+          })}
           <Link
             to="/admin/financeiro"
-            className="inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-button hover:scale-[1.02]"
+            className="group relative flex min-h-44 flex-col items-start gap-3 rounded-3xl bg-primary p-6 text-left text-primary-foreground shadow-button transition-all hover:-translate-y-1 hover:shadow-glow focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/40"
           >
-            <Wallet className="h-4 w-4" /> Financeiro
+            <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/15 ring-1 ring-white/30">
+              <Wallet className="h-7 w-7" />
+            </span>
+            <h2 className="font-display text-2xl font-bold">Financeiro</h2>
+            <p className="text-sm text-primary-foreground/85">Receita, vendas externas e relatórios</p>
           </Link>
         </div>
-      </div>
-      <div className="mt-4 flex flex-wrap gap-2 border-b border-border">
-        {tabs.map((t) => (
-          <button key={t.key} onClick={() => setTab(t.key)} className={`px-4 py-2 text-sm font-semibold transition-colors ${tab === t.key ? "border-b-2 border-primary text-primary" : "text-muted-foreground hover:text-foreground"}`}>
-            {t.label}
-          </button>
-        ))}
-      </div>
-      <div className="mt-6">
-        {tab === "dashboard" && <Dashboard />}
-        {tab === "products" && <ProductsAdmin />}
-        {tab === "wholesale" && <WholesaleAdmin />}
-        {tab === "orders" && <OrdersAdmin />}
-        {tab === "users" && <UsersAdmin />}
-      </div>
+      ) : (
+        <div className="mt-8">
+          {tab === "dashboard" && <Dashboard />}
+          {tab === "products" && <ProductsAdmin />}
+          {tab === "wholesale" && <WholesaleAdmin />}
+          {tab === "orders" && <OrdersAdmin />}
+          {tab === "users" && <UsersAdmin />}
+        </div>
+      )}
     </main>
   );
 }
@@ -334,9 +362,12 @@ function ProductModal({ product, onClose, onSaved }: { product: Product; onClose
           <div className="grid grid-cols-2 gap-3">
             <input required type="number" step="0.01" placeholder="Preço" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} className="rounded-md border border-input bg-background px-3 py-2" />
             <select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} className="rounded-md border border-input bg-background px-3 py-2">
-              <option value="tub">Pote 1,5L</option>
+              <option value="pote">Pote 1,5L</option>
               <option value="cup">Copo 300ml</option>
-              <option value="popsicle">Picolé</option>
+              <option value="pic_agua">Picolé base água</option>
+              <option value="pic_leite">Picolé base leite</option>
+              <option value="pic_premium">Picolé Premium</option>
+              <option value="pic_ski">Picolé Ski</option>
               <option value="acai">Açaí</option>
             </select>
           </div>
@@ -355,7 +386,19 @@ function ProductModal({ product, onClose, onSaved }: { product: Product; onClose
   );
 }
 
-const STATUSES = ["pendente", "pago", "preparando", "enviado", "entregue", "cancelado"] as const;
+const STATUSES = ["pendente", "pago", "separando", "saiu_para_entrega", "entregue", "cancelado"] as const;
+const STATUS_LABEL: Record<string, string> = {
+  pendente: "Pendente",
+  pago: "Pago",
+  separando: "Separando",
+  saiu_para_entrega: "Saiu para entrega",
+  entregue: "Entregue",
+  cancelado: "Cancelado",
+  // compat com nomes antigos
+  preparando: "Separando",
+  enviado: "Saiu para entrega",
+  novo: "Pendente",
+};
 
 function OrdersAdmin() {
   const [orders, setOrders] = useState<Order[] | null>(null);
@@ -416,51 +459,124 @@ function OrdersAdmin() {
       {visible.length === 0 ? (
         <p className="text-muted-foreground">Nenhum pedido nesta visão.</p>
       ) : (
-        <div className="overflow-x-auto rounded-xl border border-border">
-          <table className="w-full text-sm">
-            <thead className="bg-muted/50 text-left">
-              <tr>
-                <th className="p-3">#</th>
-                <th className="p-3">Cliente</th>
-                <th className="p-3">Itens</th>
-                <th className="p-3">Total</th>
-                <th className="p-3">Origem</th>
-                <th className="p-3">Status</th>
-                <th className="p-3 text-right">Ações</th>
-              </tr>
-            </thead>
-            <tbody>
-              {visible.map((o) => (
-                <tr key={o.id} className="border-t border-border align-top hover:bg-muted/30">
-                  <td className="p-3 font-mono text-xs">{String(o.id).slice(0, 8)}</td>
-                  <td className="p-3">
-                    <div className="font-semibold">{o.customerName ?? o.user?.name ?? o.user?.email ?? "—"}</div>
-                    {o.customerPhone && <div className="text-xs text-muted-foreground">{o.customerPhone}</div>}
-                  </td>
-                  <td className="p-3 text-xs text-muted-foreground">
-                    {o.items?.slice(0, 3).map((i) => `${i.quantity}× ${i.name}`).join(", ") ?? "—"}
-                    {o.items && o.items.length > 3 && ` +${o.items.length - 3}`}
-                  </td>
-                  <td className="p-3 font-semibold">{formatBRL(Number(o.total) || 0)}</td>
-                  <td className="p-3">
-                    {(o.source ?? "").toLowerCase() === "whatsapp" ? (
-                      <span className="inline-flex items-center gap-1 rounded-full bg-whatsapp/15 px-2 py-0.5 text-xs font-semibold text-whatsapp"><MessageCircle className="h-3 w-3" /> WhatsApp</span>
-                    ) : <span className="text-xs text-muted-foreground">{o.source ?? "site"}</span>}
-                  </td>
-                  <td className="p-3">
-                    <select value={o.status} onChange={(e) => changeStatus(o.id, e.target.value)} className="rounded-md border border-input bg-background px-2 py-1">
-                      {STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
-                    </select>
-                  </td>
-                  <td className="p-3 text-right">
-                    <button onClick={() => remove(o.id)} aria-label="Excluir pedido" className="rounded-md p-2 text-destructive hover:bg-destructive/10"><Trash2 className="h-4 w-4" /></button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="space-y-4">
+          {visible.map((o) => (
+            <OrderCard
+              key={o.id}
+              order={o}
+              onChangeStatus={(s) => changeStatus(o.id, s)}
+              onRemove={() => remove(o.id)}
+            />
+          ))}
         </div>
       )}
+    </div>
+  );
+}
+
+function OrderCard({
+  order: o,
+  onChangeStatus,
+  onRemove,
+}: {
+  order: Order;
+  onChangeStatus: (status: string) => void;
+  onRemove: () => void;
+}) {
+  const status = (o.status ?? "pendente").toLowerCase();
+  const isPending = status === "pendente" || status === "novo";
+  const isCancelled = status === "cancelado";
+  const isPaid = ["pago", "separando", "saiu_para_entrega", "entregue", "preparando", "enviado"].includes(status);
+  const customerName = o.customerName ?? o.user?.name ?? o.user?.email ?? "Cliente sem nome";
+
+  const steps: { key: string; label: string }[] = [
+    { key: "separando", label: "Separando" },
+    { key: "saiu_para_entrega", label: "Saiu para entrega" },
+    { key: "entregue", label: "Entregue" },
+  ];
+  const stepIdx = steps.findIndex((s) => s.key === status);
+
+  return (
+    <div className="rounded-2xl border border-border bg-card p-4 shadow-sm">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <p className="font-display text-lg font-bold">{customerName}</p>
+          {o.customerPhone && <p className="text-xs text-muted-foreground">{o.customerPhone}</p>}
+          <p className="mt-1 font-mono text-[10px] uppercase text-muted-foreground">#{String(o.id).slice(0, 8)}</p>
+        </div>
+        <div className="text-right">
+          <p className="font-display text-xl font-extrabold text-primary">{formatBRL(Number(o.total) || 0)}</p>
+          <div className="mt-1 flex items-center justify-end gap-2">
+            {(o.source ?? "").toLowerCase() === "whatsapp" ? (
+              <span className="inline-flex items-center gap-1 rounded-full bg-whatsapp/15 px-2 py-0.5 text-[10px] font-semibold text-whatsapp"><MessageCircle className="h-3 w-3" /> WhatsApp</span>
+            ) : <span className="text-[10px] text-muted-foreground">{o.source ?? "site"}</span>}
+            <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${isCancelled ? "bg-destructive/15 text-destructive" : isPaid ? "bg-emerald-500/15 text-emerald-700" : "bg-amber-500/15 text-amber-700"}`}>
+              {STATUS_LABEL[status] ?? status}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {o.items && o.items.length > 0 && (
+        <ul className="mt-3 space-y-0.5 text-xs text-muted-foreground">
+          {o.items.map((i, idx) => (
+            <li key={idx}>{i.quantity}× {i.name}</li>
+          ))}
+        </ul>
+      )}
+
+      {/* Etapa 1: confirmar/cancelar pagamento */}
+      {isPending && (
+        <div className="mt-4 flex flex-wrap gap-2">
+          <button
+            onClick={() => onChangeStatus("pago")}
+            className="inline-flex items-center gap-2 rounded-full bg-emerald-600 px-4 py-2 text-sm font-bold text-white hover:bg-emerald-700"
+          >
+            <CheckCircle2 className="h-4 w-4" /> Confirmar pagamento
+          </button>
+          <button
+            onClick={() => onChangeStatus("cancelado")}
+            className="inline-flex items-center gap-2 rounded-full border border-destructive bg-destructive/10 px-4 py-2 text-sm font-bold text-destructive hover:bg-destructive/20"
+          >
+            <XCircle className="h-4 w-4" /> Cancelar
+          </button>
+        </div>
+      )}
+
+      {/* Etapa 2: stepper de entrega */}
+      {isPaid && !isCancelled && (
+        <div className="mt-4 space-y-2">
+          <div className="flex items-center gap-1">
+            {steps.map((s, i) => {
+              const reached = stepIdx >= i || (status === "pago" && i === -1);
+              const done = stepIdx >= i;
+              return (
+                <div key={s.key} className="flex flex-1 items-center">
+                  <div className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[10px] font-bold ${done ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>{i + 1}</div>
+                  {i < steps.length - 1 && <div className={`mx-1 h-0.5 flex-1 ${stepIdx > i ? "bg-primary" : "bg-muted"}`} />}
+                </div>
+              );
+            })}
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {steps.map((s) => (
+              <button
+                key={s.key}
+                onClick={() => onChangeStatus(s.key)}
+                className={`rounded-full px-3 py-1.5 text-xs font-bold transition-colors ${status === s.key ? "bg-primary text-primary-foreground" : "border border-border bg-background hover:bg-muted"}`}
+              >
+                {s.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div className="mt-4 flex items-center justify-end">
+        <button onClick={onRemove} className="inline-flex items-center gap-1 rounded-md p-2 text-xs text-destructive hover:bg-destructive/10">
+          <Trash2 className="h-3.5 w-3.5" /> Excluir
+        </button>
+      </div>
     </div>
   );
 }

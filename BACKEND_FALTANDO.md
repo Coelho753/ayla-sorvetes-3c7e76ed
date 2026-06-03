@@ -105,3 +105,74 @@ Continue liberando:
 - `http://localhost:5173`
 
 Métodos: `GET, POST, PUT, DELETE, OPTIONS`. Headers: `Content-Type, Authorization`.
+
+---
+
+## 7. Novas categorias de produto (categorias dos picolés + potes/copos/açaí)
+
+O cadastro de produto no admin agora envia `category` com um destes valores:
+
+| Valor enviado     | Significado          |
+|-------------------|----------------------|
+| `pote`            | Pote 1,5L            |
+| `cup`             | Copo 300ml           |
+| `pic_agua`        | Picolé base água     |
+| `pic_leite`       | Picolé base leite    |
+| `pic_premium`     | Picolé Premium       |
+| `pic_ski`         | Picolé Ski           |
+| `acai`            | Açaí                 |
+
+Aceite TAMBÉM os valores legados `tub` e `popsicle` para retrocompatibilidade
+(podem ser migrados depois). Ajuste o enum/validador do `POST /products`
+e `PUT /products/:id`:
+
+```js
+const CATEGORIES = ['pote','tub','cup','pic_agua','pic_leite','pic_premium','pic_ski','popsicle','acai'];
+```
+
+## 8. Novos status de pedido (fluxo de pagamento + entrega)
+
+O admin agora opera o pedido em duas etapas:
+
+1. **Pagamento**: `pendente` → botão **Confirmar pagamento** (`pago`) ou **Cancelar** (`cancelado`).
+2. **Entrega** (só após pago): `separando` → `saiu_para_entrega` → `entregue`.
+
+Atualize o enum/validador de `status` em `PUT /orders/:id` para aceitar:
+
+```js
+const STATUSES = [
+  'pendente', 'pago', 'cancelado',
+  'separando', 'saiu_para_entrega', 'entregue',
+  // legados — manter aceitando até migrar a base
+  'novo', 'preparando', 'enviado'
+];
+```
+
+Recomendado: na criação de pedido (`POST /orders`), default = `pendente`.
+
+## 9. Nome do cliente no pedido (admin precisa ver quem pediu)
+
+O painel admin agora destaca **o nome de quem fez o pedido** em cada card.
+Garanta que o backend, em `GET /orders` (admin), retorne em cada pedido:
+
+- `customerName` (string) — nome do cliente que fez o pedido, OU
+- `user: { name, email }` populado (preferido — `populate('userId', 'name email')` no Mongoose).
+
+E em pedidos do WhatsApp/site sem login, salve `customerName` + `customerPhone` direto no documento do pedido.
+
+## 10. Tela de login obrigatória ao entrar no app
+
+O front agora redireciona qualquer rota não pública para `/login` quando o
+usuário não está autenticado. **Sem alteração no backend.** Apenas
+confirme que `POST /auth/login` e `POST /auth/register` continuam funcionando
+e que `GET /users/me` retorna o usuário autenticado (já está OK).
+
+## 11. (Opcional) Top produtos manualmente — somente front
+
+A edição manual dos "produtos mais pedidos" e o registro de **vendas por
+fora do aplicativo** ficam salvos no `localStorage` do navegador do admin.
+Não precisa de backend agora. Se quiser sincronizar entre admins no futuro,
+exponha:
+
+- `GET/PUT /admin/top-products-overrides` — JSON `{ [productName]: { qty, revenue } }`
+- `GET/POST/DELETE /admin/external-sales` — `{ id, date, description, value }`

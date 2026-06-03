@@ -71,6 +71,12 @@ import { useReveal } from "@/hooks/use-reveal";
 import { useImagePreload } from "@/hooks/use-image-preload";
 import { fetchProducts, groupByCategory, imgOf, type ApiProduct } from "@/lib/products";
 import { useState } from "react";
+import {
+  popsiclesAgua,
+  popsiclesPremium,
+  popsiclesSki,
+  POPSICLE_SUB_LABEL,
+} from "@/lib/catalog";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -137,7 +143,9 @@ function Index() {
   useReveal();
   const autoplay = useRef(Autoplay({ delay: 3500, stopOnInteraction: false, stopOnMouseEnter: true }));
   const autoplayCups = useRef(Autoplay({ delay: 3800, stopOnInteraction: false, stopOnMouseEnter: true }));
-  const autoplayPops = useRef(Autoplay({ delay: 3200, stopOnInteraction: false, stopOnMouseEnter: true }));
+  const autoplayPopsAgua = useRef(Autoplay({ delay: 3200, stopOnInteraction: false, stopOnMouseEnter: true }));
+  const autoplayPopsPremium = useRef(Autoplay({ delay: 3400, stopOnInteraction: false, stopOnMouseEnter: true }));
+  const autoplayPopsSki = useRef(Autoplay({ delay: 3600, stopOnInteraction: false, stopOnMouseEnter: true }));
   const autoplayAcai = useRef(Autoplay({ delay: 4000, stopOnInteraction: false, stopOnMouseEnter: true }));
 
   // Pré-carrega TODAS as imagens dos cards/banners e mantém em cache
@@ -163,7 +171,7 @@ function Index() {
 
   const tubsView = remote?.tub.length ? remote.tub.map((p) => ({ id: String(p.id), name: p.name, img: imgOf(p) ?? "", price: Number(p.price) || TUB_PRICE, category: "tub" })) : tubs.map((p) => ({ ...p, id: `local-tub-${p.name}`, category: "tub" }));
   const cupsView = remote?.cup.length ? remote.cup.map((p) => ({ id: String(p.id), name: p.name, img: imgOf(p) ?? "", price: Number(p.price) || CUP_PRICE, desc: p.description, category: "cup" })) : cups.map((p) => ({ ...p, id: `local-cup-${p.name}`, category: "cup" }));
-  const popsiclesView = remote?.popsicle.length ? remote.popsicle.map((p) => ({ id: String(p.id), name: p.name, img: imgOf(p) ?? "", price: Number(p.price) || POPSICLE_PRICE, desc: p.description, category: "popsicle" })) : popsicles.map((p) => ({ ...p, id: `local-pop-${p.name}`, category: "popsicle" }));
+  // popsicles agora renderizam via 3 carrosséis dedicados (água, premium, ski) — sem fallback genérico.
   const acaiView = remote?.acai.length ? remote.acai.map((p) => ({ id: String(p.id), name: p.name, img: imgOf(p) ?? "", price: Number(p.price) || 0, desc: p.description, size: p.size ?? "", category: "acai" })) : acaiProducts.map((p) => ({ ...p, id: `local-acai-${p.name}`, category: "acai" }));
 
   useEffect(() => {
@@ -419,46 +427,38 @@ function Index() {
 
       {/* PICOLÉS */}
       <section id="picoles" className="relative overflow-hidden px-6 py-24 md:py-32">
-        {/* fundo unificado em <main>; sem overlay local */}
-        <div className="mx-auto max-w-6xl">
+        <div className="mx-auto max-w-6xl space-y-20">
           <div className="mx-auto max-w-2xl text-center">
             <span className="reveal inline-block rounded-full bg-primary/15 px-4 py-1.5 font-display text-xs font-bold uppercase tracking-[0.2em] text-primary ring-1 ring-primary/20">
               🍡 Picolés
             </span>
             <h2 className="reveal mt-5 font-display text-4xl font-bold leading-[1.05] tracking-tight sm:text-5xl md:text-6xl">
               <span className="bg-gradient-candy bg-clip-text text-transparent">PICOLÉS</span>{" "}
-              no palitinho
+              por categoria
             </h2>
             <p className="reveal mx-auto mt-5 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">
-              Picolés artesanais com sabores intensos e ingredientes selecionados.
+              Cada linha tem o seu carrossel. Escolha a categoria e adicione ao carrinho.
             </p>
-            <Link to="/cardapio" search={{ cat: "popsicle" }} className="reveal mt-5 inline-flex items-center gap-2 rounded-full bg-primary/15 px-5 py-2 text-sm font-semibold text-primary ring-1 ring-primary/30 transition-colors hover:bg-primary/25">
-              Ver todos os picolés →
-            </Link>
           </div>
-          <div className="reveal mt-14">
-            <Carousel opts={{ align: "start", loop: true }} plugins={[autoplayPops.current]} className="mx-auto w-full max-w-5xl">
-              <CarouselContent className="-ml-4">
-                {popsiclesView.map((p, i) => (
-                  <CarouselItem key={p.name} className="pl-4 sm:basis-1/2 lg:basis-1/3">
-                    <div className="animate-pop-in h-full" style={{ animationDelay: `${i * 80}ms` }}>
-                      <ProductCard
-                        id={p.id}
-                        name={p.name}
-                        desc={p.desc}
-                        price={p.price}
-                        img={p.img}
-                        category={p.category}
-                        badge="Picolé"
-                      />
-                    </div>
-                  </CarouselItem>
-                ))}
-              </CarouselContent>
-              <CarouselPrevious className="hidden md:flex -left-4 lg:-left-12 bg-card" />
-              <CarouselNext className="hidden md:flex -right-4 lg:-right-12 bg-card" />
-            </Carousel>
-          </div>
+
+          <PopsicleCarousel
+            title={POPSICLE_SUB_LABEL.agua}
+            items={popsiclesAgua}
+            autoplay={autoplayPopsAgua.current}
+            badge="Água"
+          />
+          <PopsicleCarousel
+            title={POPSICLE_SUB_LABEL.premium}
+            items={popsiclesPremium}
+            autoplay={autoplayPopsPremium.current}
+            badge="Premium"
+          />
+          <PopsicleCarousel
+            title={POPSICLE_SUB_LABEL.ski}
+            items={popsiclesSki}
+            autoplay={autoplayPopsSki.current}
+            badge="Ski"
+          />
         </div>
       </section>
 
@@ -611,5 +611,53 @@ function Index() {
         </p>
       </footer>
     </main>
+  );
+}
+
+type PopsicleItem = { name: string; desc?: string; img: string; price: number; sub: string };
+
+function PopsicleCarousel({
+  title,
+  items,
+  autoplay,
+  badge,
+}: {
+  title: string;
+  items: PopsicleItem[];
+  autoplay: ReturnType<typeof Autoplay>;
+  badge: string;
+}) {
+  return (
+    <div className="reveal">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-2 px-2">
+        <h3 className="font-display text-2xl font-bold sm:text-3xl">
+          <span className="bg-gradient-candy bg-clip-text text-transparent">{title}</span>
+        </h3>
+        <span className="rounded-full bg-primary/15 px-3 py-1 text-xs font-bold uppercase tracking-wider text-primary ring-1 ring-primary/30">
+          {items.length} sabores
+        </span>
+      </div>
+      <Carousel opts={{ align: "start", loop: true }} plugins={[autoplay]} className="mx-auto w-full max-w-5xl">
+        <CarouselContent className="-ml-4">
+          {items.map((p, i) => (
+            <CarouselItem key={p.name} className="pl-4 sm:basis-1/2 lg:basis-1/3">
+              <div className="animate-pop-in h-full" style={{ animationDelay: `${i * 80}ms` }}>
+                <ProductCard
+                  id={`local-pop-${p.sub}-${p.name}`}
+                  name={p.name}
+                  desc={p.desc}
+                  price={p.price}
+                  img={p.img}
+                  category={`pic_${p.sub}`}
+                  badge={badge}
+                />
+              </div>
+            </CarouselItem>
+          ))}
+        </CarouselContent>
+        <CarouselPrevious className="hidden md:flex -left-4 lg:-left-12 bg-card" />
+        <CarouselNext className="hidden md:flex -right-4 lg:-right-12 bg-card" />
+      </Carousel>
+    </div>
   );
 }

@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { ArrowLeft, Download, Loader2, TrendingUp, ShoppingBag, Receipt, MessageCircle, Pencil, Save, X } from "lucide-react";
+import { ArrowLeft, Download, Loader2, TrendingUp, ShoppingBag, Receipt, MessageCircle, Pencil, Save, X, Plus, Trash2, RotateCcw } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import { RequireAuth } from "@/components/RequireAuth";
 import { api, extractApiError } from "@/lib/api";
@@ -23,6 +23,27 @@ type Order = {
 
 type Period = "today" | "7d" | "30d" | "month" | "all";
 
+type ExternalSale = { id: string; date: string; description: string; value: number };
+const EXT_KEY = "ayla.admin.external-sales";
+const TOP_OVERRIDE_KEY = "ayla.admin.top-products"; // map name -> { qty, revenue }
+
+function loadExternal(): ExternalSale[] {
+  if (typeof window === "undefined") return [];
+  try { return JSON.parse(window.localStorage.getItem(EXT_KEY) ?? "[]") as ExternalSale[]; } catch { return []; }
+}
+function saveExternal(list: ExternalSale[]) {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(EXT_KEY, JSON.stringify(list));
+}
+function loadTopOverrides(): Record<string, { qty: number; revenue: number }> {
+  if (typeof window === "undefined") return {};
+  try { return JSON.parse(window.localStorage.getItem(TOP_OVERRIDE_KEY) ?? "{}"); } catch { return {}; }
+}
+function saveTopOverrides(o: Record<string, { qty: number; revenue: number }>) {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(TOP_OVERRIDE_KEY, JSON.stringify(o));
+}
+
 function startOfPeriod(p: Period): Date {
   const now = new Date();
   if (p === "today") return new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -40,6 +61,8 @@ function Financeiro() {
   const [editTotal, setEditTotal] = useState<string>("");
   const [editStatus, setEditStatus] = useState<string>("");
   const [saving, setSaving] = useState(false);
+  const [externalSales, setExternalSales] = useState<ExternalSale[]>(() => loadExternal());
+  const [topOverrides, setTopOverrides] = useState<Record<string, { qty: number; revenue: number }>>(() => loadTopOverrides());
 
   useEffect(() => {
     (async () => {
@@ -61,7 +84,11 @@ function Financeiro() {
 
   const stats = useMemo(() => {
     const paid = filtered.filter((o) => !["cancelado"].includes(o.status));
-    const total = paid.reduce((s, o) => s + Number(o.total ?? 0), 0);
+    const ordersTotal = paid.reduce((s, o) => s + Number(o.total ?? 0), 0);
+    const startD = startOfPeriod(period);
+    const externalInPeriod = externalSales.filter((e) => period === "all" || new Date(e.date) >= startD);
+    const externalTotal = externalInPeriod.reduce((s, e) => s + Number(e.value || 0), 0);
+    const total = ordersTotal + externalTotal;
     const delivered = paid.filter((o) => o.status === "entregue").reduce((s, o) => s + Number(o.total ?? 0), 0);
     const cancelled = filtered.filter((o) => o.status === "cancelado").reduce((s, o) => s + Number(o.total ?? 0), 0);
     const fromWhats = paid.filter((o) => (o.source ?? "").toLowerCase() === "whatsapp").reduce((s, o) => s + Number(o.total ?? 0), 0);
@@ -87,10 +114,13 @@ function Financeiro() {
       productCount[k].qty += i.quantity;
       productCount[k].revenue += (i.price ?? 0) * i.quantity;
     }));
-    const top = Object.entries(productCount).sort((a, b) => b[1].revenue - a[1].revenue).slice(0, 8);
+    // merge overrides locais
+    const merged: Record<string, { qty: number; revenue: number }> = { ...productCount };
+    for (const [name, v] of Object.entries(topOverrides)) merged[name] = v;
+    const top = Object.entries(merged).sort((a, b) => b[1].revenue - a[1].revenue).slice(0, 12);
 
-    return { total, delivered, cancelled, fromWhats, ticket, count: paid.length, series, top };
-  }, [filtered]);
+    return { total, ordersTotal, externalTotal, delivered, cancelled, fromWhats, ticket, count: paid.length, series, top };
+  }, [filtered, externalSales, period, topOverrides]);
 
   function exportCsv() {
     const rows = [
@@ -195,25 +225,19 @@ function Financeiro() {
       </section>
 
       <section className="mt-6 rounded-xl border border-border p-5">
-        <h3 className="font-display text-lg font-bold">Top produtos</h3>
-        {stats.top.length === 0 ? (
-          <p className="mt-2 text-sm text-muted-foreground">Sem dados.</p>
-        ) : (
-          <table className="mt-3 w-full text-sm">
-            <thead className="text-left text-xs uppercase text-muted-foreground">
-              <tr><th className="pb-2">Produto</th><th className="pb-2 text-right">Qtd</th><th className="pb-2 text-right">Receita</th></tr>
-            </thead>
-            <tbody>
-              {stats.top.map(([name, v]) => (
-                <tr key={name} className="border-t border-border">
-                  <td className="py-2">{name}</td>
-                  <td className="py-2 text-right">{v.qty}</td>
-                  <td className="py-2 text-right font-semibold">{formatBRL(v.revenue)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
+        <TopProductsEditable
+          rows={stats.top}
+          overrides={topOverrides}
+          onChange={(o) => { setTopOverrides(o); saveTopOverrides(o); }}
+        />
+      </section>
+
+      <section className="mt-6 rounded-xl border border-border p-5">
+        <ExternalSalesPanel
+          list={externalSales}
+          onChange={(l) => { setExternalSales(l); saveExternal(l); }}
+          totalInPeriod={stats.externalTotal}
+        />
       </section>
 
       <section className="mt-6 rounded-xl border border-border p-5">
@@ -297,5 +321,137 @@ function Stat({ icon, title, value, sub }: { icon: React.ReactNode; title: strin
       <p className="mt-2 font-display text-2xl font-bold">{value}</p>
       {sub && <p className="mt-1 text-xs text-muted-foreground">{sub}</p>}
     </div>
+  );
+}
+
+function TopProductsEditable({
+  rows, overrides, onChange,
+}: {
+  rows: [string, { qty: number; revenue: number }][];
+  overrides: Record<string, { qty: number; revenue: number }>;
+  onChange: (o: Record<string, { qty: number; revenue: number }>) => void;
+}) {
+  const [editKey, setEditKey] = useState<string | null>(null);
+  const [qty, setQty] = useState("");
+  const [rev, setRev] = useState("");
+  const [newName, setNewName] = useState("");
+
+  function start(name: string, v: { qty: number; revenue: number }) {
+    setEditKey(name);
+    setQty(String(v.qty));
+    setRev(String(v.revenue.toFixed(2)));
+  }
+  function save(name: string) {
+    const q = Number(qty); const r = Number(String(rev).replace(",", "."));
+    if (!Number.isFinite(q) || !Number.isFinite(r) || q < 0 || r < 0) { toast.error("Valor inválido"); return; }
+    onChange({ ...overrides, [name]: { qty: q, revenue: r } });
+    setEditKey(null);
+    toast.success("Atualizado");
+  }
+  function resetOne(name: string) {
+    const next = { ...overrides }; delete next[name]; onChange(next);
+  }
+  function addNew() {
+    const n = newName.trim(); if (!n) return;
+    onChange({ ...overrides, [n]: { qty: 0, revenue: 0 } });
+    setNewName("");
+    start(n, { qty: 0, revenue: 0 });
+  }
+
+  return (
+    <>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h3 className="font-display text-lg font-bold">Top produtos (editável)</h3>
+        <div className="flex gap-2">
+          <input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="Adicionar produto" className="rounded-md border border-input bg-background px-2 py-1 text-sm" />
+          <button onClick={addNew} className="inline-flex items-center gap-1 rounded-md bg-primary px-3 py-1 text-xs font-bold text-primary-foreground"><Plus className="h-3 w-3" /> Add</button>
+        </div>
+      </div>
+      {rows.length === 0 ? (
+        <p className="mt-2 text-sm text-muted-foreground">Sem dados.</p>
+      ) : (
+        <table className="mt-3 w-full text-sm">
+          <thead className="text-left text-xs uppercase text-muted-foreground">
+            <tr><th className="pb-2">Produto</th><th className="pb-2 text-right">Qtd</th><th className="pb-2 text-right">Receita</th><th className="pb-2 text-right">Ações</th></tr>
+          </thead>
+          <tbody>
+            {rows.map(([name, v]) => {
+              const overridden = name in overrides;
+              const editing = editKey === name;
+              return (
+                <tr key={name} className="border-t border-border">
+                  <td className="py-2">{name} {overridden && <span className="ml-1 text-[10px] uppercase text-primary">manual</span>}</td>
+                  <td className="py-2 text-right">{editing ? <input value={qty} onChange={(e) => setQty(e.target.value)} className="w-16 rounded-md border border-input bg-background px-2 py-0.5 text-right text-xs" /> : v.qty}</td>
+                  <td className="py-2 text-right font-semibold">{editing ? <input value={rev} onChange={(e) => setRev(e.target.value)} className="w-24 rounded-md border border-input bg-background px-2 py-0.5 text-right text-xs" /> : formatBRL(v.revenue)}</td>
+                  <td className="py-2 text-right">
+                    {editing ? (
+                      <div className="inline-flex gap-1">
+                        <button onClick={() => save(name)} className="rounded-md bg-primary p-1 text-primary-foreground"><Save className="h-3 w-3" /></button>
+                        <button onClick={() => setEditKey(null)} className="rounded-md border border-border p-1"><X className="h-3 w-3" /></button>
+                      </div>
+                    ) : (
+                      <div className="inline-flex gap-1">
+                        <button onClick={() => start(name, v)} className="rounded-md border border-border p-1"><Pencil className="h-3 w-3" /></button>
+                        {overridden && <button onClick={() => resetOne(name)} className="rounded-md border border-border p-1" title="Restaurar automático"><RotateCcw className="h-3 w-3" /></button>}
+                      </div>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      )}
+    </>
+  );
+}
+
+function ExternalSalesPanel({
+  list, onChange, totalInPeriod,
+}: { list: ExternalSale[]; onChange: (l: ExternalSale[]) => void; totalInPeriod: number }) {
+  const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
+  const [desc, setDesc] = useState("");
+  const [value, setValue] = useState("");
+
+  function add() {
+    const v = Number(String(value).replace(",", "."));
+    if (!desc.trim() || !Number.isFinite(v) || v <= 0) { toast.error("Preencha descrição e valor."); return; }
+    const item: ExternalSale = { id: `ext_${Date.now().toString(36)}`, date, description: desc.trim(), value: v };
+    onChange([item, ...list]);
+    setDesc(""); setValue("");
+    toast.success("Venda externa adicionada.");
+  }
+  function remove(id: string) { onChange(list.filter((x) => x.id !== id)); }
+
+  return (
+    <>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h3 className="font-display text-lg font-bold">Vendas por fora do aplicativo</h3>
+        <span className="text-xs text-muted-foreground">Total no período: <strong className="text-foreground">{formatBRL(totalInPeriod)}</strong></span>
+      </div>
+      <p className="mt-1 text-xs text-muted-foreground">Inclui dinheiro, balcão, eventos e qualquer venda fora do app. Soma-se ao total geral do período.</p>
+      <div className="mt-3 grid gap-2 sm:grid-cols-[140px_1fr_140px_auto]">
+        <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="rounded-md border border-input bg-background px-2 py-2 text-sm" />
+        <input placeholder="Descrição (ex: balcão, evento X)" value={desc} onChange={(e) => setDesc(e.target.value)} className="rounded-md border border-input bg-background px-2 py-2 text-sm" />
+        <input placeholder="Valor R$" inputMode="decimal" value={value} onChange={(e) => setValue(e.target.value)} className="rounded-md border border-input bg-background px-2 py-2 text-sm" />
+        <button onClick={add} className="inline-flex items-center gap-1 rounded-md bg-primary px-3 py-2 text-sm font-bold text-primary-foreground"><Plus className="h-4 w-4" /> Adicionar</button>
+      </div>
+      {list.length > 0 && (
+        <ul className="mt-4 divide-y divide-border rounded-lg border border-border">
+          {list.map((e) => (
+            <li key={e.id} className="flex items-center justify-between gap-2 px-3 py-2 text-sm">
+              <div>
+                <p className="font-semibold">{e.description}</p>
+                <p className="text-xs text-muted-foreground">{new Date(e.date).toLocaleDateString("pt-BR")}</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="font-display font-bold">{formatBRL(e.value)}</span>
+                <button onClick={() => remove(e.id)} className="rounded-md p-1 text-destructive hover:bg-destructive/10"><Trash2 className="h-3.5 w-3.5" /></button>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+    </>
   );
 }
