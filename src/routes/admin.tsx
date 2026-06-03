@@ -459,51 +459,124 @@ function OrdersAdmin() {
       {visible.length === 0 ? (
         <p className="text-muted-foreground">Nenhum pedido nesta visão.</p>
       ) : (
-        <div className="overflow-x-auto rounded-xl border border-border">
-          <table className="w-full text-sm">
-            <thead className="bg-muted/50 text-left">
-              <tr>
-                <th className="p-3">#</th>
-                <th className="p-3">Cliente</th>
-                <th className="p-3">Itens</th>
-                <th className="p-3">Total</th>
-                <th className="p-3">Origem</th>
-                <th className="p-3">Status</th>
-                <th className="p-3 text-right">Ações</th>
-              </tr>
-            </thead>
-            <tbody>
-              {visible.map((o) => (
-                <tr key={o.id} className="border-t border-border align-top hover:bg-muted/30">
-                  <td className="p-3 font-mono text-xs">{String(o.id).slice(0, 8)}</td>
-                  <td className="p-3">
-                    <div className="font-semibold">{o.customerName ?? o.user?.name ?? o.user?.email ?? "—"}</div>
-                    {o.customerPhone && <div className="text-xs text-muted-foreground">{o.customerPhone}</div>}
-                  </td>
-                  <td className="p-3 text-xs text-muted-foreground">
-                    {o.items?.slice(0, 3).map((i) => `${i.quantity}× ${i.name}`).join(", ") ?? "—"}
-                    {o.items && o.items.length > 3 && ` +${o.items.length - 3}`}
-                  </td>
-                  <td className="p-3 font-semibold">{formatBRL(Number(o.total) || 0)}</td>
-                  <td className="p-3">
-                    {(o.source ?? "").toLowerCase() === "whatsapp" ? (
-                      <span className="inline-flex items-center gap-1 rounded-full bg-whatsapp/15 px-2 py-0.5 text-xs font-semibold text-whatsapp"><MessageCircle className="h-3 w-3" /> WhatsApp</span>
-                    ) : <span className="text-xs text-muted-foreground">{o.source ?? "site"}</span>}
-                  </td>
-                  <td className="p-3">
-                    <select value={o.status} onChange={(e) => changeStatus(o.id, e.target.value)} className="rounded-md border border-input bg-background px-2 py-1">
-                      {STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
-                    </select>
-                  </td>
-                  <td className="p-3 text-right">
-                    <button onClick={() => remove(o.id)} aria-label="Excluir pedido" className="rounded-md p-2 text-destructive hover:bg-destructive/10"><Trash2 className="h-4 w-4" /></button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="space-y-4">
+          {visible.map((o) => (
+            <OrderCard
+              key={o.id}
+              order={o}
+              onChangeStatus={(s) => changeStatus(o.id, s)}
+              onRemove={() => remove(o.id)}
+            />
+          ))}
         </div>
       )}
+    </div>
+  );
+}
+
+function OrderCard({
+  order: o,
+  onChangeStatus,
+  onRemove,
+}: {
+  order: Order;
+  onChangeStatus: (status: string) => void;
+  onRemove: () => void;
+}) {
+  const status = (o.status ?? "pendente").toLowerCase();
+  const isPending = status === "pendente" || status === "novo";
+  const isCancelled = status === "cancelado";
+  const isPaid = ["pago", "separando", "saiu_para_entrega", "entregue", "preparando", "enviado"].includes(status);
+  const customerName = o.customerName ?? o.user?.name ?? o.user?.email ?? "Cliente sem nome";
+
+  const steps: { key: string; label: string }[] = [
+    { key: "separando", label: "Separando" },
+    { key: "saiu_para_entrega", label: "Saiu para entrega" },
+    { key: "entregue", label: "Entregue" },
+  ];
+  const stepIdx = steps.findIndex((s) => s.key === status);
+
+  return (
+    <div className="rounded-2xl border border-border bg-card p-4 shadow-sm">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <p className="font-display text-lg font-bold">{customerName}</p>
+          {o.customerPhone && <p className="text-xs text-muted-foreground">{o.customerPhone}</p>}
+          <p className="mt-1 font-mono text-[10px] uppercase text-muted-foreground">#{String(o.id).slice(0, 8)}</p>
+        </div>
+        <div className="text-right">
+          <p className="font-display text-xl font-extrabold text-primary">{formatBRL(Number(o.total) || 0)}</p>
+          <div className="mt-1 flex items-center justify-end gap-2">
+            {(o.source ?? "").toLowerCase() === "whatsapp" ? (
+              <span className="inline-flex items-center gap-1 rounded-full bg-whatsapp/15 px-2 py-0.5 text-[10px] font-semibold text-whatsapp"><MessageCircle className="h-3 w-3" /> WhatsApp</span>
+            ) : <span className="text-[10px] text-muted-foreground">{o.source ?? "site"}</span>}
+            <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${isCancelled ? "bg-destructive/15 text-destructive" : isPaid ? "bg-emerald-500/15 text-emerald-700" : "bg-amber-500/15 text-amber-700"}`}>
+              {STATUS_LABEL[status] ?? status}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {o.items && o.items.length > 0 && (
+        <ul className="mt-3 space-y-0.5 text-xs text-muted-foreground">
+          {o.items.map((i, idx) => (
+            <li key={idx}>{i.quantity}× {i.name}</li>
+          ))}
+        </ul>
+      )}
+
+      {/* Etapa 1: confirmar/cancelar pagamento */}
+      {isPending && (
+        <div className="mt-4 flex flex-wrap gap-2">
+          <button
+            onClick={() => onChangeStatus("pago")}
+            className="inline-flex items-center gap-2 rounded-full bg-emerald-600 px-4 py-2 text-sm font-bold text-white hover:bg-emerald-700"
+          >
+            <CheckCircle2 className="h-4 w-4" /> Confirmar pagamento
+          </button>
+          <button
+            onClick={() => onChangeStatus("cancelado")}
+            className="inline-flex items-center gap-2 rounded-full border border-destructive bg-destructive/10 px-4 py-2 text-sm font-bold text-destructive hover:bg-destructive/20"
+          >
+            <XCircle className="h-4 w-4" /> Cancelar
+          </button>
+        </div>
+      )}
+
+      {/* Etapa 2: stepper de entrega */}
+      {isPaid && !isCancelled && (
+        <div className="mt-4 space-y-2">
+          <div className="flex items-center gap-1">
+            {steps.map((s, i) => {
+              const reached = stepIdx >= i || (status === "pago" && i === -1);
+              const done = stepIdx >= i;
+              return (
+                <div key={s.key} className="flex flex-1 items-center">
+                  <div className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[10px] font-bold ${done ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>{i + 1}</div>
+                  {i < steps.length - 1 && <div className={`mx-1 h-0.5 flex-1 ${stepIdx > i ? "bg-primary" : "bg-muted"}`} />}
+                </div>
+              );
+            })}
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {steps.map((s) => (
+              <button
+                key={s.key}
+                onClick={() => onChangeStatus(s.key)}
+                className={`rounded-full px-3 py-1.5 text-xs font-bold transition-colors ${status === s.key ? "bg-primary text-primary-foreground" : "border border-border bg-background hover:bg-muted"}`}
+              >
+                {s.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div className="mt-4 flex items-center justify-end">
+        <button onClick={onRemove} className="inline-flex items-center gap-1 rounded-md p-2 text-xs text-destructive hover:bg-destructive/10">
+          <Trash2 className="h-3.5 w-3.5" /> Excluir
+        </button>
+      </div>
     </div>
   );
 }
