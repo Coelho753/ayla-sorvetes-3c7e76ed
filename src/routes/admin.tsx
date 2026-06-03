@@ -362,9 +362,12 @@ function ProductModal({ product, onClose, onSaved }: { product: Product; onClose
           <div className="grid grid-cols-2 gap-3">
             <input required type="number" step="0.01" placeholder="Preço" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} className="rounded-md border border-input bg-background px-3 py-2" />
             <select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} className="rounded-md border border-input bg-background px-3 py-2">
-              <option value="tub">Pote 1,5L</option>
+              <option value="pote">Pote 1,5L</option>
               <option value="cup">Copo 300ml</option>
-              <option value="popsicle">Picolé</option>
+              <option value="pic_agua">Picolé base água</option>
+              <option value="pic_leite">Picolé base leite</option>
+              <option value="pic_premium">Picolé Premium</option>
+              <option value="pic_ski">Picolé Ski</option>
               <option value="acai">Açaí</option>
             </select>
           </div>
