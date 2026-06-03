@@ -386,7 +386,19 @@ function ProductModal({ product, onClose, onSaved }: { product: Product; onClose
   );
 }
 
-const STATUSES = ["pendente", "pago", "preparando", "enviado", "entregue", "cancelado"] as const;
+const STATUSES = ["pendente", "pago", "separando", "saiu_para_entrega", "entregue", "cancelado"] as const;
+const STATUS_LABEL: Record<string, string> = {
+  pendente: "Pendente",
+  pago: "Pago",
+  separando: "Separando",
+  saiu_para_entrega: "Saiu para entrega",
+  entregue: "Entregue",
+  cancelado: "Cancelado",
+  // compat com nomes antigos
+  preparando: "Separando",
+  enviado: "Saiu para entrega",
+  novo: "Pendente",
+};
 
 function OrdersAdmin() {
   const [orders, setOrders] = useState<Order[] | null>(null);
