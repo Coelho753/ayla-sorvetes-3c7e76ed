@@ -535,6 +535,8 @@ function UsersAdmin() {
 function UserDrawer({ user, onClose, onSaved }: { user: AdminUser; onClose: () => void; onSaved: () => void }) {
   const [form, setForm] = useState<AdminUser>({ ...user, address: user.address ?? {} });
   const [busy, setBusy] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [pwdBusy, setPwdBusy] = useState(false);
   const [orders, setOrders] = useState<Order[] | null>(null);
   const [ordersErr, setOrdersErr] = useState<string | null>(null);
 
@@ -558,6 +560,7 @@ function UserDrawer({ user, onClose, onSaved }: { user: AdminUser; onClose: () =
       await api.put(`/users/${user.id}`, {
         name: form.name,
         nome: form.name,
+        email: form.email,
         phone: form.phone,
         telefone: form.phone,
         role: form.role,
@@ -568,6 +571,18 @@ function UserDrawer({ user, onClose, onSaved }: { user: AdminUser; onClose: () =
       onSaved();
     } catch (err) { toast.error(extractApiError(err)); }
     finally { setBusy(false); }
+  }
+
+  async function resetPassword() {
+    if (newPassword.length < 10) { toast.error("A nova senha precisa ter pelo menos 10 caracteres."); return; }
+    if (!confirm(`Definir uma nova senha para ${user.email}?`)) return;
+    setPwdBusy(true);
+    try {
+      await api.put(`/users/${user.id}`, { password: newPassword, senha: newPassword });
+      toast.success("Senha redefinida.");
+      setNewPassword("");
+    } catch (err) { toast.error(extractApiError(err)); }
+    finally { setPwdBusy(false); }
   }
 
   async function changeStatus(id: Order["id"], status: string) {
@@ -600,6 +615,7 @@ function UserDrawer({ user, onClose, onSaved }: { user: AdminUser; onClose: () =
               <input placeholder="Nome" value={form.name ?? ""} onChange={(e) => setForm({ ...form, name: e.target.value })} className={inputCls} />
               <input placeholder="Telefone" value={form.phone ?? ""} onChange={(e) => setForm({ ...form, phone: e.target.value })} className={inputCls} />
             </div>
+            <input type="email" placeholder="E-mail" value={form.email ?? ""} onChange={(e) => setForm({ ...form, email: e.target.value })} className={inputCls} />
             <select value={form.role ?? "user"} onChange={(e) => setForm({ ...form, role: e.target.value })} className={inputCls}>
               <option value="user">user</option>
               <option value="admin">admin</option>
@@ -624,6 +640,27 @@ function UserDrawer({ user, onClose, onSaved }: { user: AdminUser; onClose: () =
           <button onClick={save} disabled={busy} className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary py-2.5 font-semibold text-primary-foreground disabled:opacity-60">
             {busy && <Loader2 className="h-4 w-4 animate-spin" />} Salvar alterações
           </button>
+
+          <section className="space-y-2 rounded-lg border border-border bg-muted/30 p-3">
+            <h4 className="font-display text-sm font-bold uppercase tracking-wide text-muted-foreground">Redefinir senha</h4>
+            <p className="text-xs text-muted-foreground">Mínimo 10 caracteres, com maiúscula, número e símbolo.</p>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                placeholder="Nova senha"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                className={inputCls}
+              />
+              <button
+                onClick={resetPassword}
+                disabled={pwdBusy || !newPassword}
+                className="inline-flex shrink-0 items-center gap-1 rounded-md bg-secondary px-3 text-sm font-semibold text-secondary-foreground disabled:opacity-60"
+              >
+                {pwdBusy && <Loader2 className="h-4 w-4 animate-spin" />} Aplicar
+              </button>
+            </div>
+          </section>
 
           <section className="space-y-3">
             <h4 className="font-display text-sm font-bold uppercase tracking-wide text-muted-foreground">Pedidos do usuário</h4>
