@@ -613,3 +613,51 @@ function Index() {
     </main>
   );
 }
+
+type PopsicleItem = { name: string; desc?: string; img: string; price: number; sub: string };
+
+function PopsicleCarousel({
+  title,
+  items,
+  autoplay,
+  badge,
+}: {
+  title: string;
+  items: PopsicleItem[];
+  autoplay: ReturnType<typeof Autoplay>;
+  badge: string;
+}) {
+  return (
+    <div className="reveal">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-2 px-2">
+        <h3 className="font-display text-2xl font-bold sm:text-3xl">
+          <span className="bg-gradient-candy bg-clip-text text-transparent">{title}</span>
+        </h3>
+        <span className="rounded-full bg-primary/15 px-3 py-1 text-xs font-bold uppercase tracking-wider text-primary ring-1 ring-primary/30">
+          {items.length} sabores
+        </span>
+      </div>
+      <Carousel opts={{ align: "start", loop: true }} plugins={[autoplay]} className="mx-auto w-full max-w-5xl">
+        <CarouselContent className="-ml-4">
+          {items.map((p, i) => (
+            <CarouselItem key={p.name} className="pl-4 sm:basis-1/2 lg:basis-1/3">
+              <div className="animate-pop-in h-full" style={{ animationDelay: `${i * 80}ms` }}>
+                <ProductCard
+                  id={`local-pop-${p.sub}-${p.name}`}
+                  name={p.name}
+                  desc={p.desc}
+                  price={p.price}
+                  img={p.img}
+                  category={`pic_${p.sub}`}
+                  badge={badge}
+                />
+              </div>
+            </CarouselItem>
+          ))}
+        </CarouselContent>
+        <CarouselPrevious className="hidden md:flex -left-4 lg:-left-12 bg-card" />
+        <CarouselNext className="hidden md:flex -right-4 lg:-right-12 bg-card" />
+      </Carousel>
+    </div>
+  );
+}
