@@ -323,3 +323,135 @@ function Stat({ icon, title, value, sub }: { icon: React.ReactNode; title: strin
     </div>
   );
 }
+
+function TopProductsEditable({
+  rows, overrides, onChange,
+}: {
+  rows: [string, { qty: number; revenue: number }][];
+  overrides: Record<string, { qty: number; revenue: number }>;
+  onChange: (o: Record<string, { qty: number; revenue: number }>) => void;
+}) {
+  const [editKey, setEditKey] = useState<string | null>(null);
+  const [qty, setQty] = useState("");
+  const [rev, setRev] = useState("");
+  const [newName, setNewName] = useState("");
+
+  function start(name: string, v: { qty: number; revenue: number }) {
+    setEditKey(name);
+    setQty(String(v.qty));
+    setRev(String(v.revenue.toFixed(2)));
+  }
+  function save(name: string) {
+    const q = Number(qty); const r = Number(String(rev).replace(",", "."));
+    if (!Number.isFinite(q) || !Number.isFinite(r) || q < 0 || r < 0) { toast.error("Valor inválido"); return; }
+    onChange({ ...overrides, [name]: { qty: q, revenue: r } });
+    setEditKey(null);
+    toast.success("Atualizado");
+  }
+  function resetOne(name: string) {
+    const next = { ...overrides }; delete next[name]; onChange(next);
+  }
+  function addNew() {
+    const n = newName.trim(); if (!n) return;
+    onChange({ ...overrides, [n]: { qty: 0, revenue: 0 } });
+    setNewName("");
+    start(n, { qty: 0, revenue: 0 });
+  }
+
+  return (
+    <>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h3 className="font-display text-lg font-bold">Top produtos (editável)</h3>
+        <div className="flex gap-2">
+          <input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="Adicionar produto" className="rounded-md border border-input bg-background px-2 py-1 text-sm" />
+          <button onClick={addNew} className="inline-flex items-center gap-1 rounded-md bg-primary px-3 py-1 text-xs font-bold text-primary-foreground"><Plus className="h-3 w-3" /> Add</button>
+        </div>
+      </div>
+      {rows.length === 0 ? (
+        <p className="mt-2 text-sm text-muted-foreground">Sem dados.</p>
+      ) : (
+        <table className="mt-3 w-full text-sm">
+          <thead className="text-left text-xs uppercase text-muted-foreground">
+            <tr><th className="pb-2">Produto</th><th className="pb-2 text-right">Qtd</th><th className="pb-2 text-right">Receita</th><th className="pb-2 text-right">Ações</th></tr>
+          </thead>
+          <tbody>
+            {rows.map(([name, v]) => {
+              const overridden = name in overrides;
+              const editing = editKey === name;
+              return (
+                <tr key={name} className="border-t border-border">
+                  <td className="py-2">{name} {overridden && <span className="ml-1 text-[10px] uppercase text-primary">manual</span>}</td>
+                  <td className="py-2 text-right">{editing ? <input value={qty} onChange={(e) => setQty(e.target.value)} className="w-16 rounded-md border border-input bg-background px-2 py-0.5 text-right text-xs" /> : v.qty}</td>
+                  <td className="py-2 text-right font-semibold">{editing ? <input value={rev} onChange={(e) => setRev(e.target.value)} className="w-24 rounded-md border border-input bg-background px-2 py-0.5 text-right text-xs" /> : formatBRL(v.revenue)}</td>
+                  <td className="py-2 text-right">
+                    {editing ? (
+                      <div className="inline-flex gap-1">
+                        <button onClick={() => save(name)} className="rounded-md bg-primary p-1 text-primary-foreground"><Save className="h-3 w-3" /></button>
+                        <button onClick={() => setEditKey(null)} className="rounded-md border border-border p-1"><X className="h-3 w-3" /></button>
+                      </div>
+                    ) : (
+                      <div className="inline-flex gap-1">
+                        <button onClick={() => start(name, v)} className="rounded-md border border-border p-1"><Pencil className="h-3 w-3" /></button>
+                        {overridden && <button onClick={() => resetOne(name)} className="rounded-md border border-border p-1" title="Restaurar automático"><RotateCcw className="h-3 w-3" /></button>}
+                      </div>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      )}
+    </>
+  );
+}
+
+function ExternalSalesPanel({
+  list, onChange, totalInPeriod,
+}: { list: ExternalSale[]; onChange: (l: ExternalSale[]) => void; totalInPeriod: number }) {
+  const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
+  const [desc, setDesc] = useState("");
+  const [value, setValue] = useState("");
+
+  function add() {
+    const v = Number(String(value).replace(",", "."));
+    if (!desc.trim() || !Number.isFinite(v) || v <= 0) { toast.error("Preencha descrição e valor."); return; }
+    const item: ExternalSale = { id: `ext_${Date.now().toString(36)}`, date, description: desc.trim(), value: v };
+    onChange([item, ...list]);
+    setDesc(""); setValue("");
+    toast.success("Venda externa adicionada.");
+  }
+  function remove(id: string) { onChange(list.filter((x) => x.id !== id)); }
+
+  return (
+    <>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h3 className="font-display text-lg font-bold">Vendas por fora do aplicativo</h3>
+        <span className="text-xs text-muted-foreground">Total no período: <strong className="text-foreground">{formatBRL(totalInPeriod)}</strong></span>
+      </div>
+      <p className="mt-1 text-xs text-muted-foreground">Inclui dinheiro, balcão, eventos e qualquer venda fora do app. Soma-se ao total geral do período.</p>
+      <div className="mt-3 grid gap-2 sm:grid-cols-[140px_1fr_140px_auto]">
+        <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="rounded-md border border-input bg-background px-2 py-2 text-sm" />
+        <input placeholder="Descrição (ex: balcão, evento X)" value={desc} onChange={(e) => setDesc(e.target.value)} className="rounded-md border border-input bg-background px-2 py-2 text-sm" />
+        <input placeholder="Valor R$" inputMode="decimal" value={value} onChange={(e) => setValue(e.target.value)} className="rounded-md border border-input bg-background px-2 py-2 text-sm" />
+        <button onClick={add} className="inline-flex items-center gap-1 rounded-md bg-primary px-3 py-2 text-sm font-bold text-primary-foreground"><Plus className="h-4 w-4" /> Adicionar</button>
+      </div>
+      {list.length > 0 && (
+        <ul className="mt-4 divide-y divide-border rounded-lg border border-border">
+          {list.map((e) => (
+            <li key={e.id} className="flex items-center justify-between gap-2 px-3 py-2 text-sm">
+              <div>
+                <p className="font-semibold">{e.description}</p>
+                <p className="text-xs text-muted-foreground">{new Date(e.date).toLocaleDateString("pt-BR")}</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="font-display font-bold">{formatBRL(e.value)}</span>
+                <button onClick={() => remove(e.id)} className="rounded-md p-1 text-destructive hover:bg-destructive/10"><Trash2 className="h-3.5 w-3.5" /></button>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+    </>
+  );
+}
