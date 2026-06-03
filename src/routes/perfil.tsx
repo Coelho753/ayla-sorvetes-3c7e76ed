@@ -1,13 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { z } from "zod";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
+import { Loader2, Clock, CreditCard, ChefHat, Truck, CheckCircle2, XCircle, RefreshCw } from "lucide-react";
 import { RequireAuth } from "@/components/RequireAuth";
 
 import { useAuth, type Address } from "@/contexts/AuthContext";
 import { api, extractApiError } from "@/lib/api";
-import { loadOrders, type Order } from "@/lib/orders";
 import { formatBRL } from "@/contexts/CartContext";
 
 export const Route = createFileRoute("/perfil")({
@@ -155,43 +154,151 @@ function Profile() {
         </button>
       </form>
 
-      <OrderHistory userId={user?.id ?? null} />
+      <OrderTracking />
 
       <button onClick={logout} className="mt-6 text-sm text-destructive hover:underline">Sair da conta</button>
     </main>
   );
 }
 
-function OrderHistory({ userId }: { userId: string | number | null }) {
-  const orders = useMemo<Order[]>(() => loadOrders(userId), [userId]);
+type RemoteOrder = {
+  id: string | number;
+  total: number;
+  status: string;
+  createdAt?: string;
+  items?: Array<{ name: string; quantity: number; price?: number }>;
+};
+
+const STATUS_STEPS = ["pendente", "pago", "preparando", "enviado", "entregue"] as const;
+const STATUS_META: Record<
+  string,
+  { label: string; icon: typeof Clock; color: string }
+> = {
+  pendente: { label: "Pedido recebido", icon: Clock, color: "text-muted-foreground" },
+  pago: { label: "Pagamento confirmado", icon: CreditCard, color: "text-primary" },
+  preparando: { label: "Em preparo", icon: ChefHat, color: "text-primary" },
+  enviado: { label: "A caminho", icon: Truck, color: "text-primary" },
+  entregue: { label: "Entregue", icon: CheckCircle2, color: "text-emerald-600" },
+  cancelado: { label: "Cancelado", icon: XCircle, color: "text-destructive" },
+};
+
+function OrderTracking() {
+  const [orders, setOrders] = useState<RemoteOrder[] | null>(null);
+  const [err, setErr] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+
+  async function load(silent = false) {
+    if (!silent) setRefreshing(true);
+    try {
+      const { data } = await api.get<RemoteOrder[] | { data: RemoteOrder[] }>("/orders/me");
+      const list = Array.isArray(data) ? data : (data as { data: RemoteOrder[] }).data ?? [];
+      setOrders(list);
+      setErr(null);
+    } catch (e) {
+      setErr(extractApiError(e));
+    } finally {
+      if (!silent) setRefreshing(false);
+    }
+  }
+
+  useEffect(() => {
+    load();
+    const id = window.setInterval(() => load(true), 30_000);
+    return () => window.clearInterval(id);
+  }, []);
+
   return (
     <section className="mt-6 rounded-xl border border-border p-5">
-      <h2 className="font-display text-xl font-semibold">Histórico de pedidos</h2>
-      {orders.length === 0 ? (
-        <p className="mt-2 text-sm text-muted-foreground">Você ainda não fez nenhum pedido por aqui.</p>
-      ) : (
-        <ul className="mt-3 space-y-3">
+      <div className="flex items-center justify-between">
+        <h2 className="font-display text-xl font-semibold">Meus pedidos</h2>
+        <button
+          onClick={() => load()}
+          aria-label="Atualizar pedidos"
+          className="rounded-full p-2 text-muted-foreground hover:bg-muted"
+        >
+          <RefreshCw className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
+        </button>
+      </div>
+      <p className="mt-1 text-xs text-muted-foreground">Acompanhe em tempo real o status do seu pedido (atualiza a cada 30s).</p>
+
+      {err && <p className="mt-3 text-sm text-destructive">{err}</p>}
+      {!orders && !err && <Loader2 className="mt-3 h-5 w-5 animate-spin text-primary" />}
+      {orders && orders.length === 0 && (
+        <p className="mt-3 text-sm text-muted-foreground">Você ainda não fez nenhum pedido.</p>
+      )}
+
+      {orders && orders.length > 0 && (
+        <ul className="mt-4 space-y-4">
           {orders.map((o) => (
-            <li key={o.id} className="rounded-lg border border-border bg-card p-3">
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-muted-foreground">
-                  {new Date(o.createdAt).toLocaleString("pt-BR")}
-                </span>
-                <span className="font-display font-bold text-primary">{formatBRL(o.total)}</span>
-              </div>
-              <ul className="mt-2 space-y-0.5 text-sm">
-                {o.items.map((i) => (
-                  <li key={String(i.id)} className="flex justify-between">
-                    <span>{i.quantity}× {i.name}</span>
-                    <span className="text-muted-foreground">{formatBRL(i.price * i.quantity)}</span>
-                  </li>
-                ))}
-              </ul>
-            </li>
+            <OrderCard key={o.id} order={o} />
           ))}
         </ul>
       )}
     </section>
+  );
+}
+
+function OrderCard({ order }: { order: RemoteOrder }) {
+  const status = (order.status ?? "pendente").toLowerCase();
+  const meta = STATUS_META[status] ?? STATUS_META.pendente;
+  const Icon = meta.icon;
+  const cancelled = status === "cancelado";
+  const currentStep = STATUS_STEPS.indexOf(status as (typeof STATUS_STEPS)[number]);
+
+  return (
+    <li className="rounded-lg border border-border bg-card p-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <span className="font-mono text-xs text-muted-foreground">#{String(order.id).slice(-6)}</span>
+          {order.createdAt && (
+            <p className="text-xs text-muted-foreground">{new Date(order.createdAt).toLocaleString("pt-BR")}</p>
+          )}
+        </div>
+        <span className="font-display font-bold text-primary">{formatBRL(Number(order.total) || 0)}</span>
+      </div>
+
+      <div className={`mt-3 inline-flex items-center gap-2 rounded-full bg-muted px-3 py-1 text-sm font-semibold ${meta.color}`}>
+        <Icon className="h-4 w-4" />
+        {meta.label}
+      </div>
+
+      {!cancelled && (
+        <ol className="mt-4 grid grid-cols-5 gap-1">
+          {STATUS_STEPS.map((s, i) => {
+            const done = currentStep >= i;
+            const stepMeta = STATUS_META[s];
+            const StepIcon = stepMeta.icon;
+            return (
+              <li key={s} className="flex flex-col items-center text-center">
+                <div
+                  className={`flex h-7 w-7 items-center justify-center rounded-full border-2 ${
+                    done ? "border-primary bg-primary text-primary-foreground" : "border-border bg-background text-muted-foreground"
+                  }`}
+                >
+                  <StepIcon className="h-3.5 w-3.5" />
+                </div>
+                <span className={`mt-1 text-[10px] leading-tight ${done ? "text-foreground" : "text-muted-foreground"}`}>
+                  {stepMeta.label}
+                </span>
+              </li>
+            );
+          })}
+        </ol>
+      )}
+
+      {order.items && order.items.length > 0 && (
+        <ul className="mt-3 space-y-0.5 border-t border-border pt-3 text-sm">
+          {order.items.map((i, idx) => (
+            <li key={idx} className="flex justify-between">
+              <span>{i.quantity}× {i.name}</span>
+              {i.price !== undefined && (
+                <span className="text-muted-foreground">{formatBRL(Number(i.price) * i.quantity)}</span>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
+    </li>
   );
 }
 
