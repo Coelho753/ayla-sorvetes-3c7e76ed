@@ -61,6 +61,8 @@ function Financeiro() {
   const [editTotal, setEditTotal] = useState<string>("");
   const [editStatus, setEditStatus] = useState<string>("");
   const [saving, setSaving] = useState(false);
+  const [externalSales, setExternalSales] = useState<ExternalSale[]>(() => loadExternal());
+  const [topOverrides, setTopOverrides] = useState<Record<string, { qty: number; revenue: number }>>(() => loadTopOverrides());
 
   useEffect(() => {
     (async () => {
@@ -82,7 +84,11 @@ function Financeiro() {
 
   const stats = useMemo(() => {
     const paid = filtered.filter((o) => !["cancelado"].includes(o.status));
-    const total = paid.reduce((s, o) => s + Number(o.total ?? 0), 0);
+    const ordersTotal = paid.reduce((s, o) => s + Number(o.total ?? 0), 0);
+    const startD = startOfPeriod(period);
+    const externalInPeriod = externalSales.filter((e) => period === "all" || new Date(e.date) >= startD);
+    const externalTotal = externalInPeriod.reduce((s, e) => s + Number(e.value || 0), 0);
+    const total = ordersTotal + externalTotal;
     const delivered = paid.filter((o) => o.status === "entregue").reduce((s, o) => s + Number(o.total ?? 0), 0);
     const cancelled = filtered.filter((o) => o.status === "cancelado").reduce((s, o) => s + Number(o.total ?? 0), 0);
     const fromWhats = paid.filter((o) => (o.source ?? "").toLowerCase() === "whatsapp").reduce((s, o) => s + Number(o.total ?? 0), 0);
@@ -108,10 +114,13 @@ function Financeiro() {
       productCount[k].qty += i.quantity;
       productCount[k].revenue += (i.price ?? 0) * i.quantity;
     }));
-    const top = Object.entries(productCount).sort((a, b) => b[1].revenue - a[1].revenue).slice(0, 8);
+    // merge overrides locais
+    const merged: Record<string, { qty: number; revenue: number }> = { ...productCount };
+    for (const [name, v] of Object.entries(topOverrides)) merged[name] = v;
+    const top = Object.entries(merged).sort((a, b) => b[1].revenue - a[1].revenue).slice(0, 12);
 
-    return { total, delivered, cancelled, fromWhats, ticket, count: paid.length, series, top };
-  }, [filtered]);
+    return { total, ordersTotal, externalTotal, delivered, cancelled, fromWhats, ticket, count: paid.length, series, top };
+  }, [filtered, externalSales, period, topOverrides]);
 
   function exportCsv() {
     const rows = [
