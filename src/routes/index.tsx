@@ -71,6 +71,12 @@ import { useReveal } from "@/hooks/use-reveal";
 import { useImagePreload } from "@/hooks/use-image-preload";
 import { fetchProducts, groupByCategory, imgOf, type ApiProduct } from "@/lib/products";
 import { useState } from "react";
+import {
+  popsiclesAgua,
+  popsiclesPremium,
+  popsiclesSki,
+  POPSICLE_SUB_LABEL,
+} from "@/lib/catalog";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -137,7 +143,9 @@ function Index() {
   useReveal();
   const autoplay = useRef(Autoplay({ delay: 3500, stopOnInteraction: false, stopOnMouseEnter: true }));
   const autoplayCups = useRef(Autoplay({ delay: 3800, stopOnInteraction: false, stopOnMouseEnter: true }));
-  const autoplayPops = useRef(Autoplay({ delay: 3200, stopOnInteraction: false, stopOnMouseEnter: true }));
+  const autoplayPopsAgua = useRef(Autoplay({ delay: 3200, stopOnInteraction: false, stopOnMouseEnter: true }));
+  const autoplayPopsPremium = useRef(Autoplay({ delay: 3400, stopOnInteraction: false, stopOnMouseEnter: true }));
+  const autoplayPopsSki = useRef(Autoplay({ delay: 3600, stopOnInteraction: false, stopOnMouseEnter: true }));
   const autoplayAcai = useRef(Autoplay({ delay: 4000, stopOnInteraction: false, stopOnMouseEnter: true }));
 
   // Pré-carrega TODAS as imagens dos cards/banners e mantém em cache
