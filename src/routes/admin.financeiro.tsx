@@ -225,25 +225,19 @@ function Financeiro() {
       </section>
 
       <section className="mt-6 rounded-xl border border-border p-5">
-        <h3 className="font-display text-lg font-bold">Top produtos</h3>
-        {stats.top.length === 0 ? (
-          <p className="mt-2 text-sm text-muted-foreground">Sem dados.</p>
-        ) : (
-          <table className="mt-3 w-full text-sm">
-            <thead className="text-left text-xs uppercase text-muted-foreground">
-              <tr><th className="pb-2">Produto</th><th className="pb-2 text-right">Qtd</th><th className="pb-2 text-right">Receita</th></tr>
-            </thead>
-            <tbody>
-              {stats.top.map(([name, v]) => (
-                <tr key={name} className="border-t border-border">
-                  <td className="py-2">{name}</td>
-                  <td className="py-2 text-right">{v.qty}</td>
-                  <td className="py-2 text-right font-semibold">{formatBRL(v.revenue)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
+        <TopProductsEditable
+          rows={stats.top}
+          overrides={topOverrides}
+          onChange={(o) => { setTopOverrides(o); saveTopOverrides(o); }}
+        />
+      </section>
+
+      <section className="mt-6 rounded-xl border border-border p-5">
+        <ExternalSalesPanel
+          list={externalSales}
+          onChange={(l) => { setExternalSales(l); saveExternal(l); }}
+          totalInPeriod={stats.externalTotal}
+        />
       </section>
 
       <section className="mt-6 rounded-xl border border-border p-5">
