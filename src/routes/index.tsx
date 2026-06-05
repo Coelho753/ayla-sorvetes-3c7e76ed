@@ -73,6 +73,7 @@ import { fetchProducts, groupByCategory, imgOf, type ApiProduct } from "@/lib/pr
 import { useState } from "react";
 import {
   popsiclesAgua,
+  popsiclesLeite,
   popsiclesPremium,
   popsiclesSki,
   POPSICLE_SUB_LABEL,
@@ -144,6 +145,7 @@ function Index() {
   const autoplay = useRef(Autoplay({ delay: 3500, stopOnInteraction: false, stopOnMouseEnter: true }));
   const autoplayCups = useRef(Autoplay({ delay: 3800, stopOnInteraction: false, stopOnMouseEnter: true }));
   const autoplayPopsAgua = useRef(Autoplay({ delay: 3200, stopOnInteraction: false, stopOnMouseEnter: true }));
+  const autoplayPopsLeite = useRef(Autoplay({ delay: 3300, stopOnInteraction: false, stopOnMouseEnter: true }));
   const autoplayPopsPremium = useRef(Autoplay({ delay: 3400, stopOnInteraction: false, stopOnMouseEnter: true }));
   const autoplayPopsSki = useRef(Autoplay({ delay: 3600, stopOnInteraction: false, stopOnMouseEnter: true }));
   const autoplayAcai = useRef(Autoplay({ delay: 4000, stopOnInteraction: false, stopOnMouseEnter: true }));
@@ -446,6 +448,12 @@ function Index() {
             items={popsiclesAgua}
             autoplay={autoplayPopsAgua.current}
             badge="Água"
+          />
+          <PopsicleCarousel
+            title={POPSICLE_SUB_LABEL.leite}
+            items={popsiclesLeite}
+            autoplay={autoplayPopsLeite.current}
+            badge="Leite"
           />
           <PopsicleCarousel
             title={POPSICLE_SUB_LABEL.premium}
