@@ -362,14 +362,14 @@ function Index() {
               className="mx-auto w-full max-w-5xl"
             >
               <CarouselContent className="-ml-4">
-                {tubsView.map((t, i) => (
+                {tubsFinal.map((t, i) => (
                   <CarouselItem key={t.name} className="pl-4 sm:basis-1/2 lg:basis-1/3">
                     <div className="animate-pop-in h-full" style={{ animationDelay: `${i * 90}ms` }}>
                       <ProductCard
-                        id={`tub-${i}-${t.name}`}
+                        id={t.id}
                         name={t.name}
                         price={t.price}
-                        img={t.img}
+                        img={t.img ?? ""}
                         category="tub"
                         badge="1,5L"
                       />
@@ -408,7 +408,7 @@ function Index() {
           <div className="reveal mt-14">
             <Carousel opts={{ align: "start", loop: true }} plugins={[autoplayCups.current]} className="mx-auto w-full max-w-5xl">
               <CarouselContent className="-ml-4">
-                {cupsView.map((c, i) => (
+                {cupsFinal.map((c, i) => (
                   <CarouselItem key={c.name} className="pl-4 sm:basis-1/2 lg:basis-1/3">
                     <div className="animate-pop-in h-full" style={{ animationDelay: `${i * 80}ms` }}>
                       <ProductCard
@@ -416,7 +416,7 @@ function Index() {
                         name={c.name}
                         desc={c.desc}
                         price={c.price}
-                        img={c.img}
+                        img={c.img ?? ""}
                         category={c.category}
                         badge="300ml"
                       />
@@ -451,25 +451,25 @@ function Index() {
 
           <PopsicleCarousel
             title={POPSICLE_SUB_LABEL.agua}
-            items={popsiclesAgua}
+            items={popsAguaFinal}
             autoplay={autoplayPopsAgua.current}
             badge="Água"
           />
           <PopsicleCarousel
             title={POPSICLE_SUB_LABEL.leite}
-            items={popsiclesLeite}
+            items={popsLeiteFinal}
             autoplay={autoplayPopsLeite.current}
             badge="Leite"
           />
           <PopsicleCarousel
             title={POPSICLE_SUB_LABEL.premium}
-            items={popsiclesPremium}
+            items={popsPremiumFinal}
             autoplay={autoplayPopsPremium.current}
             badge="Premium"
           />
           <PopsicleCarousel
             title={POPSICLE_SUB_LABEL.ski}
-            items={popsiclesSki}
+            items={popsSkiFinal}
             autoplay={autoplayPopsSki.current}
             badge="Ski"
           />
@@ -501,7 +501,7 @@ function Index() {
           <div className="reveal mt-14">
             <Carousel opts={{ align: "start", loop: true }} plugins={[autoplayAcai.current]} className="mx-auto w-full max-w-5xl">
               <CarouselContent className="-ml-4">
-                {acaiView.map((a, i) => (
+                {acaiFinal.map((a, i) => (
                   <CarouselItem key={a.name} className="pl-4 sm:basis-1/2 lg:basis-1/3">
                     <div className="animate-pop-in h-full" style={{ animationDelay: `${i * 100}ms` }}>
                       <ProductCard
@@ -509,7 +509,7 @@ function Index() {
                         name={a.name}
                         desc={a.desc}
                         price={a.price}
-                        img={a.img}
+                        img={a.img ?? ""}
                         category={a.category}
                         badge={a.size}
                         variant="acai"
