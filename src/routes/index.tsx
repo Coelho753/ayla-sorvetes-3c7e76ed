@@ -172,10 +172,24 @@ function Index() {
     return () => { alive = false; };
   }, []);
 
-  const tubsView = remote?.tub.length ? remote.tub.map((p) => ({ id: String(p.id), name: p.name, img: imgOf(p) ?? "", price: Number(p.price) || TUB_PRICE, category: "tub" })) : tubs.map((p) => ({ ...p, id: `local-tub-${p.name}`, category: "tub" }));
-  const cupsView = remote?.cup.length ? remote.cup.map((p) => ({ id: String(p.id), name: p.name, img: imgOf(p) ?? "", price: Number(p.price) || CUP_PRICE, desc: p.description, category: "cup" })) : cups.map((p) => ({ ...p, id: `local-cup-${p.name}`, category: "cup" }));
-  // popsicles agora renderizam via 3 carrosséis dedicados (água, premium, ski) — sem fallback genérico.
-  const acaiView = remote?.acai.length ? remote.acai.map((p) => ({ id: String(p.id), name: p.name, img: imgOf(p) ?? "", price: Number(p.price) || 0, desc: p.description, size: p.size ?? "", category: "acai" })) : acaiProducts.map((p) => ({ ...p, id: `local-acai-${p.name}`, category: "acai" }));
+  const overrides = loadOverrides();
+  const tubsView = (remote?.tub.length
+    ? remote.tub.map((p) => ({ name: p.name, img: imgOf(p) ?? "", price: Number(p.price) || TUB_PRICE }))
+    : tubs);
+  const cupsView = (remote?.cup.length
+    ? remote.cup.map((p) => ({ name: p.name, img: imgOf(p) ?? "", price: Number(p.price) || CUP_PRICE, desc: p.description }))
+    : cups);
+  const acaiBase = (remote?.acai.length
+    ? remote.acai.map((p) => ({ name: p.name, img: imgOf(p) ?? "", price: Number(p.price) || 0, desc: p.description, size: p.size ?? "" }))
+    : acaiProducts);
+
+  const tubsFinal = applyOverrides(tubsView, "tubs", overrides).map((t) => ({ ...t, category: "tub" }));
+  const cupsFinal = applyOverrides(cupsView, "cups", overrides).map((c) => ({ ...c, category: "cup" }));
+  const acaiFinal = applyOverrides(acaiBase, "acai", overrides).map((a) => ({ ...a, category: "acai" }));
+  const popsAguaFinal = applyOverrides(popsiclesAgua, "popsiclesAgua", overrides);
+  const popsLeiteFinal = applyOverrides(popsiclesLeite, "popsiclesLeite", overrides);
+  const popsPremiumFinal = applyOverrides(popsiclesPremium, "popsiclesPremium", overrides);
+  const popsSkiFinal = applyOverrides(popsiclesSki, "popsiclesSki", overrides);
 
   useEffect(() => {
     document.title = "Ayla Sorvetes — Os sorvetes mais irresistíveis da sua região 🍦";
@@ -352,11 +366,11 @@ function Index() {
                   <CarouselItem key={t.name} className="pl-4 sm:basis-1/2 lg:basis-1/3">
                     <div className="animate-pop-in h-full" style={{ animationDelay: `${i * 90}ms` }}>
                       <ProductCard
-                        id={t.id}
+                        id={`tub-${i}-${t.name}`}
                         name={t.name}
                         price={t.price}
                         img={t.img}
-                        category={t.category}
+                        category="tub"
                         badge="1,5L"
                       />
                     </div>
