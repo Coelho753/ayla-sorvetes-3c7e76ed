@@ -23,7 +23,15 @@ type Order = {
 
 type Period = "today" | "7d" | "30d" | "month" | "all";
 
-type ExternalSale = { id: string; date: string; description: string; value: number };
+type ExternalSaleItem = { name: string; quantity: number; price: number };
+type ExternalSale = {
+  id: string;
+  date: string;
+  description: string;
+  value: number;
+  customerName?: string;
+  items?: ExternalSaleItem[];
+};
 const EXT_KEY = "ayla.admin.external-sales";
 const TOP_OVERRIDE_KEY = "ayla.admin.top-products"; // map name -> { qty, revenue }
 
@@ -83,7 +91,9 @@ function Financeiro() {
   }, [orders, period]);
 
   const stats = useMemo(() => {
-    const paid = filtered.filter((o) => !["cancelado"].includes(o.status));
+    // Só consideramos vendas confirmadas (pagas em diante).
+    const CONFIRMED = new Set(["pago", "separando", "saiu_para_entrega", "entregue", "preparando", "enviado"]);
+    const paid = filtered.filter((o) => CONFIRMED.has((o.status ?? "").toLowerCase()));
     const ordersTotal = paid.reduce((s, o) => s + Number(o.total ?? 0), 0);
     const startD = startOfPeriod(period);
     const externalInPeriod = externalSales.filter((e) => period === "all" || new Date(e.date) >= startD);
@@ -197,7 +207,7 @@ function Financeiro() {
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Stat icon={<TrendingUp className="h-5 w-5" />} title="Receita do período" value={formatBRL(stats.total)} />
-        <Stat icon={<ShoppingBag className="h-5 w-5" />} title="Pedidos" value={String(stats.count)} sub={`Ticket: ${formatBRL(stats.ticket)}`} />
+        <Stat icon={<ShoppingBag className="h-5 w-5" />} title="Pedidos confirmados" value={String(stats.count)} sub={`Ticket: ${formatBRL(stats.ticket)}`} />
         <Stat icon={<Receipt className="h-5 w-5" />} title="Entregues" value={formatBRL(stats.delivered)} sub={`Cancelado: ${formatBRL(stats.cancelled)}`} />
         <Stat icon={<MessageCircle className="h-5 w-5" />} title="Via WhatsApp" value={formatBRL(stats.fromWhats)} />
       </div>
@@ -241,7 +251,8 @@ function Financeiro() {
       </section>
 
       <section className="mt-6 rounded-xl border border-border p-5">
-        <h3 className="font-display text-lg font-bold">Pedidos do período (edite valores e status)</h3>
+        <h3 className="font-display text-lg font-bold">Pedidos confirmados do período</h3>
+        <p className="mt-1 text-xs text-muted-foreground">Somente pedidos com pagamento confirmado entram nas estatísticas acima.</p>
         {filtered.length === 0 ? (
           <p className="mt-2 text-sm text-muted-foreground">Sem pedidos.</p>
         ) : (
