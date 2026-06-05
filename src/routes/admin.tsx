@@ -954,3 +954,190 @@ function WholesaleAdmin() {
     </div>
   );
 }
+
+// ============================================================
+// CarouselsAdmin — gerencia itens dos carrosséis da home page.
+// Os dados base vêm de src/lib/catalog.ts e os overrides
+// (added/edits/removed) vivem em localStorage via lib/carousel-overrides.
+// ============================================================
+
+function CarouselsAdmin() {
+  const carousels: { key: CarouselKey; base: { name: string; price: number; img?: string; desc?: string; size?: string }[] }[] = [
+    { key: "tubs", base: tubs },
+    { key: "cups", base: cups },
+    { key: "popsiclesAgua", base: popsiclesAgua },
+    { key: "popsiclesLeite", base: popsiclesLeite },
+    { key: "popsiclesPremium", base: popsiclesPremium },
+    { key: "popsiclesSki", base: popsiclesSki },
+    { key: "acai", base: acaiProducts as { name: string; price: number; img?: string; desc?: string; size?: string }[] },
+  ];
+  const [selected, setSelected] = useState<CarouselKey>("tubs");
+  const current = carousels.find((c) => c.key === selected)!;
+  return (
+    <div className="space-y-5">
+      <div className="flex flex-wrap gap-2">
+        {carousels.map((c) => (
+          <button
+            key={c.key}
+            onClick={() => setSelected(c.key)}
+            className={`rounded-full px-4 py-1.5 text-xs font-semibold ${selected === c.key ? "bg-primary text-primary-foreground" : "border border-border bg-card text-muted-foreground hover:bg-muted"}`}
+          >
+            {CAROUSEL_LABEL[c.key]}
+          </button>
+        ))}
+      </div>
+      <CarouselEditor key={selected} carouselKey={selected} base={current.base} />
+    </div>
+  );
+}
+
+function CarouselEditor({
+  carouselKey,
+  base,
+}: {
+  carouselKey: CarouselKey;
+  base: { name: string; price: number; img?: string; desc?: string; size?: string }[];
+}) {
+  const [store, setStore] = useState(() => loadOverrides());
+  const o = getOverride(store, carouselKey);
+  const removed = new Set(o.removed.map(normName));
+
+  function commit(next: typeof o) {
+    const s = setOverride(store, carouselKey, next);
+    setStore(s);
+    saveOverrides(s);
+  }
+
+  function toggleRemove(name: string) {
+    const n = normName(name);
+    const list = removed.has(n) ? o.removed.filter((x) => normName(x) !== n) : [...o.removed, name];
+    commit({ ...o, removed: list });
+  }
+
+  function editBase(name: string, patch: Partial<COItem>) {
+    const n = normName(name);
+    commit({ ...o, edits: { ...o.edits, [n]: { ...(o.edits[n] ?? {}), ...patch } } });
+  }
+
+  function resetEdit(name: string) {
+    const n = normName(name);
+    const edits = { ...o.edits }; delete edits[n];
+    commit({ ...o, edits });
+  }
+
+  function addItem(item: COItem) {
+    commit({ ...o, added: [...o.added, item] });
+  }
+  function updateAdded(id: string, patch: Partial<COItem>) {
+    commit({ ...o, added: o.added.map((a) => (a.id === id ? { ...a, ...patch } : a)) });
+  }
+  function removeAdded(id: string) {
+    commit({ ...o, added: o.added.filter((a) => a.id !== id) });
+  }
+
+  return (
+    <div className="space-y-5">
+      <AddProductForm onAdd={addItem} />
+
+      <section className="rounded-xl border border-border p-4">
+        <h4 className="mb-3 font-display text-sm font-bold uppercase tracking-wide text-muted-foreground">Itens do catálogo (base)</h4>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="text-left text-xs uppercase text-muted-foreground">
+              <tr><th className="pb-2">Produto</th><th className="pb-2">Preço</th><th className="pb-2">Descrição</th><th className="pb-2 text-right">Ações</th></tr>
+            </thead>
+            <tbody>
+              {base.map((b) => {
+                const n = normName(b.name);
+                const edit = o.edits[n];
+                const isRemoved = removed.has(n);
+                return (
+                  <tr key={b.name} className={`border-t border-border ${isRemoved ? "opacity-40" : ""}`}>
+                    <td className="py-2 font-semibold">{b.name}</td>
+                    <td className="py-2">
+                      <input
+                        type="number" step="0.01" min={0}
+                        defaultValue={edit?.price ?? b.price}
+                        onBlur={(e) => {
+                          const v = Number(e.target.value);
+                          if (!Number.isFinite(v) || v < 0) return;
+                          if (v === b.price) { resetEdit(b.name); return; }
+                          editBase(b.name, { price: v });
+                        }}
+                        className="w-24 rounded-md border border-input bg-background px-2 py-1 text-sm"
+                      />
+                    </td>
+                    <td className="py-2">
+                      <input
+                        defaultValue={edit?.desc ?? b.desc ?? ""}
+                        onBlur={(e) => editBase(b.name, { desc: e.target.value })}
+                        className="w-full min-w-40 rounded-md border border-input bg-background px-2 py-1 text-sm"
+                      />
+                    </td>
+                    <td className="py-2 text-right">
+                      <div className="inline-flex gap-1">
+                        {edit && <button onClick={() => resetEdit(b.name)} title="Restaurar base" className="rounded-md border border-border p-1"><RotateCcw className="h-3.5 w-3.5" /></button>}
+                        <button onClick={() => toggleRemove(b.name)} title={isRemoved ? "Restaurar no carrossel" : "Remover do carrossel"} className="rounded-md border border-border p-1 text-destructive">
+                          {isRemoved ? <RotateCcw className="h-3.5 w-3.5" /> : <Trash2 className="h-3.5 w-3.5" />}
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      {o.added.length > 0 && (
+        <section className="rounded-xl border border-border p-4">
+          <h4 className="mb-3 font-display text-sm font-bold uppercase tracking-wide text-muted-foreground">Produtos adicionados manualmente</h4>
+          <ul className="space-y-2">
+            {o.added.map((a) => (
+              <li key={a.id} className="flex flex-wrap items-center gap-2 rounded-lg border border-border bg-card p-2 text-sm">
+                <input value={a.name} onChange={(e) => updateAdded(a.id, { name: e.target.value })} className="flex-1 min-w-32 rounded-md border border-input bg-background px-2 py-1" placeholder="Nome" />
+                <input type="number" step="0.01" value={a.price} onChange={(e) => updateAdded(a.id, { price: Number(e.target.value) })} className="w-24 rounded-md border border-input bg-background px-2 py-1" placeholder="Preço" />
+                <input value={a.img ?? ""} onChange={(e) => updateAdded(a.id, { img: e.target.value })} className="flex-1 min-w-32 rounded-md border border-input bg-background px-2 py-1" placeholder="URL da imagem" />
+                <input value={a.desc ?? ""} onChange={(e) => updateAdded(a.id, { desc: e.target.value })} className="flex-1 min-w-40 rounded-md border border-input bg-background px-2 py-1" placeholder="Descrição" />
+                <button onClick={() => removeAdded(a.id)} className="rounded-md p-1 text-destructive hover:bg-destructive/10"><Trash2 className="h-4 w-4" /></button>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+    </div>
+  );
+}
+
+function AddProductForm({ onAdd }: { onAdd: (item: COItem) => void }) {
+  const [name, setName] = useState("");
+  const [price, setPrice] = useState("");
+  const [img, setImg] = useState("");
+  const [desc, setDesc] = useState("");
+  function submit() {
+    const p = Number(price);
+    if (!name.trim() || !Number.isFinite(p) || p < 0) { toast.error("Preencha nome e preço."); return; }
+    onAdd({
+      id: `add_${Date.now().toString(36)}`,
+      name: name.trim(),
+      price: p,
+      img: img.trim() || undefined,
+      desc: desc.trim() || undefined,
+    });
+    setName(""); setPrice(""); setImg(""); setDesc("");
+    toast.success("Produto adicionado ao carrossel.");
+  }
+  return (
+    <section className="rounded-xl border border-border bg-card p-4">
+      <h4 className="mb-3 font-display text-sm font-bold uppercase tracking-wide text-muted-foreground">Adicionar produto ao carrossel</h4>
+      <div className="grid gap-2 sm:grid-cols-[1fr_120px_1fr_1fr_auto]">
+        <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Nome" className="rounded-md border border-input bg-background px-2 py-2 text-sm" />
+        <input value={price} onChange={(e) => setPrice(e.target.value)} placeholder="Preço" inputMode="decimal" className="rounded-md border border-input bg-background px-2 py-2 text-sm" />
+        <input value={img} onChange={(e) => setImg(e.target.value)} placeholder="URL da imagem (opcional)" className="rounded-md border border-input bg-background px-2 py-2 text-sm" />
+        <input value={desc} onChange={(e) => setDesc(e.target.value)} placeholder="Descrição (opcional)" className="rounded-md border border-input bg-background px-2 py-2 text-sm" />
+        <button onClick={submit} className="inline-flex items-center gap-1 rounded-md bg-primary px-3 py-2 text-sm font-bold text-primary-foreground"><Plus className="h-4 w-4" /> Adicionar</button>
+      </div>
+    </section>
+  );
+}
