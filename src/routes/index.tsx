@@ -78,6 +78,7 @@ import {
   popsiclesSki,
   POPSICLE_SUB_LABEL,
 } from "@/lib/catalog";
+import { applyOverrides, loadOverrides } from "@/lib/carousel-overrides";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -171,10 +172,24 @@ function Index() {
     return () => { alive = false; };
   }, []);
 
-  const tubsView = remote?.tub.length ? remote.tub.map((p) => ({ id: String(p.id), name: p.name, img: imgOf(p) ?? "", price: Number(p.price) || TUB_PRICE, category: "tub" })) : tubs.map((p) => ({ ...p, id: `local-tub-${p.name}`, category: "tub" }));
-  const cupsView = remote?.cup.length ? remote.cup.map((p) => ({ id: String(p.id), name: p.name, img: imgOf(p) ?? "", price: Number(p.price) || CUP_PRICE, desc: p.description, category: "cup" })) : cups.map((p) => ({ ...p, id: `local-cup-${p.name}`, category: "cup" }));
-  // popsicles agora renderizam via 3 carrosséis dedicados (água, premium, ski) — sem fallback genérico.
-  const acaiView = remote?.acai.length ? remote.acai.map((p) => ({ id: String(p.id), name: p.name, img: imgOf(p) ?? "", price: Number(p.price) || 0, desc: p.description, size: p.size ?? "", category: "acai" })) : acaiProducts.map((p) => ({ ...p, id: `local-acai-${p.name}`, category: "acai" }));
+  const overrides = loadOverrides();
+  const tubsView = (remote?.tub.length
+    ? remote.tub.map((p) => ({ name: p.name, img: imgOf(p) ?? "", price: Number(p.price) || TUB_PRICE }))
+    : tubs);
+  const cupsView = (remote?.cup.length
+    ? remote.cup.map((p) => ({ name: p.name, img: imgOf(p) ?? "", price: Number(p.price) || CUP_PRICE, desc: p.description }))
+    : cups);
+  const acaiBase = (remote?.acai.length
+    ? remote.acai.map((p) => ({ name: p.name, img: imgOf(p) ?? "", price: Number(p.price) || 0, desc: p.description, size: p.size ?? "" }))
+    : acaiProducts);
+
+  const tubsFinal = applyOverrides(tubsView, "tubs", overrides).map((t) => ({ ...t, category: "tub" }));
+  const cupsFinal = applyOverrides(cupsView, "cups", overrides).map((c) => ({ ...c, category: "cup" }));
+  const acaiFinal = applyOverrides(acaiBase, "acai", overrides).map((a) => ({ ...a, category: "acai" }));
+  const popsAguaFinal = applyOverrides(popsiclesAgua, "popsiclesAgua", overrides);
+  const popsLeiteFinal = applyOverrides(popsiclesLeite, "popsiclesLeite", overrides);
+  const popsPremiumFinal = applyOverrides(popsiclesPremium, "popsiclesPremium", overrides);
+  const popsSkiFinal = applyOverrides(popsiclesSki, "popsiclesSki", overrides);
 
   useEffect(() => {
     document.title = "Ayla Sorvetes — Os sorvetes mais irresistíveis da sua região 🍦";
@@ -297,15 +312,6 @@ function Index() {
             style={{ animationDelay: "0.4s" }}
           >
             <a
-              href={WHATSAPP_LINK}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group inline-flex items-center gap-3 rounded-full bg-whatsapp px-8 py-5 font-display text-lg font-semibold text-whatsapp-foreground shadow-button transition-all hover:scale-105 hover:shadow-glow"
-            >
-              <MessageCircle className="h-6 w-6 transition-transform group-hover:rotate-12" strokeWidth={2.5} />
-              Pedir pelo WhatsApp
-            </a>
-            <a
               href="#potes"
               className="inline-flex items-center gap-2 rounded-full bg-white/15 px-8 py-5 font-display text-lg font-semibold text-white backdrop-blur-md ring-1 ring-white/30 transition-all hover:bg-white/25"
             >
@@ -356,15 +362,15 @@ function Index() {
               className="mx-auto w-full max-w-5xl"
             >
               <CarouselContent className="-ml-4">
-                {tubsView.map((t, i) => (
+                {tubsFinal.map((t, i) => (
                   <CarouselItem key={t.name} className="pl-4 sm:basis-1/2 lg:basis-1/3">
                     <div className="animate-pop-in h-full" style={{ animationDelay: `${i * 90}ms` }}>
                       <ProductCard
                         id={t.id}
                         name={t.name}
                         price={t.price}
-                        img={t.img}
-                        category={t.category}
+                        img={t.img ?? ""}
+                        category="tub"
                         badge="1,5L"
                       />
                     </div>
@@ -402,7 +408,7 @@ function Index() {
           <div className="reveal mt-14">
             <Carousel opts={{ align: "start", loop: true }} plugins={[autoplayCups.current]} className="mx-auto w-full max-w-5xl">
               <CarouselContent className="-ml-4">
-                {cupsView.map((c, i) => (
+                {cupsFinal.map((c, i) => (
                   <CarouselItem key={c.name} className="pl-4 sm:basis-1/2 lg:basis-1/3">
                     <div className="animate-pop-in h-full" style={{ animationDelay: `${i * 80}ms` }}>
                       <ProductCard
@@ -410,7 +416,7 @@ function Index() {
                         name={c.name}
                         desc={c.desc}
                         price={c.price}
-                        img={c.img}
+                        img={c.img ?? ""}
                         category={c.category}
                         badge="300ml"
                       />
@@ -445,27 +451,31 @@ function Index() {
 
           <PopsicleCarousel
             title={POPSICLE_SUB_LABEL.agua}
-            items={popsiclesAgua}
+            items={popsAguaFinal}
             autoplay={autoplayPopsAgua.current}
             badge="Água"
+            subKey="agua"
           />
           <PopsicleCarousel
             title={POPSICLE_SUB_LABEL.leite}
-            items={popsiclesLeite}
+            items={popsLeiteFinal}
             autoplay={autoplayPopsLeite.current}
             badge="Leite"
+            subKey="leite"
           />
           <PopsicleCarousel
             title={POPSICLE_SUB_LABEL.premium}
-            items={popsiclesPremium}
+            items={popsPremiumFinal}
             autoplay={autoplayPopsPremium.current}
             badge="Premium"
+            subKey="premium"
           />
           <PopsicleCarousel
             title={POPSICLE_SUB_LABEL.ski}
-            items={popsiclesSki}
+            items={popsSkiFinal}
             autoplay={autoplayPopsSki.current}
             badge="Ski"
+            subKey="ski"
           />
         </div>
       </section>
@@ -495,7 +505,7 @@ function Index() {
           <div className="reveal mt-14">
             <Carousel opts={{ align: "start", loop: true }} plugins={[autoplayAcai.current]} className="mx-auto w-full max-w-5xl">
               <CarouselContent className="-ml-4">
-                {acaiView.map((a, i) => (
+                {acaiFinal.map((a, i) => (
                   <CarouselItem key={a.name} className="pl-4 sm:basis-1/2 lg:basis-1/3">
                     <div className="animate-pop-in h-full" style={{ animationDelay: `${i * 100}ms` }}>
                       <ProductCard
@@ -503,7 +513,7 @@ function Index() {
                         name={a.name}
                         desc={a.desc}
                         price={a.price}
-                        img={a.img}
+                        img={a.img ?? ""}
                         category={a.category}
                         badge={a.size}
                         variant="acai"
@@ -622,18 +632,20 @@ function Index() {
   );
 }
 
-type PopsicleItem = { name: string; desc?: string; img: string; price: number; sub: string };
+type PopsicleItem = { id?: string; name: string; desc?: string; img?: string; price: number };
 
 function PopsicleCarousel({
   title,
   items,
   autoplay,
   badge,
+  subKey,
 }: {
   title: string;
   items: PopsicleItem[];
   autoplay: ReturnType<typeof Autoplay>;
   badge: string;
+  subKey: string;
 }) {
   return (
     <div className="reveal">
@@ -651,12 +663,12 @@ function PopsicleCarousel({
             <CarouselItem key={p.name} className="pl-4 sm:basis-1/2 lg:basis-1/3">
               <div className="animate-pop-in h-full" style={{ animationDelay: `${i * 80}ms` }}>
                 <ProductCard
-                  id={`local-pop-${p.sub}-${p.name}`}
+                  id={p.id ?? `local-pop-${subKey}-${p.name}`}
                   name={p.name}
                   desc={p.desc}
                   price={p.price}
-                  img={p.img}
-                  category={`pic_${p.sub}`}
+                  img={p.img ?? ""}
+                  category={`pic_${subKey}`}
                   badge={badge}
                 />
               </div>

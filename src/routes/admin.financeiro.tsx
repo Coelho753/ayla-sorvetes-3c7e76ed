@@ -23,7 +23,15 @@ type Order = {
 
 type Period = "today" | "7d" | "30d" | "month" | "all";
 
-type ExternalSale = { id: string; date: string; description: string; value: number };
+type ExternalSaleItem = { name: string; quantity: number; price: number };
+type ExternalSale = {
+  id: string;
+  date: string;
+  description: string;
+  value: number;
+  customerName?: string;
+  items?: ExternalSaleItem[];
+};
 const EXT_KEY = "ayla.admin.external-sales";
 const TOP_OVERRIDE_KEY = "ayla.admin.top-products"; // map name -> { qty, revenue }
 
@@ -83,7 +91,9 @@ function Financeiro() {
   }, [orders, period]);
 
   const stats = useMemo(() => {
-    const paid = filtered.filter((o) => !["cancelado"].includes(o.status));
+    // Só consideramos vendas confirmadas (pagas em diante).
+    const CONFIRMED = new Set(["pago", "separando", "saiu_para_entrega", "entregue", "preparando", "enviado"]);
+    const paid = filtered.filter((o) => CONFIRMED.has((o.status ?? "").toLowerCase()));
     const ordersTotal = paid.reduce((s, o) => s + Number(o.total ?? 0), 0);
     const startD = startOfPeriod(period);
     const externalInPeriod = externalSales.filter((e) => period === "all" || new Date(e.date) >= startD);
@@ -197,7 +207,7 @@ function Financeiro() {
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Stat icon={<TrendingUp className="h-5 w-5" />} title="Receita do período" value={formatBRL(stats.total)} />
-        <Stat icon={<ShoppingBag className="h-5 w-5" />} title="Pedidos" value={String(stats.count)} sub={`Ticket: ${formatBRL(stats.ticket)}`} />
+        <Stat icon={<ShoppingBag className="h-5 w-5" />} title="Pedidos confirmados" value={String(stats.count)} sub={`Ticket: ${formatBRL(stats.ticket)}`} />
         <Stat icon={<Receipt className="h-5 w-5" />} title="Entregues" value={formatBRL(stats.delivered)} sub={`Cancelado: ${formatBRL(stats.cancelled)}`} />
         <Stat icon={<MessageCircle className="h-5 w-5" />} title="Via WhatsApp" value={formatBRL(stats.fromWhats)} />
       </div>
@@ -241,7 +251,8 @@ function Financeiro() {
       </section>
 
       <section className="mt-6 rounded-xl border border-border p-5">
-        <h3 className="font-display text-lg font-bold">Pedidos do período (edite valores e status)</h3>
+        <h3 className="font-display text-lg font-bold">Pedidos confirmados do período</h3>
+        <p className="mt-1 text-xs text-muted-foreground">Somente pedidos com pagamento confirmado entram nas estatísticas acima.</p>
         {filtered.length === 0 ? (
           <p className="mt-2 text-sm text-muted-foreground">Sem pedidos.</p>
         ) : (
@@ -410,43 +421,96 @@ function ExternalSalesPanel({
   list, onChange, totalInPeriod,
 }: { list: ExternalSale[]; onChange: (l: ExternalSale[]) => void; totalInPeriod: number }) {
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
+  const [customer, setCustomer] = useState("");
   const [desc, setDesc] = useState("");
-  const [value, setValue] = useState("");
+  const [items, setItems] = useState<ExternalSaleItem[]>([{ name: "", quantity: 1, price: 0 }]);
+
+  const itemsTotal = items.reduce((s, it) => s + (Number(it.price) || 0) * (Number(it.quantity) || 0), 0);
+
+  function addItem() { setItems((cur) => [...cur, { name: "", quantity: 1, price: 0 }]); }
+  function updateItem(idx: number, patch: Partial<ExternalSaleItem>) {
+    setItems((cur) => cur.map((it, i) => (i === idx ? { ...it, ...patch } : it)));
+  }
+  function removeItem(idx: number) {
+    setItems((cur) => cur.filter((_, i) => i !== idx));
+  }
 
   function add() {
-    const v = Number(String(value).replace(",", "."));
-    if (!desc.trim() || !Number.isFinite(v) || v <= 0) { toast.error("Preencha descrição e valor."); return; }
-    const item: ExternalSale = { id: `ext_${Date.now().toString(36)}`, date, description: desc.trim(), value: v };
+    const valid = items.filter((it) => it.name.trim() && it.quantity > 0 && it.price >= 0);
+    if (valid.length === 0 || !desc.trim()) {
+      toast.error("Preencha descrição e ao menos um produto.");
+      return;
+    }
+    const total = valid.reduce((s, it) => s + it.price * it.quantity, 0);
+    const item: ExternalSale = {
+      id: `ext_${Date.now().toString(36)}`,
+      date,
+      description: desc.trim(),
+      customerName: customer.trim() || undefined,
+      value: total,
+      items: valid,
+    };
     onChange([item, ...list]);
-    setDesc(""); setValue("");
-    toast.success("Venda externa adicionada.");
+    setDesc(""); setCustomer(""); setItems([{ name: "", quantity: 1, price: 0 }]);
+    toast.success("Pedido externo cadastrado.");
   }
   function remove(id: string) { onChange(list.filter((x) => x.id !== id)); }
 
   return (
     <>
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h3 className="font-display text-lg font-bold">Vendas por fora do aplicativo</h3>
+        <h3 className="font-display text-lg font-bold">Pedidos / vendas por fora do aplicativo</h3>
         <span className="text-xs text-muted-foreground">Total no período: <strong className="text-foreground">{formatBRL(totalInPeriod)}</strong></span>
       </div>
-      <p className="mt-1 text-xs text-muted-foreground">Inclui dinheiro, balcão, eventos e qualquer venda fora do app. Soma-se ao total geral do período.</p>
-      <div className="mt-3 grid gap-2 sm:grid-cols-[140px_1fr_140px_auto]">
-        <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="rounded-md border border-input bg-background px-2 py-2 text-sm" />
-        <input placeholder="Descrição (ex: balcão, evento X)" value={desc} onChange={(e) => setDesc(e.target.value)} className="rounded-md border border-input bg-background px-2 py-2 text-sm" />
-        <input placeholder="Valor R$" inputMode="decimal" value={value} onChange={(e) => setValue(e.target.value)} className="rounded-md border border-input bg-background px-2 py-2 text-sm" />
-        <button onClick={add} className="inline-flex items-center gap-1 rounded-md bg-primary px-3 py-2 text-sm font-bold text-primary-foreground"><Plus className="h-4 w-4" /> Adicionar</button>
+      <p className="mt-1 text-xs text-muted-foreground">Cadastre balcão, eventos e qualquer pedido fora do app — com os produtos e valores. Soma-se ao total geral do período.</p>
+
+      <div className="mt-4 rounded-xl border border-border bg-card p-4">
+        <div className="grid gap-2 sm:grid-cols-[140px_1fr_1fr]">
+          <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="rounded-md border border-input bg-background px-2 py-2 text-sm" />
+          <input placeholder="Cliente (opcional)" value={customer} onChange={(e) => setCustomer(e.target.value)} className="rounded-md border border-input bg-background px-2 py-2 text-sm" />
+          <input placeholder="Descrição (ex: balcão, evento X)" value={desc} onChange={(e) => setDesc(e.target.value)} className="rounded-md border border-input bg-background px-2 py-2 text-sm" />
+        </div>
+
+        <div className="mt-3 space-y-2">
+          {items.map((it, idx) => (
+            <div key={idx} className="grid gap-2 sm:grid-cols-[1fr_90px_120px_auto]">
+              <input placeholder="Produto" value={it.name} onChange={(e) => updateItem(idx, { name: e.target.value })} className="rounded-md border border-input bg-background px-2 py-2 text-sm" />
+              <input placeholder="Qtd" type="number" min={1} value={it.quantity} onChange={(e) => updateItem(idx, { quantity: Number(e.target.value) || 0 })} className="rounded-md border border-input bg-background px-2 py-2 text-sm" />
+              <input placeholder="Preço un." inputMode="decimal" value={String(it.price)} onChange={(e) => updateItem(idx, { price: Number(String(e.target.value).replace(",", ".")) || 0 })} className="rounded-md border border-input bg-background px-2 py-2 text-sm" />
+              <button type="button" onClick={() => removeItem(idx)} disabled={items.length === 1} className="rounded-md border border-border p-2 text-destructive disabled:opacity-30"><Trash2 className="h-4 w-4" /></button>
+            </div>
+          ))}
+          <button type="button" onClick={addItem} className="inline-flex items-center gap-1 rounded-md border border-dashed border-border px-3 py-1.5 text-xs font-semibold text-muted-foreground hover:bg-muted">
+            <Plus className="h-3 w-3" /> Adicionar item
+          </button>
+        </div>
+
+        <div className="mt-3 flex items-center justify-between">
+          <span className="text-sm text-muted-foreground">Total do pedido: <strong className="font-display text-base text-foreground">{formatBRL(itemsTotal)}</strong></span>
+          <button onClick={add} className="inline-flex items-center gap-1 rounded-md bg-primary px-4 py-2 text-sm font-bold text-primary-foreground"><Plus className="h-4 w-4" /> Cadastrar pedido</button>
+        </div>
       </div>
+
       {list.length > 0 && (
         <ul className="mt-4 divide-y divide-border rounded-lg border border-border">
           {list.map((e) => (
-            <li key={e.id} className="flex items-center justify-between gap-2 px-3 py-2 text-sm">
-              <div>
-                <p className="font-semibold">{e.description}</p>
-                <p className="text-xs text-muted-foreground">{new Date(e.date).toLocaleDateString("pt-BR")}</p>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="font-display font-bold">{formatBRL(e.value)}</span>
-                <button onClick={() => remove(e.id)} className="rounded-md p-1 text-destructive hover:bg-destructive/10"><Trash2 className="h-3.5 w-3.5" /></button>
+            <li key={e.id} className="px-3 py-2 text-sm">
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <p className="font-semibold">{e.description}{e.customerName ? ` — ${e.customerName}` : ""}</p>
+                  <p className="text-xs text-muted-foreground">{new Date(e.date).toLocaleDateString("pt-BR")}</p>
+                  {e.items && e.items.length > 0 && (
+                    <ul className="mt-1 space-y-0.5 text-xs text-muted-foreground">
+                      {e.items.map((it, i) => (
+                        <li key={i}>{it.quantity}× {it.name} — {formatBRL(it.price * it.quantity)}</li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+                <div className="flex shrink-0 items-center gap-2">
+                  <span className="font-display font-bold">{formatBRL(e.value)}</span>
+                  <button onClick={() => remove(e.id)} className="rounded-md p-1 text-destructive hover:bg-destructive/10"><Trash2 className="h-3.5 w-3.5" /></button>
+                </div>
               </div>
             </li>
           ))}

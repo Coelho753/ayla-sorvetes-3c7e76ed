@@ -2,6 +2,39 @@
 
 Diagnóstico feito em `https://sorveteria-b-m8k4.onrender.com` testando cada endpoint chamado pelo front. Frontend já está pronto para consumir tudo abaixo — basta implementar no backend.
 
+## Atualização — junho/2026
+
+As últimas mudanças no painel não exigem migrações novas; quase tudo já é
+atendido pelos endpoints existentes. Os pontos abaixo estão valendo:
+
+1. **Financeiro só conta pedidos confirmados.** O front passou a filtrar
+   estatísticas por `status ∈ { pago, separando, saiu_para_entrega, entregue }`.
+   O backend precisa garantir que:
+   - `GET /orders` devolva o `status` real em **lowercase** com esses valores
+     (não usar mais `novo` / `preparando` / `enviado` — manter compat só
+     enquanto migra).
+   - Cada `PUT /orders/:id { status }` aceite os mesmos valores.
+2. **Pedidos externos (balcão / eventos)** continuam locais ao painel
+   (localStorage do admin) — não precisam de tabela. Caso queira persistir
+   no servidor, sugerimos:
+   - `POST /orders` com `source: "external"` + `customerName` + `items`
+     `[{ name, quantity, price }]` + `status: "pago"` + `total`.
+   - Esses devem aparecer no `GET /orders` e somar no financeiro
+     automaticamente, mas o front continua aceitando o modo offline.
+3. **Carrosséis da home (ordem / adicionar / remover / editar preço por
+   item).** O front armazena overrides no localStorage do admin. Para
+   sincronizar entre dispositivos, criar:
+   - `GET /carousels` → `{ key, items: [{ id, name, price, img, desc }] }`
+   - `PUT /carousels/:key` (admin) com a lista completa.
+   - Chaves esperadas: `tubs`, `cups`, `popsiclesAgua`, `popsiclesLeite`,
+     `popsiclesPremium`, `popsiclesSki`, `acai`.
+   - Enquanto não existir, o front continua funcionando 100% local.
+4. **Card com preço.** O `ProductCard` exige `price` (number, em R$).
+   Confirme que `GET /products` devolve `price` numérico (não string).
+5. **Botão "Pedir pelo WhatsApp" foi removido do hero da home.** Continua
+   apenas no CTA do fim da página e no botão flutuante. Nenhuma rota
+   afetada.
+
 ## Resultado dos testes
 
 | Endpoint                    | Status atual                                | Problema                          |
