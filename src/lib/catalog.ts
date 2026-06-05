@@ -40,6 +40,13 @@ import popsicle3dMaracuja from "@/assets/popsicle-3d-maracuja.jpg";
 import popsicle3dChiclete from "@/assets/popsicle-3d-chiclete.jpg";
 import popsicle3dGroselha from "@/assets/popsicle-3d-groselha.jpg";
 import popsicle3dChocolate from "@/assets/popsicle-3d-chocolate.jpg";
+import popsicle3dSkimo from "@/assets/popsicle-3d-skimo.jpg";
+import popsicle3dLimaoSuico from "@/assets/popsicle-3d-limao-suico.jpg";
+import popsicle3dMorango from "@/assets/popsicle-3d-morango.jpg";
+import popsicle3dAbacaxiVinho from "@/assets/popsicle-3d-abacaxi-vinho.jpg";
+import popsicle3dMilho from "@/assets/popsicle-3d-milho.jpg";
+import popsicle3dAbacaxi from "@/assets/popsicle-3d-abacaxi.jpg";
+import popsicle3dBrigadeiro from "@/assets/popsicle-3d-brigadeiro.jpg";
 import acai1L from "@/assets/acai-1l.webp";
 import acai5L from "@/assets/acai-5l.webp";
 
@@ -111,18 +118,25 @@ export const popsiclesAgua = [
   { name: "Manga", desc: "Tropical e refrescante.", img: popsicle3dManga },
   { name: "Limão", desc: "Cítrico e refrescante.", img: popsicleLimao },
   { name: "Uva", desc: "Doce e refrescante de uva.", img: popsicle3dGroselha },
-  { name: "Abacaxi", desc: "Tropical na medida certa.", img: popsicle3dManga },
+  { name: "Abacaxi", desc: "Tropical na medida certa.", img: popsicle3dAbacaxi },
   { name: "Pinta Língua", desc: "Diversão colorida que pinta a língua.", img: popsicle3dChiclete },
 ].map((p) => ({ ...p, price: POPSICLE_PRICE, sub: "agua" as PopsicleSub }));
 
+export const popsiclesLeite = [
+  { name: "Limão Suíço", desc: "Cremoso e cítrico.", img: popsicle3dLimaoSuico },
+  { name: "Morango", desc: "Morango com leite, irresistível.", img: popsicle3dMorango },
+  { name: "Abacaxi ao Vinho", desc: "Tropical com toque sofisticado.", img: popsicle3dAbacaxiVinho },
+  { name: "Milho Verde", desc: "Sabor caseiro de milho verde.", img: popsicle3dMilho },
+].map((p) => ({ ...p, price: POPSICLE_PRICE, sub: "leite" as PopsicleSub }));
+
 export const popsiclesPremium = [
   { name: "Leitinho", desc: "Cremoso de leite condensado.", img: popsicle3dLeitinho },
-  { name: "Brigadeiro", desc: "Chocolate puro com granulado.", img: popsicle3dChocolate },
+  { name: "Brigadeiro", desc: "Chocolate puro com granulado.", img: popsicle3dBrigadeiro },
   { name: "Torta de Limão", desc: "Picolé com crocante de biscoito.", img: popsicleLimao },
 ].map((p) => ({ ...p, price: POPSICLE_PREMIUM_PRICE, sub: "premium" as PopsicleSub }));
 
 export const popsiclesSki = [
-  { name: "Skimo", desc: "Cobertura crocante e recheio cremoso.", img: popsicle3dSkimoCoco },
+  { name: "Skimo", desc: "Cobertura crocante e recheio cremoso.", img: popsicle3dSkimo },
   { name: "Ski Coco", desc: "Coco com cobertura de chocolate.", img: popsicle3dSkimoCoco },
   { name: "Tentação", desc: "Chocolate com cobertura irresistível.", img: popsicleTentacao },
 ].map((p) => ({ ...p, price: POPSICLE_SKI_PRICE, sub: "ski" as PopsicleSub }));

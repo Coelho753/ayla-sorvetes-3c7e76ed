@@ -35,7 +35,7 @@ function AdminPanel() {
 
   const hubCards: { key: Tab; title: string; desc: string; icon: typeof LayoutDashboard }[] = [
     { key: "dashboard", title: "Dashboard", desc: "Visão geral e métricas", icon: LayoutDashboard },
-    { key: "products", title: "Produtos", desc: "Cadastrar, editar e excluir", icon: Package },
+    { key: "products", title: "Estoque", desc: "Produtos: cadastrar, editar e excluir", icon: Package },
     { key: "wholesale", title: "Atacado", desc: "Preços por categoria/produto", icon: Truck },
     { key: "orders", title: "Pedidos", desc: "Confirmar pagamento e entregas", icon: ShoppingCart },
     { key: "users", title: "Usuários", desc: "Editar perfil, senha e papéis", icon: UsersIcon },
