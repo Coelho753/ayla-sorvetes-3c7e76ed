@@ -454,24 +454,28 @@ function Index() {
             items={popsAguaFinal}
             autoplay={autoplayPopsAgua.current}
             badge="Água"
+            subKey="agua"
           />
           <PopsicleCarousel
             title={POPSICLE_SUB_LABEL.leite}
             items={popsLeiteFinal}
             autoplay={autoplayPopsLeite.current}
             badge="Leite"
+            subKey="leite"
           />
           <PopsicleCarousel
             title={POPSICLE_SUB_LABEL.premium}
             items={popsPremiumFinal}
             autoplay={autoplayPopsPremium.current}
             badge="Premium"
+            subKey="premium"
           />
           <PopsicleCarousel
             title={POPSICLE_SUB_LABEL.ski}
             items={popsSkiFinal}
             autoplay={autoplayPopsSki.current}
             badge="Ski"
+            subKey="ski"
           />
         </div>
       </section>
@@ -628,18 +632,20 @@ function Index() {
   );
 }
 
-type PopsicleItem = { name: string; desc?: string; img: string; price: number; sub: string };
+type PopsicleItem = { id?: string; name: string; desc?: string; img?: string; price: number };
 
 function PopsicleCarousel({
   title,
   items,
   autoplay,
   badge,
+  subKey,
 }: {
   title: string;
   items: PopsicleItem[];
   autoplay: ReturnType<typeof Autoplay>;
   badge: string;
+  subKey: string;
 }) {
   return (
     <div className="reveal">
@@ -657,12 +663,12 @@ function PopsicleCarousel({
             <CarouselItem key={p.name} className="pl-4 sm:basis-1/2 lg:basis-1/3">
               <div className="animate-pop-in h-full" style={{ animationDelay: `${i * 80}ms` }}>
                 <ProductCard
-                  id={`local-pop-${p.sub}-${p.name}`}
+                  id={p.id ?? `local-pop-${subKey}-${p.name}`}
                   name={p.name}
                   desc={p.desc}
                   price={p.price}
-                  img={p.img}
-                  category={`pic_${p.sub}`}
+                  img={p.img ?? ""}
+                  category={`pic_${subKey}`}
                   badge={badge}
                 />
               </div>
