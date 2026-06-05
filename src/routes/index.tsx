@@ -78,6 +78,7 @@ import {
   popsiclesSki,
   POPSICLE_SUB_LABEL,
 } from "@/lib/catalog";
+import { applyOverrides, loadOverrides } from "@/lib/carousel-overrides";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -296,15 +297,6 @@ function Index() {
             className="mt-10 flex flex-col items-center gap-4 sm:flex-row animate-fade-up"
             style={{ animationDelay: "0.4s" }}
           >
-            <a
-              href={WHATSAPP_LINK}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group inline-flex items-center gap-3 rounded-full bg-whatsapp px-8 py-5 font-display text-lg font-semibold text-whatsapp-foreground shadow-button transition-all hover:scale-105 hover:shadow-glow"
-            >
-              <MessageCircle className="h-6 w-6 transition-transform group-hover:rotate-12" strokeWidth={2.5} />
-              Pedir pelo WhatsApp
-            </a>
             <a
               href="#potes"
               className="inline-flex items-center gap-2 rounded-full bg-white/15 px-8 py-5 font-display text-lg font-semibold text-white backdrop-blur-md ring-1 ring-white/30 transition-all hover:bg-white/25"
