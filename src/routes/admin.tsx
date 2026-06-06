@@ -1,12 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Loader2, Plus, Pencil, Trash2, X, MessageCircle, UserCog, Wallet, Package, Save, RotateCcw, ShoppingCart, Users as UsersIcon, Truck, ArrowLeft, CheckCircle2, XCircle, GalleryHorizontal } from "lucide-react";
+import { Loader2, Plus, Pencil, Trash2, X, MessageCircle, UserCog, Wallet, Package, Save, RotateCcw, ShoppingCart, Users as UsersIcon, Truck, ArrowLeft, CheckCircle2, XCircle, GalleryHorizontal, Boxes } from "lucide-react";
 import { toast } from "sonner";
 import { RequireAuth } from "@/components/RequireAuth";
 import { api, extractApiError } from "@/lib/api";
 import { formatBRL } from "@/contexts/CartContext";
 import type { Address } from "@/contexts/AuthContext";
 import { tubs, cups, popsicles, acaiProducts, popsiclesAgua, popsiclesLeite, popsiclesPremium, popsiclesSki } from "@/lib/catalog";
+import { getStock, setStock as setStockLocal } from "@/lib/stock";
 import {
   CAROUSEL_LABEL,
   type CarouselKey,
@@ -34,7 +35,7 @@ export const Route = createFileRoute("/admin")({
   component: () => (<RequireAuth adminOnly><AdminPanel /></RequireAuth>),
 });
 
-type Product = { id: string | number; name: string; price: number; description?: string; image?: string; category?: string; size?: string; active?: boolean };
+type Product = { id: string | number; name: string; price: number; description?: string; image?: string; category?: string; size?: string; active?: boolean; stock?: number };
 type Order = { id: string | number; total: number; status: string; createdAt?: string; source?: string; customerName?: string; customerPhone?: string; items?: Array<{ name: string; quantity: number; price?: number }>; user?: { name?: string; email?: string }; userId?: string | number; address?: { street?: string; number?: string; city?: string } };
 type AdminUser = { id: string | number; name?: string; email: string; role?: string; createdAt?: string; phone?: string; address?: Address };
 
@@ -44,10 +45,10 @@ function AdminPanel() {
   const [tab, setTab] = useState<Tab>("hub");
 
   const hubCards: { key: Tab; title: string; desc: string; icon: typeof Package }[] = [
-    { key: "products", title: "Estoque", desc: "Produtos: cadastrar, editar e excluir", icon: Package },
+    { key: "products", title: "Estoque", desc: "Cadastre, edite e controle quantidade dos produtos", icon: Boxes },
+    { key: "orders", title: "Pedidos", desc: "Confirmar pagamento e entregas", icon: ShoppingCart },
     { key: "carousels", title: "Carrosséis", desc: "Adicionar, editar e remover produtos do carrossel", icon: GalleryHorizontal },
     { key: "wholesale", title: "Atacado", desc: "Preços por categoria/produto", icon: Truck },
-    { key: "orders", title: "Pedidos", desc: "Confirmar pagamento e entregas", icon: ShoppingCart },
     { key: "users", title: "Usuários", desc: "Editar perfil, senha e papéis", icon: UsersIcon },
   ];
 
@@ -75,6 +76,17 @@ function AdminPanel() {
 
       {tab === "hub" ? (
         <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {/* Financeiro em destaque — primeiro botão */}
+          <Link
+            to="/admin/financeiro"
+            className="group relative flex min-h-44 flex-col items-start gap-3 rounded-3xl bg-primary p-6 text-left text-primary-foreground shadow-button transition-all hover:-translate-y-1 hover:shadow-glow focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/40"
+          >
+            <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/15 ring-1 ring-white/30">
+              <Wallet className="h-7 w-7" />
+            </span>
+            <h2 className="font-display text-2xl font-bold">Financeiro</h2>
+            <p className="text-sm text-primary-foreground/85">Receita confirmada, vendas por fora, métricas e relatórios</p>
+          </Link>
           {hubCards.map((c) => {
             const Icon = c.icon;
             return (
@@ -91,16 +103,6 @@ function AdminPanel() {
               </button>
             );
           })}
-          <Link
-            to="/admin/financeiro"
-            className="group relative flex min-h-44 flex-col items-start gap-3 rounded-3xl bg-primary p-6 text-left text-primary-foreground shadow-button transition-all hover:-translate-y-1 hover:shadow-glow focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/40"
-          >
-            <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/15 ring-1 ring-white/30">
-              <Wallet className="h-7 w-7" />
-            </span>
-            <h2 className="font-display text-2xl font-bold">Financeiro / Dashboard</h2>
-            <p className="text-sm text-primary-foreground/85">Métricas, receita confirmada, vendas externas e relatórios</p>
-          </Link>
         </div>
       ) : (
         <div className="mt-8">
