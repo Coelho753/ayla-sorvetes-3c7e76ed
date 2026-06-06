@@ -1,39 +1,86 @@
 # Backend — rotas ausentes ou com bug
 
-Diagnóstico feito em `https://sorveteria-b-m8k4.onrender.com` testando cada endpoint chamado pelo front. Frontend já está pronto para consumir tudo abaixo — basta implementar no backend.
+Diagnóstico feito em `https://sorveteria-b-m8k4.onrender.com` testando cada endpoint chamado pelo front. Frontend já está pronto para consumir tudo abaixo — basta implementar no backend. CORS já está OK, **fora do escopo**.
 
-## Atualização — junho/2026
+## Atualização — junho/2026 (varredura final)
 
-As últimas mudanças no painel não exigem migrações novas; quase tudo já é
-atendido pelos endpoints existentes. Os pontos abaixo estão valendo:
+Mudanças novas que o backend precisa cobrir:
 
-1. **Financeiro só conta pedidos confirmados.** O front passou a filtrar
-   estatísticas por `status ∈ { pago, separando, saiu_para_entrega, entregue }`.
-   O backend precisa garantir que:
-   - `GET /orders` devolva o `status` real em **lowercase** com esses valores
-     (não usar mais `novo` / `preparando` / `enviado` — manter compat só
-     enquanto migra).
-   - Cada `PUT /orders/:id { status }` aceite os mesmos valores.
-2. **Pedidos externos (balcão / eventos)** continuam locais ao painel
-   (localStorage do admin) — não precisam de tabela. Caso queira persistir
-   no servidor, sugerimos:
-   - `POST /orders` com `source: "external"` + `customerName` + `items`
-     `[{ name, quantity, price }]` + `status: "pago"` + `total`.
-   - Esses devem aparecer no `GET /orders` e somar no financeiro
-     automaticamente, mas o front continua aceitando o modo offline.
-3. **Carrosséis da home (ordem / adicionar / remover / editar preço por
-   item).** O front armazena overrides no localStorage do admin. Para
-   sincronizar entre dispositivos, criar:
-   - `GET /carousels` → `{ key, items: [{ id, name, price, img, desc }] }`
-   - `PUT /carousels/:key` (admin) com a lista completa.
-   - Chaves esperadas: `tubs`, `cups`, `popsiclesAgua`, `popsiclesLeite`,
-     `popsiclesPremium`, `popsiclesSki`, `acai`.
-   - Enquanto não existir, o front continua funcionando 100% local.
-4. **Card com preço.** O `ProductCard` exige `price` (number, em R$).
-   Confirme que `GET /products` devolve `price` numérico (não string).
-5. **Botão "Pedir pelo WhatsApp" foi removido do hero da home.** Continua
-   apenas no CTA do fim da página e no botão flutuante. Nenhuma rota
-   afetada.
+1. **Campo `stock` em produto.** O admin cadastra quantidade, e a quantidade
+   precisa ser **debitada automaticamente** a cada venda (pelo app **e**
+   pelos pedidos externos). Esquema:
+   ```
+   Product { ..., stock: Number, default: 0 }
+   ```
+   - `POST /products` aceita `stock`.
+   - `PUT /products/:id` aceita `stock` (admin).
+   - `GET /products` devolve `stock` em todos.
+   - Em **`POST /orders`** com `status === 'pago'` (ou qualquer status
+     confirmado) e em **`PUT /orders/:id` quando muda para `pago`**,
+     decrementar `stock` dos itens do pedido em uma transação atômica
+     (`$inc: { stock: -qty }` por productId). Se a venda for cancelada
+     depois (`status: 'cancelado'`), **devolver** o estoque (`$inc: { stock: +qty }`).
+   - **Validar** estoque ≥ 0 antes de aceitar pedido — recusar com `400` e
+     mensagem `"Produto X sem estoque suficiente"`.
+
+2. **Pedidos externos (balcão / eventos)** precisam virar pedidos reais no
+   backend para entrarem no financeiro centralizado. O front já chama:
+   ```
+   POST /orders
+   {
+     source: "external",
+     status: "pago",
+     customerName: string,
+     items: [{ name, quantity, price }],
+     total: number,
+     createdAt: ISO string   // data informada pelo admin
+   }
+   ```
+   - Aceitar `source: "external"`, `status: "pago"` direto na criação.
+   - Aceitar `createdAt` enviado pelo admin (não sobrescrever com `Date.now()`).
+   - Itens externos podem **não ter `productId`** — aceitar `items` sem
+     id e casar por `name` se quiser debitar estoque.
+   - Estes pedidos devem aparecer no `GET /orders` e somar no financeiro
+     automaticamente.
+
+3. **Financeiro centralizado.** Hoje o front consome `GET /orders` e filtra
+   por `status ∈ { pago, separando, saiu_para_entrega, entregue }`. Para o
+   painel financeiro funcionar plenamente quando há vários admins:
+   - `GET /orders` deve devolver `total` numérico (não string), `status` em
+     **lowercase**, `createdAt` ISO, `source`, `customerName` e `items[]`
+     com `name`, `quantity` e `price` por item.
+   - (Opcional) `GET /admin/financial-summary?period=30d` retornando
+     `{ total, ticket, count, byDay: [{day, value}], topProducts: [...] }`
+     já agregado — evita processar tudo no cliente.
+
+4. **Notificação tempo real do status do pedido para o cliente.** O front
+   já faz polling em `/orders/me` a cada 30s. Para tempo real, expor `SSE`
+   em `GET /orders/me/stream` (snippet na seção 4 mais abaixo).
+
+## Resumo dos endpoints faltando / a estender
+
+| Endpoint                       | Status | O que precisa                                                                          |
+|--------------------------------|--------|----------------------------------------------------------------------------------------|
+| `DELETE /users/:id`            | ❌      | Implementar (admin)                                                                    |
+| `DELETE /orders/:id`           | ❌      | Implementar (admin)                                                                    |
+| `PUT /users/:id`               | ⚠️      | Aceitar `password` e `email` quando `req.user.role === 'admin'`                        |
+| `POST /products` / `PUT`       | ⚠️      | Aceitar `stock` (Number)                                                               |
+| `GET /products`                | ⚠️      | Retornar `stock` em todos os itens; `price` numérico                                   |
+| `POST /orders`                 | ⚠️      | Aceitar `source: "external"`, `status: "pago"` direto, `createdAt` do admin, debitar `stock` |
+| `PUT /orders/:id`              | ⚠️      | Ao mudar para `pago` debitar `stock`; ao mudar para `cancelado`, devolver `stock`      |
+| `GET /carousels` / `PUT /carousels/:key` | (opcional) | Sincronizar overrides dos carrosséis entre admins                            |
+| `GET /orders/me/stream` (SSE)  | (opcional) | Tempo real do status para o cliente                                                |
+
+## Notas — preço e financeiro
+
+- **Card com preço.** Confirme que `GET /products` devolve `price` numérico
+  (não string). O front faz `Number(price) || fallback`, mas ainda assim
+  string pode quebrar buscas / ordenação no servidor.
+- **Financeiro só conta pedidos confirmados** (`pago` em diante).
+- **Carrosséis da home** continuam locais no admin (localStorage).
+  Para sincronizar entre dispositivos, criar `GET/PUT /carousels/:key`
+  com chaves `tubs`, `cups`, `popsiclesAgua`, `popsiclesLeite`,
+  `popsiclesPremium`, `popsiclesSki`, `acai`.
 
 ## Resultado dos testes
 
