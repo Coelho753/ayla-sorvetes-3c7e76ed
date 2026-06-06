@@ -6,6 +6,7 @@ import { RequireAuth } from "@/components/RequireAuth";
 import { api, extractApiError } from "@/lib/api";
 import { formatBRL } from "@/contexts/CartContext";
 import { toast } from "sonner";
+import { debitStock } from "@/lib/stock";
 
 export const Route = createFileRoute("/admin/financeiro")({
   head: () => ({ meta: [{ title: "Financeiro — Admin Ayla" }] }),
@@ -451,6 +452,17 @@ function ExternalSalesPanel({
       items: valid,
     };
     onChange([item, ...list]);
+    // Debita estoque local — os itens externos casam por nome quando não há id.
+    debitStock(valid.map((it) => ({ name: it.name, quantity: it.quantity })));
+    // Tenta também registrar no backend como pedido externo já pago.
+    api.post("/orders", {
+      source: "external",
+      status: "pago",
+      customerName: customer.trim() || undefined,
+      items: valid,
+      total,
+      createdAt: new Date(date).toISOString(),
+    }).catch(() => { /* silencioso — fica salvo localmente */ });
     setDesc(""); setCustomer(""); setItems([{ name: "", quantity: 1, price: 0 }]);
     toast.success("Pedido externo cadastrado.");
   }

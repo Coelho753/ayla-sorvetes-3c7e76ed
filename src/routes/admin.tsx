@@ -1,12 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Loader2, Plus, Pencil, Trash2, X, MessageCircle, UserCog, Wallet, Package, Save, RotateCcw, ShoppingCart, Users as UsersIcon, Truck, ArrowLeft, CheckCircle2, XCircle, GalleryHorizontal } from "lucide-react";
+import { Loader2, Plus, Pencil, Trash2, X, MessageCircle, UserCog, Wallet, Package, Save, RotateCcw, ShoppingCart, Users as UsersIcon, Truck, ArrowLeft, CheckCircle2, XCircle, GalleryHorizontal, Boxes } from "lucide-react";
 import { toast } from "sonner";
 import { RequireAuth } from "@/components/RequireAuth";
 import { api, extractApiError } from "@/lib/api";
 import { formatBRL } from "@/contexts/CartContext";
 import type { Address } from "@/contexts/AuthContext";
 import { tubs, cups, popsicles, acaiProducts, popsiclesAgua, popsiclesLeite, popsiclesPremium, popsiclesSki } from "@/lib/catalog";
+import { getStock, setStock as setStockLocal } from "@/lib/stock";
 import {
   CAROUSEL_LABEL,
   type CarouselKey,
@@ -34,7 +35,7 @@ export const Route = createFileRoute("/admin")({
   component: () => (<RequireAuth adminOnly><AdminPanel /></RequireAuth>),
 });
 
-type Product = { id: string | number; name: string; price: number; description?: string; image?: string; category?: string; size?: string; active?: boolean };
+type Product = { id: string | number; name: string; price: number; description?: string; image?: string; category?: string; size?: string; active?: boolean; stock?: number };
 type Order = { id: string | number; total: number; status: string; createdAt?: string; source?: string; customerName?: string; customerPhone?: string; items?: Array<{ name: string; quantity: number; price?: number }>; user?: { name?: string; email?: string }; userId?: string | number; address?: { street?: string; number?: string; city?: string } };
 type AdminUser = { id: string | number; name?: string; email: string; role?: string; createdAt?: string; phone?: string; address?: Address };
 
@@ -44,10 +45,10 @@ function AdminPanel() {
   const [tab, setTab] = useState<Tab>("hub");
 
   const hubCards: { key: Tab; title: string; desc: string; icon: typeof Package }[] = [
-    { key: "products", title: "Estoque", desc: "Produtos: cadastrar, editar e excluir", icon: Package },
+    { key: "products", title: "Estoque", desc: "Cadastre, edite e controle quantidade dos produtos", icon: Boxes },
+    { key: "orders", title: "Pedidos", desc: "Confirmar pagamento e entregas", icon: ShoppingCart },
     { key: "carousels", title: "Carrosséis", desc: "Adicionar, editar e remover produtos do carrossel", icon: GalleryHorizontal },
     { key: "wholesale", title: "Atacado", desc: "Preços por categoria/produto", icon: Truck },
-    { key: "orders", title: "Pedidos", desc: "Confirmar pagamento e entregas", icon: ShoppingCart },
     { key: "users", title: "Usuários", desc: "Editar perfil, senha e papéis", icon: UsersIcon },
   ];
 
@@ -75,6 +76,17 @@ function AdminPanel() {
 
       {tab === "hub" ? (
         <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {/* Financeiro em destaque — primeiro botão */}
+          <Link
+            to="/admin/financeiro"
+            className="group relative flex min-h-44 flex-col items-start gap-3 rounded-3xl bg-primary p-6 text-left text-primary-foreground shadow-button transition-all hover:-translate-y-1 hover:shadow-glow focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/40"
+          >
+            <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/15 ring-1 ring-white/30">
+              <Wallet className="h-7 w-7" />
+            </span>
+            <h2 className="font-display text-2xl font-bold">Financeiro</h2>
+            <p className="text-sm text-primary-foreground/85">Receita confirmada, vendas por fora, métricas e relatórios</p>
+          </Link>
           {hubCards.map((c) => {
             const Icon = c.icon;
             return (
@@ -91,16 +103,6 @@ function AdminPanel() {
               </button>
             );
           })}
-          <Link
-            to="/admin/financeiro"
-            className="group relative flex min-h-44 flex-col items-start gap-3 rounded-3xl bg-primary p-6 text-left text-primary-foreground shadow-button transition-all hover:-translate-y-1 hover:shadow-glow focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/40"
-          >
-            <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/15 ring-1 ring-white/30">
-              <Wallet className="h-7 w-7" />
-            </span>
-            <h2 className="font-display text-2xl font-bold">Financeiro / Dashboard</h2>
-            <p className="text-sm text-primary-foreground/85">Métricas, receita confirmada, vendas externas e relatórios</p>
-          </Link>
         </div>
       ) : (
         <div className="mt-8">
@@ -305,7 +307,7 @@ function ProductsAdmin() {
       <div className="overflow-x-auto rounded-xl border border-border">
         <table className="w-full text-sm">
           <thead className="bg-muted/50 text-left">
-            <tr><th className="p-3">Nome</th><th className="p-3">Categoria</th><th className="p-3">Preço</th><th className="p-3 text-right">Ações</th></tr>
+            <tr><th className="p-3">Nome</th><th className="p-3">Categoria</th><th className="p-3">Preço</th><th className="p-3">Estoque</th><th className="p-3 text-right">Ações</th></tr>
           </thead>
           <tbody>
             {products.map((p) => (
@@ -313,6 +315,7 @@ function ProductsAdmin() {
                 <td className="p-3 font-semibold">{p.name}</td>
                 <td className="p-3 text-muted-foreground">{p.category ?? "—"}</td>
                 <td className="p-3">{formatBRL(Number(p.price) || 0)}</td>
+                <td className="p-3"><StockCell id={p.id} backendStock={p.stock} /></td>
                 <td className="p-3 text-right">
                   <button onClick={() => setEditing(p)} aria-label={`Editar ${p.name}`} className="mr-2 rounded-md p-2 hover:bg-muted"><Pencil className="h-4 w-4" /></button>
                   <button onClick={() => remove(p.id)} aria-label={`Excluir ${p.name}`} className="rounded-md p-2 text-destructive hover:bg-destructive/10"><Trash2 className="h-4 w-4" /></button>
@@ -327,6 +330,35 @@ function ProductsAdmin() {
   );
 }
 
+function StockCell({ id, backendStock }: { id: string | number; backendStock?: number }) {
+  const initial = backendStock ?? getStock(id);
+  const [val, setVal] = useState<string>(initial == null ? "" : String(initial));
+  const [busy, setBusy] = useState(false);
+  async function save() {
+    const n = Number(val);
+    if (!Number.isFinite(n) || n < 0) { toast.error("Quantidade inválida"); return; }
+    setBusy(true);
+    setStockLocal(id, n);
+    try { await api.put(`/products/${id}`, { stock: n }); } catch { /* mantém local */ }
+    setBusy(false);
+    toast.success("Estoque atualizado");
+  }
+  return (
+    <div className="flex items-center gap-1">
+      <input
+        type="number" min={0} step={1}
+        value={val}
+        onChange={(e) => setVal(e.target.value)}
+        placeholder="—"
+        className="w-20 rounded-md border border-input bg-background px-2 py-1 text-sm"
+      />
+      <button onClick={save} disabled={busy} className="rounded-md bg-primary p-1.5 text-primary-foreground disabled:opacity-50" aria-label="Salvar estoque">
+        {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
+      </button>
+    </div>
+  );
+}
+
 function ProductModal({ product, onClose, onSaved }: { product: Product; onClose: () => void; onSaved: () => void }) {
   const isNew = !product.id;
   const [form, setForm] = useState({
@@ -337,6 +369,7 @@ function ProductModal({ product, onClose, onSaved }: { product: Product; onClose
     category: product.category ?? "tub",
     size: product.size ?? "",
     active: product.active ?? true,
+    stock: String(product.stock ?? (product.id ? getStock(product.id) ?? "" : "")),
   });
   const [busy, setBusy] = useState(false);
 
@@ -352,9 +385,18 @@ function ProductModal({ product, onClose, onSaved }: { product: Product; onClose
         category: form.category,
         size: form.size.trim() || undefined,
         active: form.active,
+        stock: form.stock === "" ? undefined : Math.max(0, Math.floor(Number(form.stock))),
       };
-      if (isNew) await api.post("/products", payload);
-      else await api.put(`/products/${product.id}`, payload);
+      let saved: Product = product;
+      if (isNew) {
+        const { data } = await api.post<Product>("/products", payload);
+        saved = data ?? product;
+      } else {
+        await api.put(`/products/${product.id}`, payload);
+        saved = { ...product, ...payload } as Product;
+      }
+      // Espelha o estoque também localmente (fallback offline)
+      if (payload.stock != null && saved.id) setStockLocal(saved.id, payload.stock);
       toast.success("Salvo!"); onSaved();
     } catch (err) { toast.error(extractApiError(err)); }
     finally { setBusy(false); }
@@ -382,6 +424,13 @@ function ProductModal({ product, onClose, onSaved }: { product: Product; onClose
             </select>
           </div>
           <input placeholder="Tamanho (ex: 1L, 5L) — opcional" value={form.size} onChange={(e) => setForm({ ...form, size: e.target.value })} className="w-full rounded-md border border-input bg-background px-3 py-2" />
+          <div className="grid grid-cols-2 gap-3">
+            <label className="flex flex-col gap-1 text-xs font-semibold text-muted-foreground">
+              Estoque (unidades)
+              <input type="number" min={0} step={1} placeholder="Ex: 50" value={form.stock} onChange={(e) => setForm({ ...form, stock: e.target.value })} className="rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground" />
+            </label>
+            <p className="self-end pb-1 text-[11px] text-muted-foreground">Debitado automaticamente a cada venda (app e por fora).</p>
+          </div>
           <textarea placeholder="Descrição" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className="w-full rounded-md border border-input bg-background px-3 py-2" rows={3} />
           <input placeholder="URL da imagem" value={form.image} onChange={(e) => setForm({ ...form, image: e.target.value })} className="w-full rounded-md border border-input bg-background px-3 py-2" />
           <label className="flex items-center gap-2 text-sm">

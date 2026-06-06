@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { Minus, Plus, Plus as PlusIcon, Sparkles } from "lucide-react";
+import { Minus, Plus, Plus as PlusIcon, Sparkles, Package } from "lucide-react";
 import { toast } from "sonner";
 import { useCart, formatBRL } from "@/contexts/CartContext";
 import { safeImageUrl } from "@/lib/safe-url";
+import { getStock } from "@/lib/stock";
 
 type ProductCardProps = {
   id: string;
@@ -33,10 +34,20 @@ export function ProductCard({
   const isAcai = variant === "acai";
   const brandLabel = brand ?? (isAcai ? "AÇAÍ" : "AYLA");
   const safeImg = safeImageUrl(img);
+  const stock = getStock(id);
+  const outOfStock = stock != null && stock <= 0;
 
-  function handleAdd() {
-    add({ id, name, price, image: img, category }, qty);
-    toast.success(`${qty}x ${name} no carrinho!`);
+  function handleAdd(n: number = qty) {
+    if (outOfStock) {
+      toast.error("Produto sem estoque.");
+      return;
+    }
+    if (stock != null && n > stock) {
+      toast.error(`Apenas ${stock} em estoque.`);
+      return;
+    }
+    add({ id, name, price, image: img, category }, n);
+    toast.success(`${n}x ${name} no carrinho!`);
     setBumping(true);
     window.setTimeout(() => setBumping(false), 350);
   }
@@ -86,7 +97,7 @@ export function ProductCard({
         {/* "+" rápido */}
         <button
           type="button"
-          onClick={handleAdd}
+          onClick={() => handleAdd()}
           aria-label={`Adicionar ${name} rapidamente`}
           className={`absolute right-3 top-3 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-button ring-2 ring-white/60 transition-all duration-300 hover:scale-110 hover:rotate-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
             bumping ? "scale-125" : ""
@@ -114,13 +125,22 @@ export function ProductCard({
           <p className="mt-1.5 line-clamp-2 text-xs leading-snug text-muted-foreground">{desc}</p>
         )}
 
-        {/* Preço + qty */}
-        <div className="mt-3 flex items-center justify-between">
-          <span className="font-display text-2xl font-extrabold">
+        {/* Preço em destaque (linha própria, sempre visível) */}
+        <div className="mt-3 rounded-2xl border border-border bg-muted/40 px-3 py-2 text-center">
+          <span className="block font-display text-3xl font-extrabold leading-none">
             <span className={isAcai ? "bg-gradient-purple bg-clip-text text-transparent" : "bg-gradient-candy bg-clip-text text-transparent"}>
               {formatBRL(price)}
             </span>
           </span>
+          {stock != null && (
+            <span className={`mt-1 inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider ${outOfStock ? "text-destructive" : "text-muted-foreground"}`}>
+              <Package className="h-3 w-3" /> {outOfStock ? "Sem estoque" : `${stock} em estoque`}
+            </span>
+          )}
+        </div>
+
+        {/* Qty */}
+        <div className="mt-3 flex items-center justify-center">
           <div className="flex items-center gap-1 rounded-full bg-muted p-1 ring-1 ring-border">
             <button
               type="button"
@@ -142,18 +162,31 @@ export function ProductCard({
           </div>
         </div>
 
-        {/* Botão ADICIONAR */}
-        <button
-          type="button"
-          onClick={handleAdd}
-          aria-label={`Adicionar ${qty} ${name} ao carrinho`}
-          className={`mt-4 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full px-4 py-3 font-display text-xs font-bold uppercase tracking-[0.2em] text-primary-foreground shadow-button transition-all duration-300 hover:scale-[1.03] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
-            isAcai ? "bg-gradient-purple" : "bg-gradient-candy"
-          } ${bumping ? "scale-105" : ""}`}
-        >
-          <PlusIcon className="h-4 w-4" aria-hidden="true" />
-          Adicionar
-        </button>
+        {/* Botões de ação */}
+        <div className="mt-4 grid grid-cols-[1fr_auto] gap-2">
+          <button
+            type="button"
+            onClick={() => handleAdd()}
+            disabled={outOfStock}
+            aria-label={`Adicionar ${qty} ${name} ao carrinho`}
+            className={`inline-flex min-h-11 items-center justify-center gap-2 rounded-full px-4 py-3 font-display text-xs font-bold uppercase tracking-[0.2em] text-primary-foreground shadow-button transition-all duration-300 hover:scale-[1.03] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100 ${
+              isAcai ? "bg-gradient-purple" : "bg-gradient-candy"
+            } ${bumping ? "scale-105" : ""}`}
+          >
+            <PlusIcon className="h-4 w-4" aria-hidden="true" />
+            Adicionar
+          </button>
+          <button
+            type="button"
+            onClick={() => handleAdd(10)}
+            disabled={outOfStock || (stock != null && stock < 10)}
+            aria-label={`Adicionar 10 ${name} ao carrinho`}
+            title="Pedir 10 unidades de uma vez"
+            className="inline-flex min-h-11 items-center justify-center gap-1 rounded-full border-2 border-primary/60 bg-card px-3 py-3 font-display text-xs font-extrabold uppercase tracking-wider text-primary transition-all hover:bg-primary hover:text-primary-foreground disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-card disabled:hover:text-primary"
+          >
+            10x
+          </button>
+        </div>
       </div>
     </article>
   );

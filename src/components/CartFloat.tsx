@@ -7,6 +7,7 @@ import { WHATSAPP_PHONE } from "@/config/api";
 import { api } from "@/lib/api";
 import { toast } from "sonner";
 import { saveOrder, newOrderId } from "@/lib/orders";
+import { debitStock } from "@/lib/stock";
 import { useCartPricing } from "@/hooks/use-cart-pricing";
 import { CATEGORY_LABEL, WHOLESALE_THRESHOLD, type WholesaleCategory } from "@/lib/wholesale";
 
@@ -90,6 +91,8 @@ export function CartFloat() {
       address: user?.address ?? null,
       customerName: user?.name,
     });
+    // Debita estoque local imediatamente (espelha o backend).
+    debitStock(items.map((i) => ({ id: i.id, name: i.name, quantity: i.quantity })));
     const url = `https://wa.me/${WHATSAPP_PHONE}?text=${encodeURIComponent(buildMessage())}`;
     window.open(url, "_blank", "noopener,noreferrer");
     clear();
