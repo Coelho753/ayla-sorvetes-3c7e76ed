@@ -209,11 +209,14 @@ function Financeiro() {
     paid.forEach((o) => o.items?.forEach(addGrouped));
     externalInPeriod.forEach((e) => e.items?.forEach(addGrouped));
     const byGroup = Object.fromEntries(
-      (Object.keys(groupCount) as ProductGroupKey[]).map((g) => [g, Object.entries(groupCount[g]).sort((a, b) => b[1].qty - a[1].qty).slice(0, 8)]),
+      (Object.keys(groupCount) as ProductGroupKey[]).map((g) => {
+        const merged = { ...groupCount[g], ...(groupOverrides[g] ?? {}) };
+        return [g, Object.entries(merged).sort((a, b) => b[1].qty - a[1].qty).slice(0, 8)];
+      }),
     ) as Record<ProductGroupKey, [string, { qty: number; revenue: number }][]>;
 
     return { total, ordersTotal, externalTotal, appItemsQty, externalItemsQty, delivered, cancelled, fromWhats, ticket, count: paid.length, series, top, byGroup };
-  }, [filtered, externalSales, period, topOverrides]);
+  }, [filtered, externalSales, period, topOverrides, groupOverrides]);
 
   function exportCsv() {
     const rows = [
