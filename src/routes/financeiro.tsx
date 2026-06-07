@@ -19,12 +19,12 @@ type Order = {
   status: string;
   createdAt?: string;
   source?: string;
-  items?: Array<{ name: string; quantity: number; price?: number }>;
+  items?: Array<{ name: string; quantity: number; price?: number; category?: string }>;
 };
 
 type Period = "today" | "7d" | "30d" | "month" | "all";
 
-type ExternalSaleItem = { name: string; quantity: number; price: number };
+type ExternalSaleItem = { name: string; quantity: number; price: number; category?: ProductGroupKey };
 type ExternalSale = {
   id: string;
   date: string;
@@ -60,6 +60,35 @@ function startOfPeriod(p: Period): Date {
   if (p === "30d") return new Date(now.getTime() - 30 * 86_400_000);
   if (p === "month") return new Date(now.getFullYear(), now.getMonth(), 1);
   return new Date(0);
+}
+
+const GROUP_LABEL: Record<ProductGroupKey, string> = {
+  cup: "Copos",
+  popsicle: "Picolés",
+  tub: "Potes",
+};
+type ProductGroupKey = "cup" | "popsicle" | "tub";
+
+function productGroup(category?: string, name?: string): ProductGroupKey | null {
+  const c = (category ?? "").toLowerCase();
+  if (["cup", "copo"].includes(c)) return "cup";
+  if (["tub", "pote"].includes(c)) return "tub";
+  if (c === "popsicle" || c === "picole" || c === "picolé" || c.startsWith("pic_")) return "popsicle";
+  const n = (name ?? "").toLowerCase();
+  if (n.includes("copo")) return "cup";
+  if (n.includes("pote")) return "tub";
+  if (n.includes("picol") || n.includes("pic ") || n.startsWith("pic")) return "popsicle";
+  return null;
+}
+
+function orderSignature(input: { createdAt?: string; date?: string; total?: number; value?: number; customerName?: string; items?: ExternalSaleItem[] | Order["items"] }) {
+  const date = (input.createdAt ?? input.date ?? "").slice(0, 10);
+  const total = Number(input.total ?? input.value ?? 0).toFixed(2);
+  const items = (input.items ?? [])
+    .map((i) => `${i.name.trim().toLowerCase()}:${Number(i.quantity) || 0}:${Number(i.price ?? 0).toFixed(2)}`)
+    .sort()
+    .join("|");
+  return `${date}|${total}|${(input.customerName ?? "").trim().toLowerCase()}|${items}`;
 }
 
 function Financeiro() {
