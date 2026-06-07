@@ -35,6 +35,7 @@ type ExternalSale = {
 };
 const EXT_KEY = "ayla.admin.external-sales";
 const TOP_OVERRIDE_KEY = "ayla.admin.top-products"; // map name -> { qty, revenue }
+const SUMMARY_OVERRIDE_KEY = "ayla.admin.finance-summary";
 
 function loadExternal(): ExternalSale[] {
   if (typeof window === "undefined") return [];
@@ -51,6 +52,14 @@ function loadTopOverrides(): Record<string, { qty: number; revenue: number }> {
 function saveTopOverrides(o: Record<string, { qty: number; revenue: number }>) {
   if (typeof window === "undefined") return;
   window.localStorage.setItem(TOP_OVERRIDE_KEY, JSON.stringify(o));
+}
+function loadSummaryOverrides(): Record<string, number> {
+  if (typeof window === "undefined") return {};
+  try { return JSON.parse(window.localStorage.getItem(SUMMARY_OVERRIDE_KEY) ?? "{}"); } catch { return {}; }
+}
+function saveSummaryOverrides(o: Record<string, number>) {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(SUMMARY_OVERRIDE_KEY, JSON.stringify(o));
 }
 
 function startOfPeriod(p: Period): Date {
@@ -102,6 +111,7 @@ function Financeiro() {
   const [saving, setSaving] = useState(false);
   const [externalSales, setExternalSales] = useState<ExternalSale[]>(() => loadExternal());
   const [topOverrides, setTopOverrides] = useState<Record<string, { qty: number; revenue: number }>>(() => loadTopOverrides());
+  const [summaryOverrides, setSummaryOverrides] = useState<Record<string, number>>(() => loadSummaryOverrides());
 
   useEffect(() => {
     (async () => {
