@@ -337,26 +337,11 @@ function Financeiro() {
       </section>
 
       <section className="mt-6 rounded-xl border border-border p-5">
-        <h3 className="font-display text-lg font-bold">Mais pedidos por tipo</h3>
-        <div className="mt-4 grid gap-4 md:grid-cols-3">
-          {(Object.keys(GROUP_LABEL) as ProductGroupKey[]).map((group) => (
-            <div key={group} className="rounded-lg border border-border bg-card p-3">
-              <h4 className="font-display font-bold">{GROUP_LABEL[group]}</h4>
-              {stats.byGroup[group].length === 0 ? (
-                <p className="mt-2 text-sm text-muted-foreground">Sem dados.</p>
-              ) : (
-                <ul className="mt-2 space-y-2 text-sm">
-                  {stats.byGroup[group].map(([name, v]) => (
-                    <li key={name} className="flex items-start justify-between gap-3 border-t border-border pt-2 first:border-t-0 first:pt-0">
-                      <span>{name}</span>
-                      <span className="text-right font-semibold">{v.qty} un.<br /><small className="font-normal text-muted-foreground">{formatBRL(v.revenue)}</small></span>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          ))}
-        </div>
+        <GroupedProductsEditable
+          rows={stats.byGroup}
+          overrides={groupOverrides}
+          onChange={(o) => { setGroupOverrides(o); saveGroupOverrides(o); }}
+        />
       </section>
 
       <section className="mt-6 rounded-xl border border-border p-5">
