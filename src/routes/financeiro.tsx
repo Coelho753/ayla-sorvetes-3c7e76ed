@@ -429,12 +429,82 @@ function Financeiro() {
   );
 }
 
-function Stat({ icon, title, value, sub }: { icon: React.ReactNode; title: string; value: string; sub?: string }) {
+function EditableStat({
+  icon,
+  title,
+  storageKey,
+  computed,
+  kind,
+  sub,
+  overrides,
+  onChange,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  storageKey: string;
+  computed: number;
+  kind: "currency" | "int";
+  sub?: string;
+  overrides: Record<string, number>;
+  onChange: (o: Record<string, number>) => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState("");
+  const override = overrides[storageKey];
+  const value = override ?? computed;
+  const formatted = kind === "currency" ? formatBRL(value) : String(Math.round(value));
+
+  function start() {
+    setDraft(String(kind === "currency" ? value.toFixed(2) : Math.round(value)));
+    setEditing(true);
+  }
+  function save() {
+    const n = Number(String(draft).replace(",", "."));
+    if (!Number.isFinite(n) || n < 0) { toast.error("Valor inválido"); return; }
+    onChange({ ...overrides, [storageKey]: n });
+    setEditing(false);
+    toast.success("Valor atualizado");
+  }
+  function reset() {
+    const next = { ...overrides };
+    delete next[storageKey];
+    onChange(next);
+    setEditing(false);
+  }
+
   return (
     <div className="rounded-xl border border-border bg-card p-5">
-      <div className="flex items-center gap-2 text-muted-foreground">{icon}<p className="text-sm">{title}</p></div>
-      <p className="mt-2 font-display text-2xl font-bold">{value}</p>
+      <div className="flex items-start justify-between gap-2">
+        <div className="flex items-center gap-2 text-muted-foreground">{icon}<p className="text-sm">{title}</p></div>
+        <div className="flex gap-1">
+          {override !== undefined && (
+            <button onClick={reset} className="rounded-md p-1 text-muted-foreground hover:bg-muted" aria-label="Restaurar automático" title="Restaurar automático">
+              <RotateCcw className="h-3.5 w-3.5" />
+            </button>
+          )}
+          <button onClick={start} className="rounded-md p-1 text-muted-foreground hover:bg-muted" aria-label={`Editar ${title}`}>
+            <Pencil className="h-3.5 w-3.5" />
+          </button>
+        </div>
+      </div>
+      {editing ? (
+        <div className="mt-2 flex gap-1">
+          <input
+            autoFocus
+            inputMode="decimal"
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter") save(); if (e.key === "Escape") setEditing(false); }}
+            className="min-w-0 flex-1 rounded-md border border-input bg-background px-2 py-1 font-display text-xl font-bold outline-none focus:ring-2 focus:ring-primary"
+          />
+          <button onClick={save} className="rounded-md bg-primary p-2 text-primary-foreground" aria-label="Salvar"><Save className="h-4 w-4" /></button>
+          <button onClick={() => setEditing(false)} className="rounded-md border border-border p-2" aria-label="Cancelar"><X className="h-4 w-4" /></button>
+        </div>
+      ) : (
+        <p className="mt-2 font-display text-2xl font-bold">{formatted}</p>
+      )}
       {sub && <p className="mt-1 text-xs text-muted-foreground">{sub}</p>}
+      {override !== undefined && !editing && <p className="mt-1 text-[10px] uppercase tracking-wide text-primary">Manual</p>}
     </div>
   );
 }
