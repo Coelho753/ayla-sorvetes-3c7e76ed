@@ -284,11 +284,13 @@ function Financeiro() {
         ))}
       </div>
 
-      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Stat icon={<TrendingUp className="h-5 w-5" />} title="Receita do período" value={formatBRL(stats.total)} />
-        <Stat icon={<ShoppingBag className="h-5 w-5" />} title="Pedidos confirmados" value={String(stats.count)} sub={`Ticket: ${formatBRL(stats.ticket)}`} />
-        <Stat icon={<Receipt className="h-5 w-5" />} title="Entregues" value={formatBRL(stats.delivered)} sub={`Cancelado: ${formatBRL(stats.cancelled)}`} />
-        <Stat icon={<MessageCircle className="h-5 w-5" />} title="Via WhatsApp" value={formatBRL(stats.fromWhats)} />
+      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <EditableStat icon={<TrendingUp className="h-5 w-5" />} title="Receita total" storageKey="total" computed={stats.total} kind="currency" overrides={summaryOverrides} onChange={(o) => { setSummaryOverrides(o); saveSummaryOverrides(o); }} />
+        <EditableStat icon={<Receipt className="h-5 w-5" />} title="Arrecadado pelo app" storageKey="ordersTotal" computed={stats.ordersTotal} kind="currency" overrides={summaryOverrides} onChange={(o) => { setSummaryOverrides(o); saveSummaryOverrides(o); }} />
+        <EditableStat icon={<MessageCircle className="h-5 w-5" />} title="Vendas por fora" storageKey="externalTotal" computed={stats.externalTotal} kind="currency" overrides={summaryOverrides} onChange={(o) => { setSummaryOverrides(o); saveSummaryOverrides(o); }} />
+        <EditableStat icon={<ShoppingBag className="h-5 w-5" />} title="Produtos vendidos no app" storageKey="appItemsQty" computed={stats.appItemsQty} kind="int" overrides={summaryOverrides} onChange={(o) => { setSummaryOverrides(o); saveSummaryOverrides(o); }} />
+        <EditableStat icon={<ShoppingBag className="h-5 w-5" />} title="Produtos vendidos por fora" storageKey="externalItemsQty" computed={stats.externalItemsQty} kind="int" overrides={summaryOverrides} onChange={(o) => { setSummaryOverrides(o); saveSummaryOverrides(o); }} />
+        <EditableStat icon={<Receipt className="h-5 w-5" />} title="Pedidos confirmados" storageKey="count" computed={stats.count} kind="int" sub={`Ticket: ${formatBRL(stats.ticket)}`} overrides={summaryOverrides} onChange={(o) => { setSummaryOverrides(o); saveSummaryOverrides(o); }} />
       </div>
 
       <section className="mt-6 rounded-xl border border-border p-5">
@@ -319,6 +321,29 @@ function Financeiro() {
           overrides={topOverrides}
           onChange={(o) => { setTopOverrides(o); saveTopOverrides(o); }}
         />
+      </section>
+
+      <section className="mt-6 rounded-xl border border-border p-5">
+        <h3 className="font-display text-lg font-bold">Mais pedidos por tipo</h3>
+        <div className="mt-4 grid gap-4 md:grid-cols-3">
+          {(Object.keys(GROUP_LABEL) as ProductGroupKey[]).map((group) => (
+            <div key={group} className="rounded-lg border border-border bg-card p-3">
+              <h4 className="font-display font-bold">{GROUP_LABEL[group]}</h4>
+              {stats.byGroup[group].length === 0 ? (
+                <p className="mt-2 text-sm text-muted-foreground">Sem dados.</p>
+              ) : (
+                <ul className="mt-2 space-y-2 text-sm">
+                  {stats.byGroup[group].map(([name, v]) => (
+                    <li key={name} className="flex items-start justify-between gap-3 border-t border-border pt-2 first:border-t-0 first:pt-0">
+                      <span>{name}</span>
+                      <span className="text-right font-semibold">{v.qty} un.<br /><small className="font-normal text-muted-foreground">{formatBRL(v.revenue)}</small></span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          ))}
+        </div>
       </section>
 
       <section className="mt-6 rounded-xl border border-border p-5">
