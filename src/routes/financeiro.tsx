@@ -130,11 +130,21 @@ function Financeiro() {
     // Só consideramos vendas confirmadas (pagas em diante).
     const CONFIRMED = new Set(["pago", "separando", "saiu_para_entrega", "entregue", "preparando", "enviado"]);
     const paid = filtered.filter((o) => CONFIRMED.has((o.status ?? "").toLowerCase()));
-    const ordersTotal = paid.reduce((s, o) => s + Number(o.total ?? 0), 0);
+    const externalOrderSignatures = new Set(
+      paid
+        .filter((o) => (o.source ?? "").toLowerCase() === "external")
+        .map((o) => orderSignature(o)),
+    );
     const startD = startOfPeriod(period);
-    const externalInPeriod = externalSales.filter((e) => period === "all" || new Date(e.date) >= startD);
+    const externalInPeriod = externalSales.filter(
+      (e) => (period === "all" || new Date(e.date) >= startD) && !externalOrderSignatures.has(orderSignature(e)),
+    );
+    const appPaid = paid.filter((o) => (o.source ?? "site").toLowerCase() !== "external");
+    const ordersTotal = appPaid.reduce((s, o) => s + Number(o.total ?? 0), 0);
     const externalTotal = externalInPeriod.reduce((s, e) => s + Number(e.value || 0), 0);
     const total = ordersTotal + externalTotal;
+    const appItemsQty = appPaid.reduce((s, o) => s + (o.items ?? []).reduce((n, i) => n + Number(i.quantity || 0), 0), 0);
+    const externalItemsQty = externalInPeriod.reduce((s, e) => s + (e.items ?? []).reduce((n, i) => n + Number(i.quantity || 0), 0), 0);
     const delivered = paid.filter((o) => o.status === "entregue").reduce((s, o) => s + Number(o.total ?? 0), 0);
     const cancelled = filtered.filter((o) => o.status === "cancelado").reduce((s, o) => s + Number(o.total ?? 0), 0);
     const fromWhats = paid.filter((o) => (o.source ?? "").toLowerCase() === "whatsapp").reduce((s, o) => s + Number(o.total ?? 0), 0);
@@ -160,12 +170,32 @@ function Financeiro() {
       productCount[k].qty += i.quantity;
       productCount[k].revenue += (i.price ?? 0) * i.quantity;
     }));
+    externalInPeriod.forEach((e) => e.items?.forEach((i) => {
+      const k = i.name;
+      if (!productCount[k]) productCount[k] = { qty: 0, revenue: 0 };
+      productCount[k].qty += i.quantity;
+      productCount[k].revenue += i.price * i.quantity;
+    }));
     // merge overrides locais
     const merged: Record<string, { qty: number; revenue: number }> = { ...productCount };
     for (const [name, v] of Object.entries(topOverrides)) merged[name] = v;
     const top = Object.entries(merged).sort((a, b) => b[1].revenue - a[1].revenue).slice(0, 12);
 
-    return { total, ordersTotal, externalTotal, delivered, cancelled, fromWhats, ticket, count: paid.length, series, top };
+    const groupCount: Record<ProductGroupKey, Record<string, { qty: number; revenue: number }>> = { cup: {}, popsicle: {}, tub: {} };
+    const addGrouped = (i: { name: string; quantity: number; price?: number; category?: string }) => {
+      const group = productGroup(i.category, i.name);
+      if (!group) return;
+      if (!groupCount[group][i.name]) groupCount[group][i.name] = { qty: 0, revenue: 0 };
+      groupCount[group][i.name].qty += Number(i.quantity || 0);
+      groupCount[group][i.name].revenue += Number(i.price || 0) * Number(i.quantity || 0);
+    };
+    paid.forEach((o) => o.items?.forEach(addGrouped));
+    externalInPeriod.forEach((e) => e.items?.forEach(addGrouped));
+    const byGroup = Object.fromEntries(
+      (Object.keys(groupCount) as ProductGroupKey[]).map((g) => [g, Object.entries(groupCount[g]).sort((a, b) => b[1].qty - a[1].qty).slice(0, 8)]),
+    ) as Record<ProductGroupKey, [string, { qty: number; revenue: number }][]>;
+
+    return { total, ordersTotal, externalTotal, appItemsQty, externalItemsQty, delivered, cancelled, fromWhats, ticket, count: paid.length, series, top, byGroup };
   }, [filtered, externalSales, period, topOverrides]);
 
   function exportCsv() {
