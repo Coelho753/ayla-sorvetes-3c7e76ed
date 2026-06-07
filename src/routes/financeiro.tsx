@@ -8,7 +8,7 @@ import { formatBRL } from "@/contexts/CartContext";
 import { toast } from "sonner";
 import { debitStock } from "@/lib/stock";
 
-export const Route = createFileRoute("/admin/financeiro")({
+export const Route = createFileRoute("/financeiro")({
   head: () => ({ meta: [{ title: "Financeiro — Admin Ayla" }] }),
   component: () => (<RequireAuth adminOnly><Financeiro /></RequireAuth>),
 });
