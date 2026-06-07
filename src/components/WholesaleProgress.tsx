@@ -1,10 +1,12 @@
 import { Package } from "lucide-react";
+import { useCart } from "@/contexts/CartContext";
 import { useCartPricing } from "@/hooks/use-cart-pricing";
 import { CATEGORY_LABEL, WHOLESALE_THRESHOLD, type WholesaleCategory } from "@/lib/wholesale";
 
 type Props = { className?: string; sticky?: boolean };
 
 export function WholesaleProgress({ className = "", sticky = false }: Props) {
+  const { count } = useCart();
   const pricing = useCartPricing();
   const categories = (Object.keys(pricing.counts) as WholesaleCategory[])
     .filter((c) => pricing.counts[c] > 0);
@@ -16,7 +18,7 @@ export function WholesaleProgress({ className = "", sticky = false }: Props) {
     >
       <div className="flex items-center gap-2 text-sm font-bold text-primary">
         <Package className="h-4 w-4" />
-        Progresso para preço de atacado
+        {count} {count === 1 ? "produto adicionado" : "produtos adicionados"} no carrinho
       </div>
       <div className="mt-3 space-y-2.5">
         {categories.map((c) => {
