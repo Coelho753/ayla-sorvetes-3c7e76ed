@@ -121,7 +121,7 @@ export function CartFloat() {
           <button
             type="button"
             onClick={() => setOpen(true)}
-            className="mb-1 hidden min-w-0 rounded-2xl border border-primary/30 bg-card/95 px-3 py-2 text-left text-xs shadow-card backdrop-blur sm:block"
+            className="mb-1 min-w-0 max-w-56 rounded-2xl border border-primary/30 bg-card/95 px-3 py-2 text-left text-xs shadow-card backdrop-blur"
           >
             <span className="block font-bold text-foreground">{count} {count === 1 ? "produto" : "produtos"} no carrinho</span>
             <span className="block text-muted-foreground">{promoLine}</span>
