@@ -589,6 +589,96 @@ function TopProductsEditable({
   );
 }
 
+function GroupedProductsEditable({
+  rows,
+  overrides,
+  onChange,
+}: {
+  rows: Record<ProductGroupKey, [string, { qty: number; revenue: number }][]>;
+  overrides: Record<ProductGroupKey, Record<string, { qty: number; revenue: number }>>;
+  onChange: (o: Record<ProductGroupKey, Record<string, { qty: number; revenue: number }>>) => void;
+}) {
+  const [editKey, setEditKey] = useState<string | null>(null);
+  const [qty, setQty] = useState("");
+  const [rev, setRev] = useState("");
+  const [newNames, setNewNames] = useState<Record<string, string>>({});
+  const keyFor = (group: ProductGroupKey, name: string) => `${group}::${name}`;
+
+  function start(group: ProductGroupKey, name: string, v: { qty: number; revenue: number }) {
+    setEditKey(keyFor(group, name));
+    setQty(String(v.qty));
+    setRev(String(v.revenue.toFixed(2)));
+  }
+  function save(group: ProductGroupKey, name: string) {
+    const q = Number(qty); const r = Number(String(rev).replace(",", "."));
+    if (!Number.isFinite(q) || !Number.isFinite(r) || q < 0 || r < 0) { toast.error("Valor inválido"); return; }
+    onChange({ ...overrides, [group]: { ...(overrides[group] ?? {}), [name]: { qty: q, revenue: r } } });
+    setEditKey(null);
+    toast.success("Atualizado");
+  }
+  function resetOne(group: ProductGroupKey, name: string) {
+    const nextGroup = { ...(overrides[group] ?? {}) };
+    delete nextGroup[name];
+    onChange({ ...overrides, [group]: nextGroup });
+  }
+  function addNew(group: ProductGroupKey) {
+    const name = (newNames[group] ?? "").trim();
+    if (!name) return;
+    onChange({ ...overrides, [group]: { ...(overrides[group] ?? {}), [name]: { qty: 0, revenue: 0 } } });
+    setNewNames({ ...newNames, [group]: "" });
+    start(group, name, { qty: 0, revenue: 0 });
+  }
+
+  return (
+    <>
+      <h3 className="font-display text-lg font-bold">Mais pedidos por tipo (editável)</h3>
+      <div className="mt-4 grid gap-4 md:grid-cols-3">
+        {(Object.keys(GROUP_LABEL) as ProductGroupKey[]).map((group) => (
+          <div key={group} className="rounded-lg border border-border bg-card p-3">
+            <h4 className="font-display font-bold">{GROUP_LABEL[group]}</h4>
+            <div className="mt-2 flex gap-1">
+              <input value={newNames[group] ?? ""} onChange={(e) => setNewNames({ ...newNames, [group]: e.target.value })} placeholder="Adicionar produto" className="min-w-0 flex-1 rounded-md border border-input bg-background px-2 py-1 text-xs" />
+              <button onClick={() => addNew(group)} className="rounded-md bg-primary px-2 text-xs font-bold text-primary-foreground"><Plus className="h-3 w-3" /></button>
+            </div>
+            {rows[group].length === 0 ? (
+              <p className="mt-2 text-sm text-muted-foreground">Sem dados.</p>
+            ) : (
+              <ul className="mt-3 space-y-2 text-sm">
+                {rows[group].map(([name, v]) => {
+                  const editing = editKey === keyFor(group, name);
+                  const overridden = name in (overrides[group] ?? {});
+                  return (
+                    <li key={name} className="border-t border-border pt-2 first:border-t-0 first:pt-0">
+                      <div className="flex items-start justify-between gap-2">
+                        <span>{name} {overridden && <small className="text-primary">manual</small>}</span>
+                        {!editing && <button onClick={() => start(group, name, v)} className="rounded-md border border-border p-1"><Pencil className="h-3 w-3" /></button>}
+                      </div>
+                      {editing ? (
+                        <div className="mt-2 grid grid-cols-[1fr_1fr_auto_auto] gap-1">
+                          <input value={qty} onChange={(e) => setQty(e.target.value)} className="rounded-md border border-input bg-background px-2 py-1 text-xs" />
+                          <input value={rev} onChange={(e) => setRev(e.target.value)} className="rounded-md border border-input bg-background px-2 py-1 text-xs" />
+                          <button onClick={() => save(group, name)} className="rounded-md bg-primary p-1 text-primary-foreground"><Save className="h-3 w-3" /></button>
+                          <button onClick={() => setEditKey(null)} className="rounded-md border border-border p-1"><X className="h-3 w-3" /></button>
+                        </div>
+                      ) : (
+                        <div className="mt-1 flex items-end justify-between gap-2 text-xs text-muted-foreground">
+                          <span>{v.qty} unidades</span>
+                          <span className="font-semibold text-foreground">{formatBRL(v.revenue)}</span>
+                          {overridden && <button onClick={() => resetOne(group, name)} className="rounded-md border border-border p-1" title="Restaurar automático"><RotateCcw className="h-3 w-3" /></button>}
+                        </div>
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </div>
+        ))}
+      </div>
+    </>
+  );
+}
+
 function ExternalSalesPanel({
   list, onChange, totalInPeriod,
 }: { list: ExternalSale[]; onChange: (l: ExternalSale[]) => void; totalInPeriod: number }) {
