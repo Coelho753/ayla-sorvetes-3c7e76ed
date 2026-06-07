@@ -142,7 +142,15 @@ export function normalizeCategory(c?: string): WholesaleCategory | null {
   const x = (c ?? "").toLowerCase();
   if (x === "tub" || x === "pote") return "tub";
   if (x === "cup" || x === "copo") return "cup";
-  if (x === "popsicle" || x === "picole" || x === "picolé") return "popsicle";
+  if (
+    x === "popsicle" ||
+    x === "picole" ||
+    x === "picolé" ||
+    x === "pic_agua" ||
+    x === "pic_leite" ||
+    x === "pic_premium" ||
+    x === "pic_ski"
+  ) return "popsicle";
   return null;
 }
 
