@@ -126,11 +126,9 @@ export function ProductCard({
         )}
 
         {/* Preço em destaque (linha própria, sempre visível) */}
-        <div className="mt-3 rounded-2xl border border-border bg-muted/40 px-3 py-2 text-center">
-          <span className="block font-display text-3xl font-extrabold leading-none">
-            <span className={isAcai ? "bg-gradient-purple bg-clip-text text-transparent" : "bg-gradient-candy bg-clip-text text-transparent"}>
-              {formatBRL(price)}
-            </span>
+        <div className="mt-3 rounded-2xl border-2 border-primary/30 bg-background px-3 py-2 text-center shadow-sm">
+          <span className={`block font-display text-3xl font-extrabold leading-none tracking-tight ${isAcai ? "text-secondary" : "text-primary"}`}>
+            {formatBRL(price)}
           </span>
           {stock != null && (
             <span className={`mt-1 inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider ${outOfStock ? "text-destructive" : "text-muted-foreground"}`}>

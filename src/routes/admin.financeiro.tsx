@@ -65,6 +65,7 @@ function startOfPeriod(p: Period): Date {
 function Financeiro() {
   const [orders, setOrders] = useState<Order[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [backendWarn, setBackendWarn] = useState<string | null>(null);
   const [period, setPeriod] = useState<Period>("30d");
   const [editId, setEditId] = useState<string | number | null>(null);
   const [editTotal, setEditTotal] = useState<string>("");
@@ -78,7 +79,12 @@ function Financeiro() {
       try {
         const { data } = await api.get<Order[] | { data: Order[] }>("/orders");
         setOrders(Array.isArray(data) ? data : (data as { data: Order[] }).data ?? []);
-      } catch (err) { setError(extractApiError(err)); }
+      } catch (err) {
+        // Sem backend disponível: mostramos o painel mesmo assim,
+        // com vendas externas e top produtos editáveis.
+        setBackendWarn(extractApiError(err, "Backend indisponível — exibindo apenas vendas por fora."));
+        setOrders([]);
+      }
     })();
   }, []);
 
@@ -197,6 +203,12 @@ function Financeiro() {
           <Download className="h-4 w-4" /> Exportar CSV
         </button>
       </div>
+
+      {backendWarn && (
+        <div className="mt-4 rounded-xl border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-sm text-amber-700 dark:text-amber-300">
+          {backendWarn}
+        </div>
+      )}
 
       <div className="mt-4 flex flex-wrap gap-2">
         {periods.map((p) => (
