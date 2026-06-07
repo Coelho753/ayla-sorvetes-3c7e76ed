@@ -130,21 +130,18 @@ function Financeiro() {
     // Só consideramos vendas confirmadas (pagas em diante).
     const CONFIRMED = new Set(["pago", "separando", "saiu_para_entrega", "entregue", "preparando", "enviado"]);
     const paid = filtered.filter((o) => CONFIRMED.has((o.status ?? "").toLowerCase()));
-    const externalOrderSignatures = new Set(
-      paid
-        .filter((o) => (o.source ?? "").toLowerCase() === "external")
-        .map((o) => orderSignature(o)),
-    );
+    const externalPaid = paid.filter((o) => (o.source ?? "").toLowerCase() === "external");
+    const externalOrderSignatures = new Set(externalPaid.map((o) => orderSignature(o)));
     const startD = startOfPeriod(period);
     const externalInPeriod = externalSales.filter(
       (e) => (period === "all" || new Date(e.date) >= startD) && !externalOrderSignatures.has(orderSignature(e)),
     );
     const appPaid = paid.filter((o) => (o.source ?? "site").toLowerCase() !== "external");
     const ordersTotal = appPaid.reduce((s, o) => s + Number(o.total ?? 0), 0);
-    const externalTotal = externalInPeriod.reduce((s, e) => s + Number(e.value || 0), 0);
+    const externalTotal = externalPaid.reduce((s, o) => s + Number(o.total ?? 0), 0) + externalInPeriod.reduce((s, e) => s + Number(e.value || 0), 0);
     const total = ordersTotal + externalTotal;
     const appItemsQty = appPaid.reduce((s, o) => s + (o.items ?? []).reduce((n, i) => n + Number(i.quantity || 0), 0), 0);
-    const externalItemsQty = externalInPeriod.reduce((s, e) => s + (e.items ?? []).reduce((n, i) => n + Number(i.quantity || 0), 0), 0);
+    const externalItemsQty = externalPaid.reduce((s, o) => s + (o.items ?? []).reduce((n, i) => n + Number(i.quantity || 0), 0), 0) + externalInPeriod.reduce((s, e) => s + (e.items ?? []).reduce((n, i) => n + Number(i.quantity || 0), 0), 0);
     const delivered = paid.filter((o) => o.status === "entregue").reduce((s, o) => s + Number(o.total ?? 0), 0);
     const cancelled = filtered.filter((o) => o.status === "cancelado").reduce((s, o) => s + Number(o.total ?? 0), 0);
     const fromWhats = paid.filter((o) => (o.source ?? "").toLowerCase() === "whatsapp").reduce((s, o) => s + Number(o.total ?? 0), 0);
