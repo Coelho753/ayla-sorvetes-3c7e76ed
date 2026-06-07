@@ -104,22 +104,43 @@ export function CartFloat() {
   // categorias com itens (para mostrar barra de progresso)
   const categoriesWithItems = (Object.keys(pricing.counts) as WholesaleCategory[])
     .filter((c) => pricing.counts[c] > 0);
+  const promoCandidates = (Object.keys(pricing.counts) as WholesaleCategory[])
+    .filter((c) => pricing.counts[c] > 0)
+    .map((c) => ({ category: c, qty: pricing.counts[c], left: Math.max(0, WHOLESALE_THRESHOLD - pricing.counts[c]) }))
+    .sort((a, b) => a.left - b.left);
+  const promoLine = promoCandidates.length === 0
+    ? "Promoção por quantidade em potes, copos e picolés."
+    : promoCandidates.some((p) => p.left === 0)
+      ? "Promoção ativa no carrinho."
+      : `Faltam ${promoCandidates[0].left} ${promoCandidates[0].left === 1 ? "produto" : "produtos"} em ${CATEGORY_LABEL[promoCandidates[0].category]} para entrar em promoção.`;
 
   return (
     <>
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        aria-label={`Abrir carrinho (${count})`}
-        className="fixed bottom-24 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-button transition-transform hover:scale-110"
-      >
-        <ShoppingCart className="h-6 w-6" />
+      <div className="fixed bottom-24 right-4 z-50 flex max-w-[calc(100vw-2rem)] items-end gap-2 sm:right-6">
         {count > 0 && (
-          <span className="absolute -top-1 -right-1 flex h-6 min-w-6 items-center justify-center rounded-full bg-secondary px-1.5 text-xs font-bold text-secondary-foreground ring-2 ring-background">
-            {count}
-          </span>
+          <button
+            type="button"
+            onClick={() => setOpen(true)}
+            className="mb-1 min-w-0 max-w-56 rounded-2xl border border-primary/30 bg-card/95 px-3 py-2 text-left text-xs shadow-card backdrop-blur"
+          >
+            <span className="block font-bold text-foreground">{count} {count === 1 ? "produto" : "produtos"} no carrinho</span>
+            <span className="block text-muted-foreground">{promoLine}</span>
+          </button>
         )}
-      </button>
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          aria-label={`Abrir carrinho (${count})`}
+          className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-button transition-transform hover:scale-110"
+        >
+          <ShoppingCart className="h-6 w-6" />
+          {count > 0 && (
+            <span className="absolute -top-1 -right-1 flex h-6 min-w-6 items-center justify-center rounded-full bg-secondary px-1.5 text-xs font-bold text-secondary-foreground ring-2 ring-background">
+              {count}
+            </span>
+          )}
+        </button>
+      </div>
 
       {open && (
         <div className="fixed inset-0 z-[60]">

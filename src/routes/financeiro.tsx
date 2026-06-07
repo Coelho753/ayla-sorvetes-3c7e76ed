@@ -8,7 +8,7 @@ import { formatBRL } from "@/contexts/CartContext";
 import { toast } from "sonner";
 import { debitStock } from "@/lib/stock";
 
-export const Route = createFileRoute("/admin/financeiro")({
+export const Route = createFileRoute("/financeiro")({
   head: () => ({ meta: [{ title: "Financeiro — Admin Ayla" }] }),
   component: () => (<RequireAuth adminOnly><Financeiro /></RequireAuth>),
 });
@@ -19,12 +19,12 @@ type Order = {
   status: string;
   createdAt?: string;
   source?: string;
-  items?: Array<{ name: string; quantity: number; price?: number }>;
+  items?: Array<{ name: string; quantity: number; price?: number; category?: string }>;
 };
 
 type Period = "today" | "7d" | "30d" | "month" | "all";
 
-type ExternalSaleItem = { name: string; quantity: number; price: number };
+type ExternalSaleItem = { name: string; quantity: number; price: number; category?: ProductGroupKey };
 type ExternalSale = {
   id: string;
   date: string;
@@ -35,6 +35,8 @@ type ExternalSale = {
 };
 const EXT_KEY = "ayla.admin.external-sales";
 const TOP_OVERRIDE_KEY = "ayla.admin.top-products"; // map name -> { qty, revenue }
+const SUMMARY_OVERRIDE_KEY = "ayla.admin.finance-summary";
+const GROUP_OVERRIDE_KEY = "ayla.admin.group-products";
 
 function loadExternal(): ExternalSale[] {
   if (typeof window === "undefined") return [];
@@ -52,6 +54,22 @@ function saveTopOverrides(o: Record<string, { qty: number; revenue: number }>) {
   if (typeof window === "undefined") return;
   window.localStorage.setItem(TOP_OVERRIDE_KEY, JSON.stringify(o));
 }
+function loadSummaryOverrides(): Record<string, number> {
+  if (typeof window === "undefined") return {};
+  try { return JSON.parse(window.localStorage.getItem(SUMMARY_OVERRIDE_KEY) ?? "{}"); } catch { return {}; }
+}
+function saveSummaryOverrides(o: Record<string, number>) {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(SUMMARY_OVERRIDE_KEY, JSON.stringify(o));
+}
+function loadGroupOverrides(): Record<ProductGroupKey, Record<string, { qty: number; revenue: number }>> {
+  if (typeof window === "undefined") return { cup: {}, popsicle: {}, tub: {} };
+  try { return { cup: {}, popsicle: {}, tub: {}, ...JSON.parse(window.localStorage.getItem(GROUP_OVERRIDE_KEY) ?? "{}") }; } catch { return { cup: {}, popsicle: {}, tub: {} }; }
+}
+function saveGroupOverrides(o: Record<ProductGroupKey, Record<string, { qty: number; revenue: number }>>) {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(GROUP_OVERRIDE_KEY, JSON.stringify(o));
+}
 
 function startOfPeriod(p: Period): Date {
   const now = new Date();
@@ -60,6 +78,35 @@ function startOfPeriod(p: Period): Date {
   if (p === "30d") return new Date(now.getTime() - 30 * 86_400_000);
   if (p === "month") return new Date(now.getFullYear(), now.getMonth(), 1);
   return new Date(0);
+}
+
+const GROUP_LABEL: Record<ProductGroupKey, string> = {
+  cup: "Copos",
+  popsicle: "Picolés",
+  tub: "Potes",
+};
+type ProductGroupKey = "cup" | "popsicle" | "tub";
+
+function productGroup(category?: string, name?: string): ProductGroupKey | null {
+  const c = (category ?? "").toLowerCase();
+  if (["cup", "copo"].includes(c)) return "cup";
+  if (["tub", "pote"].includes(c)) return "tub";
+  if (c === "popsicle" || c === "picole" || c === "picolé" || c.startsWith("pic_")) return "popsicle";
+  const n = (name ?? "").toLowerCase();
+  if (n.includes("copo")) return "cup";
+  if (n.includes("pote")) return "tub";
+  if (n.includes("picol") || n.includes("pic ") || n.startsWith("pic")) return "popsicle";
+  return null;
+}
+
+function orderSignature(input: { createdAt?: string; date?: string; total?: number; value?: number; customerName?: string; items?: ExternalSaleItem[] | Order["items"] }) {
+  const date = (input.createdAt ?? input.date ?? "").slice(0, 10);
+  const total = Number(input.total ?? input.value ?? 0).toFixed(2);
+  const items = (input.items ?? [])
+    .map((i) => `${i.name.trim().toLowerCase()}:${Number(i.quantity) || 0}:${Number(i.price ?? 0).toFixed(2)}`)
+    .sort()
+    .join("|");
+  return `${date}|${total}|${(input.customerName ?? "").trim().toLowerCase()}|${items}`;
 }
 
 function Financeiro() {
@@ -73,6 +120,8 @@ function Financeiro() {
   const [saving, setSaving] = useState(false);
   const [externalSales, setExternalSales] = useState<ExternalSale[]>(() => loadExternal());
   const [topOverrides, setTopOverrides] = useState<Record<string, { qty: number; revenue: number }>>(() => loadTopOverrides());
+  const [summaryOverrides, setSummaryOverrides] = useState<Record<string, number>>(() => loadSummaryOverrides());
+  const [groupOverrides, setGroupOverrides] = useState<Record<ProductGroupKey, Record<string, { qty: number; revenue: number }>>>(() => loadGroupOverrides());
 
   useEffect(() => {
     (async () => {
@@ -101,11 +150,18 @@ function Financeiro() {
     // Só consideramos vendas confirmadas (pagas em diante).
     const CONFIRMED = new Set(["pago", "separando", "saiu_para_entrega", "entregue", "preparando", "enviado"]);
     const paid = filtered.filter((o) => CONFIRMED.has((o.status ?? "").toLowerCase()));
-    const ordersTotal = paid.reduce((s, o) => s + Number(o.total ?? 0), 0);
+    const externalPaid = paid.filter((o) => (o.source ?? "").toLowerCase() === "external");
+    const externalOrderSignatures = new Set(externalPaid.map((o) => orderSignature(o)));
     const startD = startOfPeriod(period);
-    const externalInPeriod = externalSales.filter((e) => period === "all" || new Date(e.date) >= startD);
-    const externalTotal = externalInPeriod.reduce((s, e) => s + Number(e.value || 0), 0);
+    const externalInPeriod = externalSales.filter(
+      (e) => (period === "all" || new Date(e.date) >= startD) && !externalOrderSignatures.has(orderSignature(e)),
+    );
+    const appPaid = paid.filter((o) => (o.source ?? "site").toLowerCase() !== "external");
+    const ordersTotal = appPaid.reduce((s, o) => s + Number(o.total ?? 0), 0);
+    const externalTotal = externalPaid.reduce((s, o) => s + Number(o.total ?? 0), 0) + externalInPeriod.reduce((s, e) => s + Number(e.value || 0), 0);
     const total = ordersTotal + externalTotal;
+    const appItemsQty = appPaid.reduce((s, o) => s + (o.items ?? []).reduce((n, i) => n + Number(i.quantity || 0), 0), 0);
+    const externalItemsQty = externalPaid.reduce((s, o) => s + (o.items ?? []).reduce((n, i) => n + Number(i.quantity || 0), 0), 0) + externalInPeriod.reduce((s, e) => s + (e.items ?? []).reduce((n, i) => n + Number(i.quantity || 0), 0), 0);
     const delivered = paid.filter((o) => o.status === "entregue").reduce((s, o) => s + Number(o.total ?? 0), 0);
     const cancelled = filtered.filter((o) => o.status === "cancelado").reduce((s, o) => s + Number(o.total ?? 0), 0);
     const fromWhats = paid.filter((o) => (o.source ?? "").toLowerCase() === "whatsapp").reduce((s, o) => s + Number(o.total ?? 0), 0);
@@ -131,13 +187,36 @@ function Financeiro() {
       productCount[k].qty += i.quantity;
       productCount[k].revenue += (i.price ?? 0) * i.quantity;
     }));
+    externalInPeriod.forEach((e) => e.items?.forEach((i) => {
+      const k = i.name;
+      if (!productCount[k]) productCount[k] = { qty: 0, revenue: 0 };
+      productCount[k].qty += i.quantity;
+      productCount[k].revenue += i.price * i.quantity;
+    }));
     // merge overrides locais
     const merged: Record<string, { qty: number; revenue: number }> = { ...productCount };
     for (const [name, v] of Object.entries(topOverrides)) merged[name] = v;
     const top = Object.entries(merged).sort((a, b) => b[1].revenue - a[1].revenue).slice(0, 12);
 
-    return { total, ordersTotal, externalTotal, delivered, cancelled, fromWhats, ticket, count: paid.length, series, top };
-  }, [filtered, externalSales, period, topOverrides]);
+    const groupCount: Record<ProductGroupKey, Record<string, { qty: number; revenue: number }>> = { cup: {}, popsicle: {}, tub: {} };
+    const addGrouped = (i: { name: string; quantity: number; price?: number; category?: string }) => {
+      const group = productGroup(i.category, i.name);
+      if (!group) return;
+      if (!groupCount[group][i.name]) groupCount[group][i.name] = { qty: 0, revenue: 0 };
+      groupCount[group][i.name].qty += Number(i.quantity || 0);
+      groupCount[group][i.name].revenue += Number(i.price || 0) * Number(i.quantity || 0);
+    };
+    paid.forEach((o) => o.items?.forEach(addGrouped));
+    externalInPeriod.forEach((e) => e.items?.forEach(addGrouped));
+    const byGroup = Object.fromEntries(
+      (Object.keys(groupCount) as ProductGroupKey[]).map((g) => {
+        const merged = { ...groupCount[g], ...(groupOverrides[g] ?? {}) };
+        return [g, Object.entries(merged).sort((a, b) => b[1].qty - a[1].qty).slice(0, 8)];
+      }),
+    ) as Record<ProductGroupKey, [string, { qty: number; revenue: number }][]>;
+
+    return { total, ordersTotal, externalTotal, appItemsQty, externalItemsQty, delivered, cancelled, fromWhats, ticket, count: paid.length, series, top, byGroup };
+  }, [filtered, externalSales, period, topOverrides, groupOverrides]);
 
   function exportCsv() {
     const rows = [
@@ -218,11 +297,13 @@ function Financeiro() {
         ))}
       </div>
 
-      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Stat icon={<TrendingUp className="h-5 w-5" />} title="Receita do período" value={formatBRL(stats.total)} />
-        <Stat icon={<ShoppingBag className="h-5 w-5" />} title="Pedidos confirmados" value={String(stats.count)} sub={`Ticket: ${formatBRL(stats.ticket)}`} />
-        <Stat icon={<Receipt className="h-5 w-5" />} title="Entregues" value={formatBRL(stats.delivered)} sub={`Cancelado: ${formatBRL(stats.cancelled)}`} />
-        <Stat icon={<MessageCircle className="h-5 w-5" />} title="Via WhatsApp" value={formatBRL(stats.fromWhats)} />
+      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <EditableStat icon={<TrendingUp className="h-5 w-5" />} title="Receita total" storageKey="total" computed={stats.total} kind="currency" overrides={summaryOverrides} onChange={(o) => { setSummaryOverrides(o); saveSummaryOverrides(o); }} />
+        <EditableStat icon={<Receipt className="h-5 w-5" />} title="Arrecadado pelo app" storageKey="ordersTotal" computed={stats.ordersTotal} kind="currency" overrides={summaryOverrides} onChange={(o) => { setSummaryOverrides(o); saveSummaryOverrides(o); }} />
+        <EditableStat icon={<MessageCircle className="h-5 w-5" />} title="Vendas por fora" storageKey="externalTotal" computed={stats.externalTotal} kind="currency" overrides={summaryOverrides} onChange={(o) => { setSummaryOverrides(o); saveSummaryOverrides(o); }} />
+        <EditableStat icon={<ShoppingBag className="h-5 w-5" />} title="Produtos vendidos no app" storageKey="appItemsQty" computed={stats.appItemsQty} kind="int" overrides={summaryOverrides} onChange={(o) => { setSummaryOverrides(o); saveSummaryOverrides(o); }} />
+        <EditableStat icon={<ShoppingBag className="h-5 w-5" />} title="Produtos vendidos por fora" storageKey="externalItemsQty" computed={stats.externalItemsQty} kind="int" overrides={summaryOverrides} onChange={(o) => { setSummaryOverrides(o); saveSummaryOverrides(o); }} />
+        <EditableStat icon={<Receipt className="h-5 w-5" />} title="Pedidos confirmados" storageKey="count" computed={stats.count} kind="int" sub={`Ticket: ${formatBRL(stats.ticket)}`} overrides={summaryOverrides} onChange={(o) => { setSummaryOverrides(o); saveSummaryOverrides(o); }} />
       </div>
 
       <section className="mt-6 rounded-xl border border-border p-5">
@@ -252,6 +333,14 @@ function Financeiro() {
           rows={stats.top}
           overrides={topOverrides}
           onChange={(o) => { setTopOverrides(o); saveTopOverrides(o); }}
+        />
+      </section>
+
+      <section className="mt-6 rounded-xl border border-border p-5">
+        <GroupedProductsEditable
+          rows={stats.byGroup}
+          overrides={groupOverrides}
+          onChange={(o) => { setGroupOverrides(o); saveGroupOverrides(o); }}
         />
       </section>
 
@@ -338,12 +427,82 @@ function Financeiro() {
   );
 }
 
-function Stat({ icon, title, value, sub }: { icon: React.ReactNode; title: string; value: string; sub?: string }) {
+function EditableStat({
+  icon,
+  title,
+  storageKey,
+  computed,
+  kind,
+  sub,
+  overrides,
+  onChange,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  storageKey: string;
+  computed: number;
+  kind: "currency" | "int";
+  sub?: string;
+  overrides: Record<string, number>;
+  onChange: (o: Record<string, number>) => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState("");
+  const override = overrides[storageKey];
+  const value = override ?? computed;
+  const formatted = kind === "currency" ? formatBRL(value) : String(Math.round(value));
+
+  function start() {
+    setDraft(String(kind === "currency" ? value.toFixed(2) : Math.round(value)));
+    setEditing(true);
+  }
+  function save() {
+    const n = Number(String(draft).replace(",", "."));
+    if (!Number.isFinite(n) || n < 0) { toast.error("Valor inválido"); return; }
+    onChange({ ...overrides, [storageKey]: n });
+    setEditing(false);
+    toast.success("Valor atualizado");
+  }
+  function reset() {
+    const next = { ...overrides };
+    delete next[storageKey];
+    onChange(next);
+    setEditing(false);
+  }
+
   return (
     <div className="rounded-xl border border-border bg-card p-5">
-      <div className="flex items-center gap-2 text-muted-foreground">{icon}<p className="text-sm">{title}</p></div>
-      <p className="mt-2 font-display text-2xl font-bold">{value}</p>
+      <div className="flex items-start justify-between gap-2">
+        <div className="flex items-center gap-2 text-muted-foreground">{icon}<p className="text-sm">{title}</p></div>
+        <div className="flex gap-1">
+          {override !== undefined && (
+            <button onClick={reset} className="rounded-md p-1 text-muted-foreground hover:bg-muted" aria-label="Restaurar automático" title="Restaurar automático">
+              <RotateCcw className="h-3.5 w-3.5" />
+            </button>
+          )}
+          <button onClick={start} className="rounded-md p-1 text-muted-foreground hover:bg-muted" aria-label={`Editar ${title}`}>
+            <Pencil className="h-3.5 w-3.5" />
+          </button>
+        </div>
+      </div>
+      {editing ? (
+        <div className="mt-2 flex gap-1">
+          <input
+            autoFocus
+            inputMode="decimal"
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter") save(); if (e.key === "Escape") setEditing(false); }}
+            className="min-w-0 flex-1 rounded-md border border-input bg-background px-2 py-1 font-display text-xl font-bold outline-none focus:ring-2 focus:ring-primary"
+          />
+          <button onClick={save} className="rounded-md bg-primary p-2 text-primary-foreground" aria-label="Salvar"><Save className="h-4 w-4" /></button>
+          <button onClick={() => setEditing(false)} className="rounded-md border border-border p-2" aria-label="Cancelar"><X className="h-4 w-4" /></button>
+        </div>
+      ) : (
+        <p className="mt-2 font-display text-2xl font-bold">{formatted}</p>
+      )}
       {sub && <p className="mt-1 text-xs text-muted-foreground">{sub}</p>}
+      {override !== undefined && !editing && <p className="mt-1 text-[10px] uppercase tracking-wide text-primary">Manual</p>}
     </div>
   );
 }
@@ -430,17 +589,107 @@ function TopProductsEditable({
   );
 }
 
+function GroupedProductsEditable({
+  rows,
+  overrides,
+  onChange,
+}: {
+  rows: Record<ProductGroupKey, [string, { qty: number; revenue: number }][]>;
+  overrides: Record<ProductGroupKey, Record<string, { qty: number; revenue: number }>>;
+  onChange: (o: Record<ProductGroupKey, Record<string, { qty: number; revenue: number }>>) => void;
+}) {
+  const [editKey, setEditKey] = useState<string | null>(null);
+  const [qty, setQty] = useState("");
+  const [rev, setRev] = useState("");
+  const [newNames, setNewNames] = useState<Record<string, string>>({});
+  const keyFor = (group: ProductGroupKey, name: string) => `${group}::${name}`;
+
+  function start(group: ProductGroupKey, name: string, v: { qty: number; revenue: number }) {
+    setEditKey(keyFor(group, name));
+    setQty(String(v.qty));
+    setRev(String(v.revenue.toFixed(2)));
+  }
+  function save(group: ProductGroupKey, name: string) {
+    const q = Number(qty); const r = Number(String(rev).replace(",", "."));
+    if (!Number.isFinite(q) || !Number.isFinite(r) || q < 0 || r < 0) { toast.error("Valor inválido"); return; }
+    onChange({ ...overrides, [group]: { ...(overrides[group] ?? {}), [name]: { qty: q, revenue: r } } });
+    setEditKey(null);
+    toast.success("Atualizado");
+  }
+  function resetOne(group: ProductGroupKey, name: string) {
+    const nextGroup = { ...(overrides[group] ?? {}) };
+    delete nextGroup[name];
+    onChange({ ...overrides, [group]: nextGroup });
+  }
+  function addNew(group: ProductGroupKey) {
+    const name = (newNames[group] ?? "").trim();
+    if (!name) return;
+    onChange({ ...overrides, [group]: { ...(overrides[group] ?? {}), [name]: { qty: 0, revenue: 0 } } });
+    setNewNames({ ...newNames, [group]: "" });
+    start(group, name, { qty: 0, revenue: 0 });
+  }
+
+  return (
+    <>
+      <h3 className="font-display text-lg font-bold">Mais pedidos por tipo (editável)</h3>
+      <div className="mt-4 grid gap-4 md:grid-cols-3">
+        {(Object.keys(GROUP_LABEL) as ProductGroupKey[]).map((group) => (
+          <div key={group} className="rounded-lg border border-border bg-card p-3">
+            <h4 className="font-display font-bold">{GROUP_LABEL[group]}</h4>
+            <div className="mt-2 flex gap-1">
+              <input value={newNames[group] ?? ""} onChange={(e) => setNewNames({ ...newNames, [group]: e.target.value })} placeholder="Adicionar produto" className="min-w-0 flex-1 rounded-md border border-input bg-background px-2 py-1 text-xs" />
+              <button onClick={() => addNew(group)} className="rounded-md bg-primary px-2 text-xs font-bold text-primary-foreground"><Plus className="h-3 w-3" /></button>
+            </div>
+            {rows[group].length === 0 ? (
+              <p className="mt-2 text-sm text-muted-foreground">Sem dados.</p>
+            ) : (
+              <ul className="mt-3 space-y-2 text-sm">
+                {rows[group].map(([name, v]) => {
+                  const editing = editKey === keyFor(group, name);
+                  const overridden = name in (overrides[group] ?? {});
+                  return (
+                    <li key={name} className="border-t border-border pt-2 first:border-t-0 first:pt-0">
+                      <div className="flex items-start justify-between gap-2">
+                        <span>{name} {overridden && <small className="text-primary">manual</small>}</span>
+                        {!editing && <button onClick={() => start(group, name, v)} className="rounded-md border border-border p-1"><Pencil className="h-3 w-3" /></button>}
+                      </div>
+                      {editing ? (
+                        <div className="mt-2 grid grid-cols-[1fr_1fr_auto_auto] gap-1">
+                          <input value={qty} onChange={(e) => setQty(e.target.value)} className="rounded-md border border-input bg-background px-2 py-1 text-xs" />
+                          <input value={rev} onChange={(e) => setRev(e.target.value)} className="rounded-md border border-input bg-background px-2 py-1 text-xs" />
+                          <button onClick={() => save(group, name)} className="rounded-md bg-primary p-1 text-primary-foreground"><Save className="h-3 w-3" /></button>
+                          <button onClick={() => setEditKey(null)} className="rounded-md border border-border p-1"><X className="h-3 w-3" /></button>
+                        </div>
+                      ) : (
+                        <div className="mt-1 flex items-end justify-between gap-2 text-xs text-muted-foreground">
+                          <span>{v.qty} unidades</span>
+                          <span className="font-semibold text-foreground">{formatBRL(v.revenue)}</span>
+                          {overridden && <button onClick={() => resetOne(group, name)} className="rounded-md border border-border p-1" title="Restaurar automático"><RotateCcw className="h-3 w-3" /></button>}
+                        </div>
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </div>
+        ))}
+      </div>
+    </>
+  );
+}
+
 function ExternalSalesPanel({
   list, onChange, totalInPeriod,
 }: { list: ExternalSale[]; onChange: (l: ExternalSale[]) => void; totalInPeriod: number }) {
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [customer, setCustomer] = useState("");
   const [desc, setDesc] = useState("");
-  const [items, setItems] = useState<ExternalSaleItem[]>([{ name: "", quantity: 1, price: 0 }]);
+  const [items, setItems] = useState<ExternalSaleItem[]>([{ name: "", quantity: 1, price: 0, category: "popsicle" }]);
 
   const itemsTotal = items.reduce((s, it) => s + (Number(it.price) || 0) * (Number(it.quantity) || 0), 0);
 
-  function addItem() { setItems((cur) => [...cur, { name: "", quantity: 1, price: 0 }]); }
+  function addItem() { setItems((cur) => [...cur, { name: "", quantity: 1, price: 0, category: "popsicle" }]); }
   function updateItem(idx: number, patch: Partial<ExternalSaleItem>) {
     setItems((cur) => cur.map((it, i) => (i === idx ? { ...it, ...patch } : it)));
   }
@@ -475,7 +724,7 @@ function ExternalSalesPanel({
       total,
       createdAt: new Date(date).toISOString(),
     }).catch(() => { /* silencioso — fica salvo localmente */ });
-    setDesc(""); setCustomer(""); setItems([{ name: "", quantity: 1, price: 0 }]);
+    setDesc(""); setCustomer(""); setItems([{ name: "", quantity: 1, price: 0, category: "popsicle" }]);
     toast.success("Pedido externo cadastrado.");
   }
   function remove(id: string) { onChange(list.filter((x) => x.id !== id)); }
@@ -497,8 +746,13 @@ function ExternalSalesPanel({
 
         <div className="mt-3 space-y-2">
           {items.map((it, idx) => (
-            <div key={idx} className="grid gap-2 sm:grid-cols-[1fr_90px_120px_auto]">
+            <div key={idx} className="grid gap-2 sm:grid-cols-[1fr_120px_80px_110px_auto]">
               <input placeholder="Produto" value={it.name} onChange={(e) => updateItem(idx, { name: e.target.value })} className="rounded-md border border-input bg-background px-2 py-2 text-sm" />
+              <select value={it.category ?? "popsicle"} onChange={(e) => updateItem(idx, { category: e.target.value as ProductGroupKey })} className="rounded-md border border-input bg-background px-2 py-2 text-sm">
+                <option value="popsicle">Picolé</option>
+                <option value="cup">Copo</option>
+                <option value="tub">Pote</option>
+              </select>
               <input placeholder="Qtd" type="number" min={1} value={it.quantity} onChange={(e) => updateItem(idx, { quantity: Number(e.target.value) || 0 })} className="rounded-md border border-input bg-background px-2 py-2 text-sm" />
               <input placeholder="Preço un." inputMode="decimal" value={String(it.price)} onChange={(e) => updateItem(idx, { price: Number(String(e.target.value).replace(",", ".")) || 0 })} className="rounded-md border border-input bg-background px-2 py-2 text-sm" />
               <button type="button" onClick={() => removeItem(idx)} disabled={items.length === 1} className="rounded-md border border-border p-2 text-destructive disabled:opacity-30"><Trash2 className="h-4 w-4" /></button>
