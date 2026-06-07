@@ -597,11 +597,11 @@ function ExternalSalesPanel({
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [customer, setCustomer] = useState("");
   const [desc, setDesc] = useState("");
-  const [items, setItems] = useState<ExternalSaleItem[]>([{ name: "", quantity: 1, price: 0 }]);
+  const [items, setItems] = useState<ExternalSaleItem[]>([{ name: "", quantity: 1, price: 0, category: "popsicle" }]);
 
   const itemsTotal = items.reduce((s, it) => s + (Number(it.price) || 0) * (Number(it.quantity) || 0), 0);
 
-  function addItem() { setItems((cur) => [...cur, { name: "", quantity: 1, price: 0 }]); }
+  function addItem() { setItems((cur) => [...cur, { name: "", quantity: 1, price: 0, category: "popsicle" }]); }
   function updateItem(idx: number, patch: Partial<ExternalSaleItem>) {
     setItems((cur) => cur.map((it, i) => (i === idx ? { ...it, ...patch } : it)));
   }
@@ -636,7 +636,7 @@ function ExternalSalesPanel({
       total,
       createdAt: new Date(date).toISOString(),
     }).catch(() => { /* silencioso — fica salvo localmente */ });
-    setDesc(""); setCustomer(""); setItems([{ name: "", quantity: 1, price: 0 }]);
+    setDesc(""); setCustomer(""); setItems([{ name: "", quantity: 1, price: 0, category: "popsicle" }]);
     toast.success("Pedido externo cadastrado.");
   }
   function remove(id: string) { onChange(list.filter((x) => x.id !== id)); }
@@ -658,8 +658,13 @@ function ExternalSalesPanel({
 
         <div className="mt-3 space-y-2">
           {items.map((it, idx) => (
-            <div key={idx} className="grid gap-2 sm:grid-cols-[1fr_90px_120px_auto]">
+            <div key={idx} className="grid gap-2 sm:grid-cols-[1fr_120px_80px_110px_auto]">
               <input placeholder="Produto" value={it.name} onChange={(e) => updateItem(idx, { name: e.target.value })} className="rounded-md border border-input bg-background px-2 py-2 text-sm" />
+              <select value={it.category ?? "popsicle"} onChange={(e) => updateItem(idx, { category: e.target.value as ProductGroupKey })} className="rounded-md border border-input bg-background px-2 py-2 text-sm">
+                <option value="popsicle">Picolé</option>
+                <option value="cup">Copo</option>
+                <option value="tub">Pote</option>
+              </select>
               <input placeholder="Qtd" type="number" min={1} value={it.quantity} onChange={(e) => updateItem(idx, { quantity: Number(e.target.value) || 0 })} className="rounded-md border border-input bg-background px-2 py-2 text-sm" />
               <input placeholder="Preço un." inputMode="decimal" value={String(it.price)} onChange={(e) => updateItem(idx, { price: Number(String(e.target.value).replace(",", ".")) || 0 })} className="rounded-md border border-input bg-background px-2 py-2 text-sm" />
               <button type="button" onClick={() => removeItem(idx)} disabled={items.length === 1} className="rounded-md border border-border p-2 text-destructive disabled:opacity-30"><Trash2 className="h-4 w-4" /></button>
