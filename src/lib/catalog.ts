@@ -50,11 +50,14 @@ import popsicle3dBrigadeiro from "@/assets/popsicle-3d-brigadeiro.jpg";
 import acai1L from "@/assets/acai-1l.webp";
 import acai5L from "@/assets/acai-5l.webp";
 
-export const TUB_PRICE = 35.0;
-export const CUP_PRICE = 12.0;
-export const POPSICLE_PRICE = 7.0;
-export const POPSICLE_PREMIUM_PRICE = 9.0;
-export const POPSICLE_SKI_PRICE = 8.0;
+// Preços oficiais (fallback local). Backend pode sobrescrever via /products.
+export const TUB_PRICE = 14.0;           // Pote 1,5L
+export const CUP_PRICE = 5.0;            // Copo 300ml
+export const POPSICLE_AGUA_PRICE = 1.5;  // Base água
+export const POPSICLE_LEITE_PRICE = 2.0; // Base leite
+export const POPSICLE_PRICE = POPSICLE_AGUA_PRICE; // legado (default = água)
+export const POPSICLE_PREMIUM_PRICE = 5.0; // Brigadeiro, Leitinho, Torta de limão
+export const POPSICLE_SKI_PRICE = 4.0;     // Ski / Skimo / Tentação
 
 // Sub-categorias de picolé conforme padronizadas pelo cliente.
 export type PopsicleSub = "agua" | "leite" | "premium" | "ski";
@@ -109,7 +112,7 @@ export const popsicles = [
   { name: "Chiclete", desc: "Sabor divertido de chiclete colorido.", img: popsicle3dChiclete },
   { name: "Groselha", desc: "Sabor clássico e marcante de groselha.", img: popsicle3dGroselha },
   { name: "Chocolate", desc: "Chocolate intenso e cremoso em picolé.", img: popsicle3dChocolate },
-].map((p) => ({ ...p, price: POPSICLE_PRICE }));
+].map((p) => ({ ...p, price: POPSICLE_AGUA_PRICE }));
 
 // Sub-coleções de picolé conforme cardápio oficial. Cada item aparece em
 // APENAS um carrossel — não há duplicação cruzada.
@@ -120,14 +123,14 @@ export const popsiclesAgua = [
   { name: "Uva", desc: "Doce e refrescante de uva.", img: popsicle3dGroselha },
   { name: "Abacaxi", desc: "Tropical na medida certa.", img: popsicle3dAbacaxi },
   { name: "Pinta Língua", desc: "Diversão colorida que pinta a língua.", img: popsicle3dChiclete },
-].map((p) => ({ ...p, price: POPSICLE_PRICE, sub: "agua" as PopsicleSub }));
+].map((p) => ({ ...p, price: POPSICLE_AGUA_PRICE, sub: "agua" as PopsicleSub }));
 
 export const popsiclesLeite = [
   { name: "Limão Suíço", desc: "Cremoso e cítrico.", img: popsicle3dLimaoSuico },
   { name: "Morango", desc: "Morango com leite, irresistível.", img: popsicle3dMorango },
   { name: "Abacaxi ao Vinho", desc: "Tropical com toque sofisticado.", img: popsicle3dAbacaxiVinho },
   { name: "Milho Verde", desc: "Sabor caseiro de milho verde.", img: popsicle3dMilho },
-].map((p) => ({ ...p, price: POPSICLE_PRICE, sub: "leite" as PopsicleSub }));
+].map((p) => ({ ...p, price: POPSICLE_LEITE_PRICE, sub: "leite" as PopsicleSub }));
 
 export const popsiclesPremium = [
   { name: "Leitinho", desc: "Cremoso de leite condensado.", img: popsicle3dLeitinho },
@@ -142,10 +145,10 @@ export const popsiclesSki = [
 ].map((p) => ({ ...p, price: POPSICLE_SKI_PRICE, sub: "ski" as PopsicleSub }));
 
 export const acaiProducts = [
-  { name: "Açaí Premium 1L", desc: "Pote com guaraná e frutos vermelhos.", img: acai1L, size: "1L", price: 45.0 },
-  { name: "Açaí Premium 5L", desc: "Caixa família para festas e eventos.", img: acai5L, size: "5L", price: 180.0 },
-  { name: "Copo de Açaí", desc: "Açaí cremoso individual com toque tropical.", img: cupAcai, size: "300ml", price: 15.0 },
-  { name: "Picolé de Açaí", desc: "Intenso e cremoso, direto da Amazônia.", img: popsicleAcai, size: "Picolé", price: 8.0 },
+  { name: "Açaí Premium 1L", desc: "Pote com guaraná e frutos vermelhos.", img: acai1L, size: "1L", price: 18.0 },
+  { name: "Açaí Premium 5L", desc: "Caixa família para festas e eventos.", img: acai5L, size: "5L", price: 80.0 },
+  { name: "Copo de Açaí", desc: "Açaí cremoso individual com toque tropical.", img: cupAcai, size: "300ml", price: 8.0 },
+  { name: "Picolé de Açaí", desc: "Intenso e cremoso, direto da Amazônia.", img: popsicleAcai, size: "Picolé", price: 2.0 },
 ];
 
 export type CategoryKey = "tub" | "cup" | "popsicle" | "acai";
