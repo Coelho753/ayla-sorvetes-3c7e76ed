@@ -1,5 +1,5 @@
 // Servidor estático mínimo para hospedagem no Render (Node runtime).
-// Serve o build do Vite (dist/client) e faz fallback SPA para index.html.
+// O build deve rodar no Build Command; o start apenas abre a porta e serve dist/client.
 import http from "node:http";
 import fs from "node:fs";
 import path from "node:path";
@@ -8,6 +8,7 @@ import { fileURLToPath } from "node:url";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(__dirname, "dist", "client");
 const PORT = Number(process.env.PORT) || 10000;
+const INDEX = path.join(ROOT, "index.html");
 
 const MIME = {
   ".html": "text/html; charset=utf-8",
@@ -54,20 +55,30 @@ function serveFile(filePath, res) {
     .pipe(res);
 }
 
+function buildMissingMessage() {
+  return [
+    "Build não encontrado.",
+    "Configure o Build Command do Render como: npm install && npm run build",
+    "Configure o Start Command como: npm start",
+  ].join("\n");
+}
+
 const server = http.createServer((req, res) => {
   try {
     const url = new URL(req.url, "http://localhost");
-    if (url.pathname === "/health") return send(res, 200, { "Content-Type": "application/json" }, '{"ok":true}');
+    if (url.pathname === "/health") {
+      const built = fs.existsSync(INDEX);
+      return send(res, built ? 200 : 503, { "Content-Type": "application/json" }, JSON.stringify({ ok: built }));
+    }
     const rel = decodeURIComponent(url.pathname);
     const filePath = safeJoin(ROOT, rel);
     if (!filePath) return send(res, 400, {}, "Bad request");
     fs.stat(filePath, (err, stat) => {
       if (!err && stat.isFile()) return serveFile(filePath, res);
       // SPA fallback
-      const indexPath = path.join(ROOT, "index.html");
-      fs.stat(indexPath, (e2, s2) => {
-        if (e2 || !s2.isFile()) return send(res, 404, { "Content-Type": "text/plain" }, "Not built. Run `npm run build`.");
-        serveFile(indexPath, res);
+      fs.stat(INDEX, (e2, s2) => {
+        if (e2 || !s2.isFile()) return send(res, 503, { "Content-Type": "text/plain; charset=utf-8" }, buildMissingMessage());
+        serveFile(INDEX, res);
       });
     });
   } catch {
