@@ -984,14 +984,40 @@ function WholesaleAdmin() {
 // ============================================================
 
 function CarouselsAdmin() {
+  const [remote, setRemote] = useState<Awaited<ReturnType<typeof import("@/lib/products").fetchProducts>>>(null);
+  useEffect(() => {
+    import("@/lib/products").then(({ fetchProducts }) => fetchProducts().then(setRemote));
+  }, []);
+  const groups = useMemo(() => {
+    const empty = { tub: [], cup: [], popsiclesAgua: [], popsiclesLeite: [], popsiclesPremium: [], popsiclesSki: [], acai: [] } as Record<string, { name: string; price: number; img?: string; desc?: string; size?: string }[]>;
+    if (!remote) return empty;
+    const toItem = (p: { name: string; price: number | string; image?: string; imageUrl?: string; description?: string; size?: string }) => ({
+      name: p.name,
+      price: Number(p.price) || 0,
+      img: p.image ?? p.imageUrl,
+      desc: p.description,
+      size: p.size,
+    });
+    for (const p of remote) {
+      const c = (p.category ?? "").toString().toLowerCase();
+      if (c === "tub" || c === "pote") empty.tub.push(toItem(p));
+      else if (c === "cup" || c === "copo") empty.cup.push(toItem(p));
+      else if (c === "pic_agua") empty.popsiclesAgua.push(toItem(p));
+      else if (c === "pic_leite") empty.popsiclesLeite.push(toItem(p));
+      else if (c === "pic_premium") empty.popsiclesPremium.push(toItem(p));
+      else if (c === "pic_ski") empty.popsiclesSki.push(toItem(p));
+      else if (c === "acai" || c === "açaí") empty.acai.push(toItem(p));
+    }
+    return empty;
+  }, [remote]);
   const carousels: { key: CarouselKey; base: { name: string; price: number; img?: string; desc?: string; size?: string }[] }[] = [
-    { key: "tubs", base: tubs },
-    { key: "cups", base: cups },
-    { key: "popsiclesAgua", base: popsiclesAgua },
-    { key: "popsiclesLeite", base: popsiclesLeite },
-    { key: "popsiclesPremium", base: popsiclesPremium },
-    { key: "popsiclesSki", base: popsiclesSki },
-    { key: "acai", base: acaiProducts as { name: string; price: number; img?: string; desc?: string; size?: string }[] },
+    { key: "tubs", base: groups.tub },
+    { key: "cups", base: groups.cup },
+    { key: "popsiclesAgua", base: groups.popsiclesAgua },
+    { key: "popsiclesLeite", base: groups.popsiclesLeite },
+    { key: "popsiclesPremium", base: groups.popsiclesPremium },
+    { key: "popsiclesSki", base: groups.popsiclesSki },
+    { key: "acai", base: groups.acai },
   ];
   const [selected, setSelected] = useState<CarouselKey>("tubs");
   const current = carousels.find((c) => c.key === selected)!;
