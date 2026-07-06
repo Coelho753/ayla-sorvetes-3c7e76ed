@@ -20,19 +20,7 @@ import { useReveal } from "@/hooks/use-reveal";
 import { useImagePreload } from "@/hooks/use-image-preload";
 import { fetchProducts, groupByCategory, imgOf, type ApiProduct } from "@/lib/products";
 import { useState } from "react";
-import {
-  tubs,
-  cups,
-  popsicles,
-  acaiProducts,
-  TUB_PRICE,
-  CUP_PRICE,
-  popsiclesAgua,
-  popsiclesLeite,
-  popsiclesPremium,
-  popsiclesSki,
-  POPSICLE_SUB_LABEL,
-} from "@/lib/catalog";
+import { TUB_PRICE, CUP_PRICE, POPSICLE_SUB_LABEL } from "@/lib/catalog";
 import { applyOverrides, loadOverrides } from "@/lib/carousel-overrides";
 
 export const Route = createFileRoute("/")({
@@ -58,17 +46,9 @@ function Index() {
   const autoplayPopsSki = useRef(Autoplay({ delay: 3600, stopOnInteraction: false, stopOnMouseEnter: true }));
   const autoplayAcai = useRef(Autoplay({ delay: 4000, stopOnInteraction: false, stopOnMouseEnter: true }));
 
-  // Pré-carrega TODAS as imagens dos cards/banners e mantém em cache
-  useImagePreload([
-    ...tubs.map((t) => t.img),
-    ...cups.map((c) => c.img),
-    ...popsicles.map((p) => p.img),
-    ...acaiProducts.map((a) => a.img),
-    floatPopsicle, floatScoop, mascot,
-  ]);
+  useImagePreload([floatPopsicle, floatScoop, mascot]);
 
-  // Tenta carregar produtos do backend; se falhar, usa fallback local
-  const [remote, setRemote] = useState<{ tub: ApiProduct[]; cup: ApiProduct[]; popsicle: ApiProduct[]; acai: ApiProduct[] } | null>(null);
+  const [remote, setRemote] = useState<ReturnType<typeof groupByCategory> | null>(null);
   useEffect(() => {
     let alive = true;
     fetchProducts().then((list) => {
@@ -79,23 +59,28 @@ function Index() {
   }, []);
 
   const overrides = loadOverrides();
-  const tubsView = (remote?.tub.length
-    ? remote.tub.map((p) => ({ name: p.name, img: imgOf(p) ?? "", price: Number(p.price) || TUB_PRICE }))
-    : tubs);
-  const cupsView = (remote?.cup.length
-    ? remote.cup.map((p) => ({ name: p.name, img: imgOf(p) ?? "", price: Number(p.price) || CUP_PRICE, desc: p.description }))
-    : cups);
-  const acaiBase = (remote?.acai.length
-    ? remote.acai.map((p) => ({ name: p.name, img: imgOf(p) ?? "", price: Number(p.price) || 0, desc: p.description, size: p.size ?? "" }))
-    : acaiProducts);
+  const mapProd = (p: ApiProduct, defaultPrice = 0) => ({
+    name: p.name,
+    img: imgOf(p) ?? "",
+    price: Number(p.price) || defaultPrice,
+    desc: p.description,
+    size: p.size ?? "",
+  });
+  const tubsView = (remote?.tub ?? []).map((p) => mapProd(p, TUB_PRICE));
+  const cupsView = (remote?.cup ?? []).map((p) => mapProd(p, CUP_PRICE));
+  const acaiBase = (remote?.acai ?? []).map((p) => mapProd(p));
+  const popsAguaView = (remote?.popsiclesAgua ?? []).map((p) => mapProd(p, 1.5));
+  const popsLeiteView = (remote?.popsiclesLeite ?? []).map((p) => mapProd(p, 2));
+  const popsPremiumView = (remote?.popsiclesPremium ?? []).map((p) => mapProd(p, 5));
+  const popsSkiView = (remote?.popsiclesSki ?? []).map((p) => mapProd(p, 4));
 
   const tubsFinal = applyOverrides(tubsView, "tubs", overrides).map((t) => ({ ...t, category: "tub" }));
   const cupsFinal = applyOverrides(cupsView, "cups", overrides).map((c) => ({ ...c, category: "cup" }));
   const acaiFinal = applyOverrides(acaiBase, "acai", overrides).map((a) => ({ ...a, category: "acai" }));
-  const popsAguaFinal = applyOverrides(popsiclesAgua, "popsiclesAgua", overrides);
-  const popsLeiteFinal = applyOverrides(popsiclesLeite, "popsiclesLeite", overrides);
-  const popsPremiumFinal = applyOverrides(popsiclesPremium, "popsiclesPremium", overrides);
-  const popsSkiFinal = applyOverrides(popsiclesSki, "popsiclesSki", overrides);
+  const popsAguaFinal = applyOverrides(popsAguaView, "popsiclesAgua", overrides);
+  const popsLeiteFinal = applyOverrides(popsLeiteView, "popsiclesLeite", overrides);
+  const popsPremiumFinal = applyOverrides(popsPremiumView, "popsiclesPremium", overrides);
+  const popsSkiFinal = applyOverrides(popsSkiView, "popsiclesSki", overrides);
 
   useEffect(() => {
     document.title = "Ayla Sorvetes — Os sorvetes mais irresistíveis da sua região 🍦";
