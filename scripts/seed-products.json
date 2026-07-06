@@ -1,316 +1,438 @@
 [
   {
     "name": "Limão Suíço",
-    "price": 35,
-    "category": "tub",
+    "category": "pote",
+    "price": 14.0,
     "size": "1,5L",
+    "image": "/assets/tub-3d-limao-suico.jpg",
+    "stock": 0,
     "active": true
   },
   {
     "name": "Abacaxi ao Vinho",
-    "price": 35,
-    "category": "tub",
+    "category": "pote",
+    "price": 14.0,
     "size": "1,5L",
+    "image": "/assets/tub-3d-abacaxi-vinho.jpg",
+    "stock": 0,
     "active": true
   },
   {
     "name": "Abacaxi",
-    "price": 35,
-    "category": "tub",
+    "category": "pote",
+    "price": 14.0,
     "size": "1,5L",
+    "image": "/assets/tub-3d-abacaxi.jpg",
+    "stock": 0,
     "active": true
   },
   {
     "name": "Pistache",
-    "price": 35,
-    "category": "tub",
+    "category": "pote",
+    "price": 14.0,
     "size": "1,5L",
+    "image": "/assets/tub-3d-pistache.jpg",
+    "stock": 0,
     "active": true
   },
   {
     "name": "Doce de Leite",
-    "price": 35,
-    "category": "tub",
+    "category": "pote",
+    "price": 14.0,
     "size": "1,5L",
+    "image": "/assets/tub-3d-doce-leite.jpg",
+    "stock": 0,
     "active": true
   },
   {
     "name": "Napolitano",
-    "price": 35,
-    "category": "tub",
+    "category": "pote",
+    "price": 14.0,
     "size": "1,5L",
+    "image": "/assets/tub-3d-napolitano.jpg",
+    "stock": 0,
     "active": true
   },
   {
     "name": "Chocolate",
-    "price": 35,
-    "category": "tub",
+    "category": "pote",
+    "price": 14.0,
     "size": "1,5L",
+    "image": "/assets/tub-3d-chocolate.jpg",
+    "stock": 0,
     "active": true
   },
   {
     "name": "Morango",
-    "price": 35,
-    "category": "tub",
+    "category": "pote",
+    "price": 14.0,
     "size": "1,5L",
+    "image": "/assets/tub-3d-morango.jpg",
+    "stock": 0,
     "active": true
   },
   {
     "name": "Brigadeiro",
-    "price": 35,
-    "category": "tub",
+    "category": "pote",
+    "price": 14.0,
     "size": "1,5L",
+    "image": "/assets/tub-3d-brigadeiro.jpg",
+    "stock": 0,
     "active": true
   },
   {
     "name": "Coco",
-    "price": 35,
-    "category": "tub",
+    "category": "pote",
+    "price": 14.0,
     "size": "1,5L",
+    "image": "/assets/tub-3d-coco.jpg",
+    "stock": 0,
     "active": true
   },
   {
     "name": "Milho",
-    "price": 35,
-    "category": "tub",
+    "category": "pote",
+    "price": 14.0,
     "size": "1,5L",
+    "image": "/assets/tub-3d-milho.jpg",
+    "stock": 0,
     "active": true
   },
   {
     "name": "Iogurte Grego com Frutas Silvestres",
-    "price": 35,
-    "category": "tub",
+    "category": "pote",
+    "price": 14.0,
     "size": "1,5L",
+    "image": "/assets/tub-iogurte-grego.webp",
+    "stock": 0,
     "active": true
   },
   {
     "name": "Flocos",
-    "price": 35,
-    "category": "tub",
+    "category": "pote",
+    "price": 14.0,
     "size": "1,5L",
+    "image": "/assets/tub-flocos.webp",
+    "stock": 0,
     "active": true
   },
   {
     "name": "Ninho Trufado",
-    "price": 35,
-    "category": "tub",
+    "category": "pote",
+    "price": 14.0,
     "size": "1,5L",
+    "image": "/assets/tub-ninho-trufado.webp",
+    "stock": 0,
     "active": true
   },
   {
     "name": "Ninho Trufado",
-    "description": "Cremoso leitinho com pedaços de trufa.",
-    "price": 12,
     "category": "cup",
+    "price": 5.0,
     "size": "300ml",
-    "active": true
+    "image": "/assets/cup-3d-ninho.webp",
+    "stock": 0,
+    "active": true,
+    "description": "Cremoso leitinho com pedaços de trufa."
   },
   {
     "name": "Brigadeiro",
-    "description": "Chocolate puro com granulado crocante.",
-    "price": 12,
     "category": "cup",
+    "price": 5.0,
     "size": "300ml",
-    "active": true
+    "image": "/assets/cup-3d-brigadeiro.webp",
+    "stock": 0,
+    "active": true,
+    "description": "Chocolate puro com granulado crocante."
   },
   {
     "name": "Doce de Leite",
-    "description": "Caramelo cremoso que derrete na boca.",
-    "price": 12,
     "category": "cup",
+    "price": 5.0,
     "size": "300ml",
-    "active": true
+    "image": "/assets/cup-3d-doce-leite.webp",
+    "stock": 0,
+    "active": true,
+    "description": "Caramelo cremoso que derrete na boca."
   },
   {
     "name": "Limão Suíço",
-    "description": "Refrescante e cítrico, na medida certa.",
-    "price": 12,
     "category": "cup",
+    "price": 5.0,
     "size": "300ml",
-    "active": true
+    "image": "/assets/cup-3d-limao.webp",
+    "stock": 0,
+    "active": true,
+    "description": "Refrescante e cítrico, na medida certa."
   },
   {
     "name": "Leite Condensado",
-    "description": "Doce, cremoso e irresistível.",
-    "price": 12,
     "category": "cup",
+    "price": 5.0,
     "size": "300ml",
-    "active": true
+    "image": "/assets/cup-3d-leite-condensado.webp",
+    "stock": 0,
+    "active": true,
+    "description": "Doce, cremoso e irresistível."
   },
   {
     "name": "Chocolate",
-    "description": "Chocolate intenso e cremoso.",
-    "price": 12,
     "category": "cup",
+    "price": 5.0,
     "size": "300ml",
-    "active": true
+    "image": "/assets/cup-3d-chocolate.jpg",
+    "stock": 0,
+    "active": true,
+    "description": "Chocolate intenso e cremoso."
   },
   {
     "name": "Morango",
-    "description": "Morangos frescos em creme suave.",
-    "price": 12,
     "category": "cup",
+    "price": 5.0,
     "size": "300ml",
-    "active": true
+    "image": "/assets/cup-3d-morango.jpg",
+    "stock": 0,
+    "active": true,
+    "description": "Morangos frescos em creme suave."
   },
   {
     "name": "Milho",
-    "description": "Sabor caseiro e cremoso de milho verde.",
-    "price": 12,
     "category": "cup",
+    "price": 5.0,
     "size": "300ml",
-    "active": true
+    "image": "/assets/cup-3d-milho.jpg",
+    "stock": 0,
+    "active": true,
+    "description": "Sabor caseiro e cremoso de milho verde."
   },
   {
     "name": "Abacaxi ao Vinho",
-    "description": "Tropical com toque sofisticado.",
-    "price": 12,
     "category": "cup",
+    "price": 5.0,
     "size": "300ml",
-    "active": true
+    "image": "/assets/cup-3d-abacaxi-vinho.jpg",
+    "stock": 0,
+    "active": true,
+    "description": "Tropical com toque sofisticado."
   },
   {
     "name": "Abacaxi",
-    "description": "Refrescante e tropical.",
-    "price": 12,
     "category": "cup",
+    "price": 5.0,
     "size": "300ml",
-    "active": true
+    "image": "/assets/cup-3d-abacaxi.jpg",
+    "stock": 0,
+    "active": true,
+    "description": "Refrescante e tropical."
   },
   {
     "name": "Choco Maltine",
-    "description": "Chocolate com crocância de maltine.",
-    "price": 12,
     "category": "cup",
+    "price": 5.0,
     "size": "300ml",
-    "active": true
-  },
-  {
-    "name": "Flocos",
-    "description": "Cremoso com flocos crocantes de chocolate.",
-    "price": 7,
-    "category": "popsicle",
-    "size": "Picolé",
-    "active": true
-  },
-  {
-    "name": "Coco Branco",
-    "description": "Tropical e refrescante com coco fresco.",
-    "price": 7,
-    "category": "popsicle",
-    "size": "Picolé",
-    "active": true
-  },
-  {
-    "name": "Kiwi",
-    "description": "Refrescante com pedaços de kiwi natural.",
-    "price": 7,
-    "category": "popsicle",
-    "size": "Picolé",
-    "active": true
-  },
-  {
-    "name": "Torta de Limão",
-    "description": "Picolé com crocante de biscoito.",
-    "price": 7,
-    "category": "popsicle",
-    "size": "Picolé",
-    "active": true
-  },
-  {
-    "name": "Tentação",
-    "description": "Picolé cremoso de chocolate com cobertura irresistível.",
-    "price": 7,
-    "category": "popsicle",
-    "size": "Picolé",
-    "active": true
-  },
-  {
-    "name": "Leitinho",
-    "description": "Picolé cremoso sabor leite ninho.",
-    "price": 5,
-    "category": "popsicle",
-    "size": "Picolé",
-    "active": true
-  },
-  {
-    "name": "Manga",
-    "description": "Tropical e refrescante com sabor intenso de manga.",
-    "price": 7,
-    "category": "popsicle",
-    "size": "Picolé",
-    "active": true
-  },
-  {
-    "name": "Skimo Coco",
-    "description": "Coco com cobertura crocante de chocolate.",
-    "price": 7,
-    "category": "popsicle",
-    "size": "Picolé",
-    "active": true
-  },
-  {
-    "name": "Maracujá",
-    "description": "Azedinho na medida certa, super refrescante.",
-    "price": 7,
-    "category": "popsicle",
-    "size": "Picolé",
-    "active": true
-  },
-  {
-    "name": "Chiclete",
-    "description": "Sabor divertido de chiclete colorido.",
-    "price": 7,
-    "category": "popsicle",
-    "size": "Picolé",
-    "active": true
+    "image": "/assets/cup-3d-choco-maltine.jpg",
+    "stock": 0,
+    "active": true,
+    "description": "Chocolate com crocância de maltine."
   },
   {
     "name": "Groselha",
-    "description": "Sabor clássico e marcante de groselha.",
-    "price": 7,
-    "category": "popsicle",
+    "category": "pic_agua",
+    "price": 1.5,
     "size": "Picolé",
-    "active": true
+    "image": "/assets/popsicle-3d-groselha.jpg",
+    "stock": 0,
+    "active": true,
+    "description": "Sabor clássico e marcante."
   },
   {
-    "name": "Chocolate",
-    "description": "Chocolate intenso e cremoso em picolé.",
-    "price": 7,
-    "category": "popsicle",
+    "name": "Manga",
+    "category": "pic_agua",
+    "price": 1.5,
     "size": "Picolé",
-    "active": true
+    "image": "/assets/popsicle-3d-manga.jpg",
+    "stock": 0,
+    "active": true,
+    "description": "Tropical e refrescante."
+  },
+  {
+    "name": "Limão",
+    "category": "pic_agua",
+    "price": 1.5,
+    "size": "Picolé",
+    "image": "/assets/popsicle-limao.webp",
+    "stock": 0,
+    "active": true,
+    "description": "Cítrico e refrescante."
+  },
+  {
+    "name": "Uva",
+    "category": "pic_agua",
+    "price": 1.5,
+    "size": "Picolé",
+    "image": "/assets/popsicle-3d-groselha.jpg",
+    "stock": 0,
+    "active": true,
+    "description": "Doce e refrescante de uva."
+  },
+  {
+    "name": "Abacaxi",
+    "category": "pic_agua",
+    "price": 1.5,
+    "size": "Picolé",
+    "image": "/assets/popsicle-3d-abacaxi.jpg",
+    "stock": 0,
+    "active": true,
+    "description": "Tropical na medida certa."
+  },
+  {
+    "name": "Pinta Língua",
+    "category": "pic_agua",
+    "price": 1.5,
+    "size": "Picolé",
+    "image": "/assets/popsicle-3d-chiclete.jpg",
+    "stock": 0,
+    "active": true,
+    "description": "Diversão colorida que pinta a língua."
+  },
+  {
+    "name": "Limão Suíço",
+    "category": "pic_leite",
+    "price": 2.0,
+    "size": "Picolé",
+    "image": "/assets/popsicle-3d-limao-suico.jpg",
+    "stock": 0,
+    "active": true,
+    "description": "Cremoso e cítrico."
+  },
+  {
+    "name": "Morango",
+    "category": "pic_leite",
+    "price": 2.0,
+    "size": "Picolé",
+    "image": "/assets/popsicle-3d-morango.jpg",
+    "stock": 0,
+    "active": true,
+    "description": "Morango com leite, irresistível."
+  },
+  {
+    "name": "Abacaxi ao Vinho",
+    "category": "pic_leite",
+    "price": 2.0,
+    "size": "Picolé",
+    "image": "/assets/popsicle-3d-abacaxi-vinho.jpg",
+    "stock": 0,
+    "active": true,
+    "description": "Tropical com toque sofisticado."
+  },
+  {
+    "name": "Milho Verde",
+    "category": "pic_leite",
+    "price": 2.0,
+    "size": "Picolé",
+    "image": "/assets/popsicle-3d-milho.jpg",
+    "stock": 0,
+    "active": true,
+    "description": "Sabor caseiro de milho verde."
+  },
+  {
+    "name": "Leitinho",
+    "category": "pic_premium",
+    "price": 5.0,
+    "size": "Picolé",
+    "image": "/assets/popsicle-3d-leitinho.jpg",
+    "stock": 0,
+    "active": true,
+    "description": "Cremoso de leite condensado."
+  },
+  {
+    "name": "Brigadeiro",
+    "category": "pic_premium",
+    "price": 5.0,
+    "size": "Picolé",
+    "image": "/assets/popsicle-3d-brigadeiro.jpg",
+    "stock": 0,
+    "active": true,
+    "description": "Chocolate puro com granulado."
+  },
+  {
+    "name": "Torta de Limão",
+    "category": "pic_premium",
+    "price": 5.0,
+    "size": "Picolé",
+    "image": "/assets/popsicle-limao.webp",
+    "stock": 0,
+    "active": true,
+    "description": "Picolé com crocante de biscoito."
+  },
+  {
+    "name": "Skimo",
+    "category": "pic_ski",
+    "price": 4.0,
+    "size": "Picolé",
+    "image": "/assets/popsicle-3d-skimo.jpg",
+    "stock": 0,
+    "active": true,
+    "description": "Cobertura crocante e recheio cremoso."
+  },
+  {
+    "name": "Ski Coco",
+    "category": "pic_ski",
+    "price": 4.0,
+    "size": "Picolé",
+    "image": "/assets/popsicle-3d-skimo-coco.jpg",
+    "stock": 0,
+    "active": true,
+    "description": "Coco com cobertura de chocolate."
+  },
+  {
+    "name": "Tentação",
+    "category": "pic_ski",
+    "price": 4.0,
+    "size": "Picolé",
+    "image": "/assets/popsicle-tentacao.webp",
+    "stock": 0,
+    "active": true,
+    "description": "Chocolate com cobertura irresistível."
   },
   {
     "name": "Açaí Premium 1L",
-    "description": "Pote com guaraná e frutos vermelhos.",
-    "price": 45,
     "category": "acai",
+    "price": 18.0,
     "size": "1L",
-    "active": true
+    "image": "/assets/acai-1l.webp",
+    "stock": 0,
+    "active": true,
+    "description": "Pote com guaraná e frutos vermelhos."
   },
   {
     "name": "Açaí Premium 5L",
-    "description": "Caixa família para festas e eventos.",
-    "price": 180,
     "category": "acai",
+    "price": 80.0,
     "size": "5L",
-    "active": true
+    "image": "/assets/acai-5l.webp",
+    "stock": 0,
+    "active": true,
+    "description": "Caixa família para festas e eventos."
   },
   {
     "name": "Copo de Açaí",
-    "description": "Açaí cremoso individual com toque tropical.",
-    "price": 15,
     "category": "acai",
+    "price": 8.0,
     "size": "300ml",
-    "active": true
+    "image": "/assets/cup-3d-acai.webp",
+    "stock": 0,
+    "active": true,
+    "description": "Açaí cremoso individual com toque tropical."
   },
   {
     "name": "Picolé de Açaí",
-    "description": "Intenso e cremoso, direto da Amazônia.",
-    "price": 8,
     "category": "acai",
+    "price": 2.0,
     "size": "Picolé",
-    "active": true
+    "image": "/assets/popsicle-acai.webp",
+    "stock": 0,
+    "active": true,
+    "description": "Intenso e cremoso, direto da Amazônia."
   }
 ]
