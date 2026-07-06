@@ -6,7 +6,7 @@ import { RequireAuth } from "@/components/RequireAuth";
 import { api, extractApiError } from "@/lib/api";
 import { formatBRL } from "@/contexts/CartContext";
 import type { Address } from "@/contexts/AuthContext";
-import { tubs, cups, popsicles, acaiProducts, popsiclesAgua, popsiclesLeite, popsiclesPremium, popsiclesSki } from "@/lib/catalog";
+// Catálogo agora é 100% do backend; carrosséis puxam de /products.
 import { getStock, setStock as setStockLocal } from "@/lib/stock";
 import {
   CAROUSEL_LABEL,
@@ -267,30 +267,6 @@ function ProductsAdmin() {
     catch (err) { toast.error(extractApiError(err)); }
   }
 
-  const [importing, setImporting] = useState(false);
-  async function importCatalog() {
-    if (!confirm("Importar todos os produtos do catálogo local (potes, copos, picolés e açaí) para o backend? Itens com mesmo nome+categoria serão ignorados.")) return;
-    setImporting(true);
-    try {
-      const existing = new Set((products ?? []).map((p) => `${(p.category ?? "").toLowerCase()}::${p.name.trim().toLowerCase()}`));
-      const all: Array<{ name: string; price: number; description?: string; category: string; size?: string; active: boolean }> = [
-        ...tubs.map((t) => ({ name: t.name, price: t.price, description: t.desc, category: "tub", size: "1,5L", active: true })),
-        ...cups.map((c) => ({ name: c.name, price: c.price, description: c.desc, category: "cup", size: "300ml", active: true })),
-        ...popsicles.map((p) => ({ name: p.name, price: p.price, description: p.desc, category: "popsicle", size: "Picolé", active: true })),
-        ...acaiProducts.map((a) => ({ name: a.name, price: a.price, description: a.desc, category: "acai", size: a.size, active: true })),
-      ];
-      let ok = 0, skip = 0, fail = 0;
-      for (const p of all) {
-        const key = `${p.category}::${p.name.trim().toLowerCase()}`;
-        if (existing.has(key)) { skip++; continue; }
-        try { await api.post("/products", p); ok++; }
-        catch { fail++; }
-      }
-      toast.success(`Importação concluída: ${ok} criados, ${skip} já existiam, ${fail} falhas.`);
-      load();
-    } finally { setImporting(false); }
-  }
-
   if (error) return <p className="text-destructive">{error}</p>;
   if (!products) return <Loader2 className="mx-auto h-8 w-8 animate-spin text-primary" />;
 
@@ -299,9 +275,6 @@ function ProductsAdmin() {
       <div className="mb-4 flex flex-wrap gap-2">
         <button onClick={() => setEditing({ id: "", name: "", price: 0 })} className="inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground">
           <Plus className="h-4 w-4" /> Novo produto
-        </button>
-        <button onClick={importCatalog} disabled={importing} className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2 text-sm font-semibold hover:bg-muted disabled:opacity-60">
-          {importing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />} Importar catálogo local
         </button>
       </div>
       <div className="overflow-x-auto rounded-xl border border-border">
@@ -1011,14 +984,40 @@ function WholesaleAdmin() {
 // ============================================================
 
 function CarouselsAdmin() {
+  const [remote, setRemote] = useState<Awaited<ReturnType<typeof import("@/lib/products").fetchProducts>>>(null);
+  useEffect(() => {
+    import("@/lib/products").then(({ fetchProducts }) => fetchProducts().then(setRemote));
+  }, []);
+  const groups = useMemo(() => {
+    const empty = { tub: [], cup: [], popsiclesAgua: [], popsiclesLeite: [], popsiclesPremium: [], popsiclesSki: [], acai: [] } as Record<string, { name: string; price: number; img?: string; desc?: string; size?: string }[]>;
+    if (!remote) return empty;
+    const toItem = (p: { name: string; price: number | string; image?: string; imageUrl?: string; description?: string; size?: string }) => ({
+      name: p.name,
+      price: Number(p.price) || 0,
+      img: p.image ?? p.imageUrl,
+      desc: p.description,
+      size: p.size,
+    });
+    for (const p of remote) {
+      const c = (p.category ?? "").toString().toLowerCase();
+      if (c === "tub" || c === "pote") empty.tub.push(toItem(p));
+      else if (c === "cup" || c === "copo") empty.cup.push(toItem(p));
+      else if (c === "pic_agua") empty.popsiclesAgua.push(toItem(p));
+      else if (c === "pic_leite") empty.popsiclesLeite.push(toItem(p));
+      else if (c === "pic_premium") empty.popsiclesPremium.push(toItem(p));
+      else if (c === "pic_ski") empty.popsiclesSki.push(toItem(p));
+      else if (c === "acai" || c === "açaí") empty.acai.push(toItem(p));
+    }
+    return empty;
+  }, [remote]);
   const carousels: { key: CarouselKey; base: { name: string; price: number; img?: string; desc?: string; size?: string }[] }[] = [
-    { key: "tubs", base: tubs },
-    { key: "cups", base: cups },
-    { key: "popsiclesAgua", base: popsiclesAgua },
-    { key: "popsiclesLeite", base: popsiclesLeite },
-    { key: "popsiclesPremium", base: popsiclesPremium },
-    { key: "popsiclesSki", base: popsiclesSki },
-    { key: "acai", base: acaiProducts as { name: string; price: number; img?: string; desc?: string; size?: string }[] },
+    { key: "tubs", base: groups.tub },
+    { key: "cups", base: groups.cup },
+    { key: "popsiclesAgua", base: groups.popsiclesAgua },
+    { key: "popsiclesLeite", base: groups.popsiclesLeite },
+    { key: "popsiclesPremium", base: groups.popsiclesPremium },
+    { key: "popsiclesSki", base: groups.popsiclesSki },
+    { key: "acai", base: groups.acai },
   ];
   const [selected, setSelected] = useState<CarouselKey>("tubs");
   const current = carousels.find((c) => c.key === selected)!;
