@@ -267,30 +267,6 @@ function ProductsAdmin() {
     catch (err) { toast.error(extractApiError(err)); }
   }
 
-  const [importing, setImporting] = useState(false);
-  async function importCatalog() {
-    if (!confirm("Importar todos os produtos do catálogo local (potes, copos, picolés e açaí) para o backend? Itens com mesmo nome+categoria serão ignorados.")) return;
-    setImporting(true);
-    try {
-      const existing = new Set((products ?? []).map((p) => `${(p.category ?? "").toLowerCase()}::${p.name.trim().toLowerCase()}`));
-      const all: Array<{ name: string; price: number; description?: string; category: string; size?: string; active: boolean }> = [
-        ...tubs.map((t) => ({ name: t.name, price: t.price, description: t.desc, category: "tub", size: "1,5L", active: true })),
-        ...cups.map((c) => ({ name: c.name, price: c.price, description: c.desc, category: "cup", size: "300ml", active: true })),
-        ...popsicles.map((p) => ({ name: p.name, price: p.price, description: p.desc, category: "popsicle", size: "Picolé", active: true })),
-        ...acaiProducts.map((a) => ({ name: a.name, price: a.price, description: a.desc, category: "acai", size: a.size, active: true })),
-      ];
-      let ok = 0, skip = 0, fail = 0;
-      for (const p of all) {
-        const key = `${p.category}::${p.name.trim().toLowerCase()}`;
-        if (existing.has(key)) { skip++; continue; }
-        try { await api.post("/products", p); ok++; }
-        catch { fail++; }
-      }
-      toast.success(`Importação concluída: ${ok} criados, ${skip} já existiam, ${fail} falhas.`);
-      load();
-    } finally { setImporting(false); }
-  }
-
   if (error) return <p className="text-destructive">{error}</p>;
   if (!products) return <Loader2 className="mx-auto h-8 w-8 animate-spin text-primary" />;
 
