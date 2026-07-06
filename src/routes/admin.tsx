@@ -6,7 +6,7 @@ import { RequireAuth } from "@/components/RequireAuth";
 import { api, extractApiError } from "@/lib/api";
 import { formatBRL } from "@/contexts/CartContext";
 import type { Address } from "@/contexts/AuthContext";
-import { tubs, cups, popsicles, acaiProducts, popsiclesAgua, popsiclesLeite, popsiclesPremium, popsiclesSki } from "@/lib/catalog";
+// Catálogo agora é 100% do backend; carrosséis puxam de /products.
 import { getStock, setStock as setStockLocal } from "@/lib/stock";
 import {
   CAROUSEL_LABEL,
