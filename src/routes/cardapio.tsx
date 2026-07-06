@@ -4,7 +4,7 @@ import { Loader2, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { useCart, formatBRL } from "@/contexts/CartContext";
 import { fetchProducts, groupByCategory, imgOf, type ApiProduct } from "@/lib/products";
-import { tubs, cups, popsicles, acaiProducts, CATEGORY_LABELS, type CategoryKey } from "@/lib/catalog";
+import { CATEGORY_LABELS, type CategoryKey } from "@/lib/catalog";
 
 type CatTab = CategoryKey | "all";
 
@@ -22,15 +22,6 @@ export const Route = createFileRoute("/cardapio")({
 });
 
 type Item = { id: string; name: string; price: number; image?: string; description?: string; category: CategoryKey; badge?: string };
-
-function buildLocal(): Item[] {
-  return [
-    ...tubs.map((t) => ({ id: `local-tub-${t.name}`, name: t.name, price: t.price, image: t.img, category: "tub" as const, badge: "1,5L" })),
-    ...cups.map((c) => ({ id: `local-cup-${c.name}`, name: c.name, price: c.price, image: c.img, description: c.desc, category: "cup" as const, badge: "300ml" })),
-    ...popsicles.map((p) => ({ id: `local-pop-${p.name}`, name: p.name, price: p.price, image: p.img, description: p.desc, category: "popsicle" as const, badge: "Picolé" })),
-    ...acaiProducts.map((a) => ({ id: `local-acai-${a.name}`, name: a.name, price: a.price, image: a.img, description: a.desc, category: "acai" as const, badge: a.size })),
-  ];
-}
 
 function fromRemote(list: ApiProduct[]): Item[] {
   const grouped = groupByCategory(list);
@@ -52,7 +43,7 @@ function fromRemote(list: ApiProduct[]): Item[] {
 function CardapioPage() {
   const search = useSearch({ from: "/cardapio" });
   const [tab, setTab] = useState<CatTab>(search.cat ?? "all");
-  const [items, setItems] = useState<Item[]>(() => buildLocal());
+  const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
   const { add } = useCart();
 
@@ -62,7 +53,7 @@ function CardapioPage() {
     let alive = true;
     fetchProducts().then((list) => {
       if (!alive) return;
-      if (list && list.length > 0) setItems(fromRemote(list));
+      if (list) setItems(fromRemote(list));
       setLoading(false);
     });
     return () => { alive = false; };
