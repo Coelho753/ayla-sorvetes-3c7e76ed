@@ -1,7 +1,8 @@
 import { api } from "./api";
-import { localImageFor } from "./catalog";
 
-export type Category = "tub" | "cup" | "popsicle" | "acai";
+export type Category =
+  | "tub" | "cup" | "popsicle" | "acai"
+  | "pote" | "pic_agua" | "pic_leite" | "pic_premium" | "pic_ski";
 
 export type ApiProduct = {
   id: string | number;
@@ -20,6 +21,10 @@ export type GroupedProducts = {
   cup: ApiProduct[];
   popsicle: ApiProduct[];
   acai: ApiProduct[];
+  popsiclesAgua: ApiProduct[];
+  popsiclesLeite: ApiProduct[];
+  popsiclesPremium: ApiProduct[];
+  popsiclesSki: ApiProduct[];
 };
 
 export async function fetchProducts(): Promise<ApiProduct[] | null> {
@@ -33,11 +38,18 @@ export async function fetchProducts(): Promise<ApiProduct[] | null> {
 }
 
 export function groupByCategory(list: ApiProduct[]): GroupedProducts {
-  const out: GroupedProducts = { tub: [], cup: [], popsicle: [], acai: [] };
+  const out: GroupedProducts = {
+    tub: [], cup: [], popsicle: [], acai: [],
+    popsiclesAgua: [], popsiclesLeite: [], popsiclesPremium: [], popsiclesSki: [],
+  };
   for (const p of list) {
     const c = (p.category ?? "").toString().toLowerCase();
     if (c === "tub" || c === "pote") out.tub.push(p);
     else if (c === "cup" || c === "copo") out.cup.push(p);
+    else if (c === "pic_agua") { out.popsiclesAgua.push(p); out.popsicle.push(p); }
+    else if (c === "pic_leite") { out.popsiclesLeite.push(p); out.popsicle.push(p); }
+    else if (c === "pic_premium") { out.popsiclesPremium.push(p); out.popsicle.push(p); }
+    else if (c === "pic_ski") { out.popsiclesSki.push(p); out.popsicle.push(p); }
     else if (c === "popsicle" || c === "picole" || c === "picolé") out.popsicle.push(p);
     else if (c === "acai" || c === "açaí") out.acai.push(p);
   }
@@ -47,5 +59,5 @@ export function groupByCategory(list: ApiProduct[]): GroupedProducts {
 export function imgOf(p: ApiProduct): string | undefined {
   const v = p.image ?? p.imageUrl;
   if (v && v.trim()) return v;
-  return localImageFor(p.category as string | undefined, p.name);
+  return undefined;
 }
