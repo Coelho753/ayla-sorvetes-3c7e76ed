@@ -252,6 +252,7 @@ function ProductsAdmin() {
   const [products, setProducts] = useState<Product[] | null>(null);
   const [editing, setEditing] = useState<Product | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [seeding, setSeeding] = useState<{ done: number; total: number } | null>(null);
 
   async function load() {
     try {
@@ -267,16 +268,40 @@ function ProductsAdmin() {
     catch (err) { toast.error(extractApiError(err)); }
   }
 
+  async function populate() {
+    const { seedCatalog, seedProducts } = await import("@/lib/seed-catalog");
+    if (!confirm(`Enviar ${seedProducts.length} produtos do catálogo para o banco? Itens já existentes serão atualizados.`)) return;
+    setSeeding({ done: 0, total: seedProducts.length });
+    try {
+      const res = await seedCatalog((done, total) => setSeeding({ done, total }));
+      toast.success(`${res.created} criados, ${res.updated} atualizados${res.failed ? `, ${res.failed} falhas` : ""}`);
+      if (res.errors.length) toast.error(res.errors.join(" • "));
+      load();
+    } catch (err) {
+      toast.error(extractApiError(err));
+    } finally {
+      setSeeding(null);
+    }
+  }
+
   if (error) return <p className="text-destructive">{error}</p>;
   if (!products) return <Loader2 className="mx-auto h-8 w-8 animate-spin text-primary" />;
 
   return (
     <div>
-      <div className="mb-4 flex flex-wrap gap-2">
+      <div className="mb-4 flex flex-wrap items-center gap-2">
         <button onClick={() => setEditing({ id: "", name: "", price: 0 })} className="inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground">
           <Plus className="h-4 w-4" /> Novo produto
         </button>
+        <button onClick={populate} disabled={!!seeding} className="inline-flex items-center gap-2 rounded-full bg-secondary px-4 py-2 text-sm font-semibold text-secondary-foreground disabled:opacity-60">
+          {seeding ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
+          {seeding ? `Enviando ${seeding.done}/${seeding.total}…` : "Popular catálogo"}
+        </button>
+        {products.length === 0 && !seeding && (
+          <span className="text-xs text-muted-foreground">Banco vazio — clique em “Popular catálogo”.</span>
+        )}
       </div>
+
       <div className="overflow-x-auto rounded-xl border border-border">
         <table className="w-full text-sm">
           <thead className="bg-muted/50 text-left">
