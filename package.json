@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite dev",
-    "build": "NODE_OPTIONS=--max-old-space-size=768 vite build",
+    "build": "NODE_OPTIONS=--max-old-space-size=768 vite build && node scripts/prerender.mjs",
     "build:dev": "NODE_OPTIONS=--max-old-space-size=768 vite build --mode development",
     "preview": "vite preview",
     "start": "node render-server.mjs",
