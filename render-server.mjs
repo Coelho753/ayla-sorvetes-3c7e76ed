@@ -6,7 +6,12 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const ROOT = path.join(__dirname, "dist", "client");
+// O build pode sair em dist/client (local) ou .output/public (Render/Nitro).
+const CANDIDATES = [
+  path.join(__dirname, "dist", "client"),
+  path.join(__dirname, ".output", "public"),
+];
+const ROOT = CANDIDATES.find((d) => fs.existsSync(path.join(d, "index.html"))) || CANDIDATES[0];
 const PORT = Number(process.env.PORT) || 10000;
 const INDEX = path.join(ROOT, "index.html");
 

@@ -1,18 +1,20 @@
-// Gera dist/client/index.html a partir do bundle SSR (dist/server).
-// Sem isso, o deploy estático (Render) não encontra o index.html e cai na
-// mensagem "Build não encontrado".
+// Gera o index.html a partir do bundle SSR.
+// O output pode estar em dist/ (local) ou .output/ (Render/Nitro) — suporta os dois.
 import fs from "node:fs";
 import path from "node:path";
 
-const CLIENT_DIR = path.resolve("dist/client");
-const OUT = path.join(CLIENT_DIR, "index.html");
+const CANDIDATES = [
+  { server: "dist/server/index.mjs", client: "dist/client" },
+  { server: ".output/server/index.mjs", client: ".output/public" },
+];
 
 async function main() {
-  if (!fs.existsSync(path.resolve("dist/server/index.mjs"))) {
-    console.error("[prerender] dist/server/index.mjs não encontrado — rode o build antes.");
+  const target = CANDIDATES.find((c) => fs.existsSync(path.resolve(c.server)));
+  if (!target) {
+    console.error("[prerender] bundle SSR não encontrado em dist/server nem .output/server.");
     process.exit(1);
   }
-  const mod = await import(path.resolve("dist/server/index.mjs"));
+  const mod = await import(path.resolve(target.server));
   const handler = mod.default?.fetch ?? mod.default;
   const res = await handler(new Request("http://localhost/"), {}, {
     waitUntil() {},
@@ -27,9 +29,10 @@ async function main() {
     console.error("[prerender] HTML incompleto — abortando.");
     process.exit(1);
   }
-  fs.mkdirSync(CLIENT_DIR, { recursive: true });
-  fs.writeFileSync(OUT, html);
-  console.log(`[prerender] index.html gerado (${(html.length / 1024).toFixed(1)} kB)`);
+  const clientDir = path.resolve(target.client);
+  fs.mkdirSync(clientDir, { recursive: true });
+  fs.writeFileSync(path.join(clientDir, "index.html"), html);
+  console.log(`[prerender] ${target.client}/index.html gerado (${(html.length / 1024).toFixed(1)} kB)`);
 }
 
 main().catch((err) => {
