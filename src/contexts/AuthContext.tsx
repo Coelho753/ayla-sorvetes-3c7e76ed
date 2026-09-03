@@ -118,7 +118,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       if (!payload) throw new Error("not-found");
       const raw = (payload.user as Record<string, unknown> | undefined) ?? payload;
-      setUser(normalizeUser(raw));
+      const u = normalizeUser(raw);
+      if (typeof window !== "undefined") {
+        console.info("[auth] perfil carregado", { role: raw.role ?? raw.tipo ?? raw.perfil, roles: raw.roles, isAdmin: computeIsAdmin(u) });
+      }
+      setUser(u);
     } catch {
       setUser(null);
     }
