@@ -56,7 +56,28 @@ type AuthContextValue = {
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
-function pickTokens(data: Record<string, unknown>) {
+function unwrapPayload(data: Record<string, unknown>): Record<string, unknown> {
+  const nested = data.data;
+  return nested && typeof nested === "object" ? nested as Record<string, unknown> : data;
+}
+
+function readAccessTokenClaims(): Record<string, unknown> | null {
+  const token = tokenStorage.getAccess();
+  if (!token) return null;
+  const payload = token.split(".")[1];
+  if (!payload || typeof window === "undefined") return null;
+  try {
+    const normalized = payload.replace(/-/g, "+").replace(/_/g, "/");
+    const decoded = window.atob(normalized.padEnd(Math.ceil(normalized.length / 4) * 4, "="));
+    const parsed = JSON.parse(decoded) as unknown;
+    return parsed && typeof parsed === "object" ? parsed as Record<string, unknown> : null;
+  } catch {
+    return null;
+  }
+}
+
+function pickTokens(response: Record<string, unknown>) {
+  const data = unwrapPayload(response);
   const access =
     (data.accessToken as string) ?? (data.access_token as string) ?? (data.token as string) ?? null;
   const refresh = (data.refreshToken as string) ?? (data.refresh_token as string) ?? null;
@@ -77,10 +98,10 @@ function normalizeAddress(raw: Record<string, unknown> | null | undefined): Addr
   };
 }
 
-function normalizeUser(raw: Record<string, unknown> | null | undefined): User | null {
+function normalizeUser(raw: Record<string, unknown> | null | undefined, claims = readAccessTokenClaims()): User | null {
   if (!raw) return null;
-  const id = (raw.id as User["id"]) ?? (raw._id as User["id"]);
-  const email = raw.email as string;
+  const id = (raw.id as User["id"]) ?? (raw._id as User["id"]) ?? (claims?.sub as User["id"]) ?? (claims?.id as User["id"]);
+  const email = (raw.email as string) ?? (claims?.email as string);
   if (!id || !email) return null;
   const fullName = (raw.name as string) ?? (raw.nome as string) ?? "";
   const firstName = (raw.firstName as string) ?? (raw.nome as string) ?? fullName.split(" ")[0];
@@ -92,9 +113,11 @@ function normalizeUser(raw: Record<string, unknown> | null | undefined): User | 
     firstName,
     lastName,
     phone: (raw.phone as string) ?? (raw.telefone as string) ?? undefined,
-    role: (raw.role as string) ?? (raw.tipo as string) ?? (raw.perfil as string) ?? undefined,
-    roles: Array.isArray(raw.roles) ? (raw.roles as unknown[]).map(String) : undefined,
-    admin: raw.isAdmin === true || raw.admin === true || raw.is_admin === true,
+    role: (raw.role as string) ?? (raw.tipo as string) ?? (raw.perfil as string) ?? (claims?.role as string) ?? (claims?.tipo as string) ?? (claims?.perfil as string) ?? undefined,
+    roles: Array.isArray(raw.roles)
+      ? (raw.roles as unknown[]).map(String)
+      : Array.isArray(claims?.roles) ? (claims.roles as unknown[]).map(String) : undefined,
+    admin: raw.isAdmin === true || raw.admin === true || raw.is_admin === true || claims?.isAdmin === true || claims?.admin === true || claims?.is_admin === true,
     address: normalizeAddress((raw.endereco ?? raw.address) as Record<string, unknown> | undefined),
   };
 }
@@ -117,7 +140,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       }
       if (!payload) throw new Error("not-found");
-      const raw = (payload.user as Record<string, unknown> | undefined) ?? payload;
+       const unwrapped = unwrapPayload(payload);
+       const raw = (unwrapped.user as Record<string, unknown> | undefined) ??
+         (unwrapped.usuario as Record<string, unknown> | undefined) ?? unwrapped;
       const u = normalizeUser(raw);
       if (typeof window !== "undefined") {
         console.info("[auth] perfil carregado", { role: raw.role ?? raw.tipo ?? raw.perfil, roles: raw.roles, isAdmin: computeIsAdmin(u) });
@@ -147,8 +172,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = useCallback(
     async (email: string, password: string) => {
       try {
-        const { data } = await api.post("/auth/login", { email, senha: password, password });
-        const { access, refresh } = pickTokens(data);
+         const { data: response } = await api.post("/auth/login", { email, senha: password, password });
+         const data = unwrapPayload(response);
+         const { access, refresh } = pickTokens(response);
         if (!access) throw new Error("Resposta de login inválida.");
         tokenStorage.set(access, refresh);
         const apiUser = normalizeUser(
@@ -172,7 +198,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         const fullName = `${payload.firstName} ${payload.lastName}`.trim();
         // Envia tanto chaves PT quanto EN para máxima compatibilidade.
-        const { data } = await api.post("/auth/register", {
+         const { data: response } = await api.post("/auth/register", {
           nome: fullName,
           name: fullName,
           firstName: payload.firstName,
@@ -184,7 +210,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           endereco: payload.address,
           address: payload.address,
         });
-        const { access, refresh } = pickTokens(data);
+         const data = unwrapPayload(response);
+         const { access, refresh } = pickTokens(response);
         if (access) {
           tokenStorage.set(access, refresh);
           const apiUser = normalizeUser(
