@@ -3,7 +3,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { LogOut, User as UserIcon, Shield } from "lucide-react";
 
 export function SiteHeader() {
-  const { user, isAdmin, logout } = useAuth();
+  const { user, logout } = useAuth();
   const location = useLocation();
   // Não renderiza header na landing para preservar 100% do design
   if (location.pathname === "/") return null;

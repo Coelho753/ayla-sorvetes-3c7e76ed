@@ -7,7 +7,7 @@ import { LogIn, LogOut, UserPlus, User as UserIcon, Shield } from "lucide-react"
  * Não altera o layout — sobreposta com posição fixed.
  */
 export function AuthBar() {
-  const { user, isAdmin, logout } = useAuth();
+  const { user, logout } = useAuth();
 
   return (
     <nav
