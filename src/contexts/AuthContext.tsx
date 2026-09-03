@@ -139,7 +139,7 @@ function normalizeUser(raw: Record<string, unknown> | null | undefined, claims =
     roles: Array.isArray(raw.roles)
       ? (raw.roles as unknown[]).map(String)
       : Array.isArray(claims?.roles) ? (claims.roles as unknown[]).map(String) : undefined,
-    admin: raw.isAdmin === true || raw.admin === true || raw.is_admin === true || claims?.isAdmin === true || claims?.admin === true || claims?.is_admin === true,
+    admin: deepHasAdmin(raw) || deepHasAdmin(claims),
     address: normalizeAddress((raw.endereco ?? raw.address) as Record<string, unknown> | undefined),
   };
 }
