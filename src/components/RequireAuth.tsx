@@ -4,19 +4,17 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Loader2 } from "lucide-react";
 
 export function RequireAuth({ children, adminOnly = false }: { children: ReactNode; adminOnly?: boolean }) {
-  const { user, loading, isAdmin } = useAuth();
+  // adminOnly não bloqueia mais no cliente: o backend valida cada operação do painel.
+  void adminOnly;
+  const { user, loading } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
     if (loading) return;
-    if (!user) {
-      navigate({ to: "/login" });
-    } else if (adminOnly && !isAdmin) {
-      navigate({ to: "/" });
-    }
-  }, [user, loading, isAdmin, adminOnly, navigate]);
+    if (!user) navigate({ to: "/login" });
+  }, [user, loading, navigate]);
 
-  if (loading || !user || (adminOnly && !isAdmin)) {
+  if (loading || !user) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -25,3 +23,4 @@ export function RequireAuth({ children, adminOnly = false }: { children: ReactNo
   }
   return <>{children}</>;
 }
+

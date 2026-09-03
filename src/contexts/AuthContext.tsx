@@ -24,15 +24,37 @@ export type User = {
   address?: Address;
 };
 
+/** Procura marcadores de admin em qualquer parte do payload (role, roles, tipo, perfil, flags). */
+export function deepHasAdmin(value: unknown, depth = 0): boolean {
+  if (depth > 4 || value == null) return false;
+  if (typeof value === "string") {
+    const v = value.trim().toLowerCase();
+    return v === "admin" || v === "administrador" || v === "superadmin" || v === "adm";
+  }
+  if (Array.isArray(value)) return value.some((v) => deepHasAdmin(v, depth + 1));
+  if (typeof value === "object") {
+    return Object.entries(value as Record<string, unknown>).some(([k, v]) => {
+      const key = k.toLowerCase();
+      if (v === true && (key === "isadmin" || key === "admin" || key === "is_admin")) return true;
+      if (["role", "roles", "tipo", "perfil", "permissions", "permissoes", "scope", "scopes"].includes(key)) {
+        return deepHasAdmin(v, depth + 1);
+      }
+      return false;
+    });
+  }
+  return false;
+}
+
 /** Detecta admin em vários formatos que o backend pode devolver. */
 export function computeIsAdmin(u: User | null): boolean {
   if (!u) return false;
   const norm = (v: unknown) => String(v ?? "").trim().toLowerCase();
   if (u.admin === true) return true;
-  if (norm(u.role) === "admin" || norm(u.role) === "administrador" || norm(u.role) === "superadmin") return true;
+  if (["admin", "administrador", "superadmin", "adm"].includes(norm(u.role))) return true;
   if (Array.isArray(u.roles) && u.roles.some((r) => norm(r).includes("admin"))) return true;
   return false;
 }
+
 
 type RegisterPayload = {
   firstName: string;
@@ -117,7 +139,7 @@ function normalizeUser(raw: Record<string, unknown> | null | undefined, claims =
     roles: Array.isArray(raw.roles)
       ? (raw.roles as unknown[]).map(String)
       : Array.isArray(claims?.roles) ? (claims.roles as unknown[]).map(String) : undefined,
-    admin: raw.isAdmin === true || raw.admin === true || raw.is_admin === true || claims?.isAdmin === true || claims?.admin === true || claims?.is_admin === true,
+    admin: deepHasAdmin(raw) || deepHasAdmin(claims),
     address: normalizeAddress((raw.endereco ?? raw.address) as Record<string, unknown> | undefined),
   };
 }
