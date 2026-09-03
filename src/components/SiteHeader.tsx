@@ -21,11 +21,10 @@ export function SiteHeader() {
               <Link to="/perfil" className="hidden sm:inline-flex items-center gap-1 rounded-md px-3 py-2 hover:bg-muted">
                 <UserIcon className="h-4 w-4" /> {user.name?.split(" ")[0] ?? "Conta"}
               </Link>
-              {isAdmin && (
-                <Link to="/admin" className="inline-flex items-center gap-1 rounded-md bg-secondary/15 px-3 py-2 font-semibold text-secondary hover:bg-secondary/25">
-                  <Shield className="h-4 w-4" /> Admin
-                </Link>
-              )}
+              <Link to="/admin" className="inline-flex items-center gap-1 rounded-md bg-secondary/15 px-3 py-2 font-semibold text-secondary hover:bg-secondary/25">
+                <Shield className="h-4 w-4" /> Admin
+              </Link>
+
               <button onClick={logout} className="rounded-md p-2 hover:bg-muted" aria-label="Sair">
                 <LogOut className="h-4 w-4" />
               </button>
