@@ -19,8 +19,20 @@ export type User = {
   email: string;
   phone?: string;
   role?: string;
+  roles?: string[];
+  admin?: boolean;
   address?: Address;
 };
+
+/** Detecta admin em vários formatos que o backend pode devolver. */
+export function computeIsAdmin(u: User | null): boolean {
+  if (!u) return false;
+  const norm = (v: unknown) => String(v ?? "").trim().toLowerCase();
+  if (u.admin === true) return true;
+  if (norm(u.role) === "admin" || norm(u.role) === "administrador" || norm(u.role) === "superadmin") return true;
+  if (Array.isArray(u.roles) && u.roles.some((r) => norm(r).includes("admin"))) return true;
+  return false;
+}
 
 type RegisterPayload = {
   firstName: string;
@@ -80,7 +92,9 @@ function normalizeUser(raw: Record<string, unknown> | null | undefined): User | 
     firstName,
     lastName,
     phone: (raw.phone as string) ?? (raw.telefone as string) ?? undefined,
-    role: (raw.role as string) ?? undefined,
+    role: (raw.role as string) ?? (raw.tipo as string) ?? (raw.perfil as string) ?? undefined,
+    roles: Array.isArray(raw.roles) ? (raw.roles as unknown[]).map(String) : undefined,
+    admin: raw.isAdmin === true || raw.admin === true || raw.is_admin === true,
     address: normalizeAddress((raw.endereco ?? raw.address) as Record<string, unknown> | undefined),
   };
 }
@@ -204,7 +218,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       user,
       loading,
       isAuthenticated: !!user,
-      isAdmin: user?.role === "admin",
+      isAdmin: computeIsAdmin(user),
       login,
       register,
       logout,
