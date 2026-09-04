@@ -1,4 +1,4 @@
-import { api } from "./api";
+import { api, extractApiError } from "./api";
 import seed from "@/data/seed-products.json";
 
 export type SeedProduct = {
@@ -56,8 +56,9 @@ export async function seedCatalog(onProgress?: (done: number, total: number) => 
     } catch (err) {
       result.failed++;
       if (result.errors.length < 5) {
-        const msg = (err as { response?: { status?: number } })?.response?.status ?? "erro";
-        result.errors.push(`${product.name} (${product.category}): ${msg}`);
+        const status = (err as { response?: { status?: number } })?.response?.status;
+        const detail = extractApiError(err, "erro");
+        result.errors.push(`${product.name} (${product.category}): HTTP ${status ?? "?"} — ${detail}`);
       }
     }
     done++;

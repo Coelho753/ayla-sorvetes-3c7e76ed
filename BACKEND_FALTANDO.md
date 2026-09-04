@@ -274,3 +274,16 @@ curl $API/products/$ID | jq .stock           # 10 de novo
 
 Se todos os itens acima passarem, o backend está alinhado com o frontend
 atual do app Ayla Sorvetes.
+---
+
+## URGENTE — POST/PUT /products retorna 403 para admin
+
+Sintoma: usuário com `role: "admin"` no MongoDB consegue logar e ler `/users/me`, mas `POST /products` e `PUT /products/:id` respondem **403 Forbidden**.
+
+### Instruções para a IA de backend
+1. Abra o middleware de autorização das rotas de produto (ex.: `requireAdmin` / `isAdmin` / `authorize('admin')`).
+2. Garanta que ele compara com o valor salvo no banco: o documento do usuário tem `role: "admin"` (string, minúsculo). Aceite `req.user.role === 'admin'` — sem exigir campos extras como `isAdmin`, `permissions` ou claims no JWT.
+3. Se o middleware lê o role do **JWT** em vez do banco, inclua `role` no payload do token no login (`jwt.sign({ id, role }, ...)`) OU faça lookup do usuário no banco dentro do middleware (preferível).
+4. Confirme que as rotas usam o campo correto do body: `name`, `category`, `price`, `size`, `image`, `stock`, `active`, `description` (inglês). Se o schema espera português (`nome`, `categoria`...), aceite ambos.
+5. Categorias válidas esperadas pelo frontend: `pote`, `cup`, `pic_agua`, `pic_leite`, `pic_premium`, `pic_ski`, `acai`. Não rejeite essas strings no enum do schema.
+6. Teste com: `curl -X POST $API/products -H "Authorization: Bearer <token_admin>" -H "Content-Type: application/json" -d '{"name":"Teste","category":"pote","price":14,"size":"1,5L","stock":0,"active":true}'` — deve retornar 201.
