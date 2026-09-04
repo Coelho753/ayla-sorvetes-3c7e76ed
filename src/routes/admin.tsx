@@ -327,8 +327,9 @@ function ProductsAdmin() {
           Diagnóstico de acesso
         </button>
         {products.length === 0 && !seeding && (
-
+          <span className="text-xs text-muted-foreground">Banco vazio — clique em “Popular catálogo”.</span>
         )}
+
       </div>
 
       <div className="overflow-x-auto rounded-xl border border-border">
