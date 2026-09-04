@@ -284,6 +284,32 @@ function ProductsAdmin() {
     }
   }
 
+  async function diagnose() {
+    const { tokenStorage } = await import("@/lib/api");
+    const token = tokenStorage.getAccess();
+    let claims: unknown = null;
+    try {
+      const part = token?.split(".")[1] ?? "";
+      const norm = part.replace(/-/g, "+").replace(/_/g, "/");
+      claims = JSON.parse(window.atob(norm.padEnd(Math.ceil(norm.length / 4) * 4, "=")));
+    } catch { claims = "não foi possível ler o token"; }
+
+    let me: unknown = null;
+    try { me = (await api.get("/users/me")).data; } catch (err) { me = extractApiError(err); }
+
+    let postStatus = "";
+    try {
+      await api.post("/products", { name: "__teste_permissao__", category: "pote", price: 1, stock: 0, active: false });
+      postStatus = "201 — permissão OK";
+    } catch (err) { postStatus = extractApiError(err); }
+
+    const report = JSON.stringify({ claimsDoToken: claims, usersMe: me, testePostProducts: postStatus }, null, 2);
+    console.info("[diagnóstico admin]", report);
+    try { await navigator.clipboard.writeText(report); toast.success("Diagnóstico copiado — cole para o suporte do servidor"); }
+    catch { toast.message("Diagnóstico no console do navegador"); }
+  }
+
+
   if (error) return <p className="text-destructive">{error}</p>;
   if (!products) return <Loader2 className="mx-auto h-8 w-8 animate-spin text-primary" />;
 
