@@ -323,8 +323,11 @@ function ProductsAdmin() {
           {seeding ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
           {seeding ? `Enviando ${seeding.done}/${seeding.total}…` : "Popular catálogo"}
         </button>
+        <button onClick={diagnose} className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-2 text-sm font-semibold">
+          Diagnóstico de acesso
+        </button>
         {products.length === 0 && !seeding && (
-          <span className="text-xs text-muted-foreground">Banco vazio — clique em “Popular catálogo”.</span>
+
         )}
       </div>
 
